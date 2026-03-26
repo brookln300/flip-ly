@@ -552,6 +552,9 @@ export default function Home() {
         <p className="text-xs" style={{ color: '#333' }}>
           &copy; 1997&ndash;2026 FLIP-LY.NET | Best viewed in Netscape Navigator 4.0
         </p>
+        <p className="text-xs mt-2" style={{ color: '#555', fontFamily: '"Comic Sans MS", cursive' }}>
+          We scrape nothing. We make everything up. You&apos;re welcome.
+        </p>
         <div className="mt-4">
           <VisitorCounter />
         </div>

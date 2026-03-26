@@ -141,8 +141,11 @@ export default function Dashboard() {
             <span className="w-3 h-3 rounded-full" style={{ background: 'var(--lime)', boxShadow: '0 0 8px var(--lime)' }} />
             <span className="text-sm" style={{ color: '#ccc', fontFamily: 'monospace' }}>Active — scanning for sales near {user.city || 'your area'}</span>
           </div>
-          <p className="text-xs" style={{ color: '#666' }}>
+          <p className="text-xs mb-1" style={{ color: '#666' }}>
             Next email: Monday 8:00 AM CDT
+          </p>
+          <p className="text-xs" style={{ color: '#555', fontStyle: 'italic' }}>
+            Your weekly digest of questionable garage sale finds will arrive every Monday at 8 AM CDT. (It will be just as cursed as this website.)
           </p>
           <p className="text-xs mt-1 mb-4" style={{ color: '#555' }}>
             We scrape Craigslist, EstateSales.net, and Facebook Marketplace so you don&apos;t have to.
