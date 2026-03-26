@@ -101,7 +101,12 @@ export default function Home() {
   const [showError, setShowError] = useState(false)
   const [showSignup, setShowSignup] = useState(false)
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [signupCity, setSignupCity] = useState('')
+  const [signupZip, setSignupZip] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [signupError, setSignupError] = useState('')
+  const [signingUp, setSigningUp] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchCity, setSearchCity] = useState('')
   const [searching, setSearching] = useState(false)
@@ -125,8 +130,35 @@ export default function Home() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email) return
-    setSubmitted(true)
+    if (!email || !password || !signupCity || !signupZip) return
+    setSigningUp(true)
+    setSignupError('')
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          city: signupCity,
+          zip_code: signupZip,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setSignupError(data.error || 'Signup failed')
+        setSigningUp(false)
+        return
+      }
+      setSubmitted(true)
+      // Redirect to dashboard after 2 seconds
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 2000)
+    } catch {
+      setSignupError('Something broke. Like our CSS.')
+      setSigningUp(false)
+    }
   }
 
   const fakeListings = [
@@ -565,18 +597,51 @@ export default function Home() {
                       placeholder="your@email.com"
                       required
                       className="cl-input"
-                      style={{ transform: 'rotate(0.5deg)' }}
                     />
-                    <button type="submit" className="w-full py-3 font-bold text-lg" style={{
-                      background: 'var(--neon-orange)', color: '#fff',
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="password (6+ chars)"
+                      required
+                      minLength={6}
+                      className="cl-input"
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={signupCity}
+                        onChange={e => setSignupCity(e.target.value)}
+                        placeholder="City *"
+                        required
+                        className="cl-input flex-1"
+                      />
+                      <input
+                        type="text"
+                        value={signupZip}
+                        onChange={e => setSignupZip(e.target.value)}
+                        placeholder="Zip *"
+                        required
+                        className="cl-input"
+                        style={{ width: '100px' }}
+                        maxLength={5}
+                      />
+                    </div>
+                    {signupError && (
+                      <p className="text-xs" style={{ color: 'var(--hotpink)' }}>
+                        ⚠️ {signupError}
+                      </p>
+                    )}
+                    <button type="submit" disabled={signingUp} className="w-full py-3 font-bold text-lg" style={{
+                      background: signingUp ? '#666' : 'var(--neon-orange)', color: '#fff',
                       border: '3px solid var(--lime)',
-                      fontFamily: '"Comic Sans MS", cursive', cursor: 'pointer',
+                      fontFamily: '"Comic Sans MS", cursive', cursor: signingUp ? 'wait' : 'pointer',
                     }}>
-                      LET&apos;S GO 🦞
+                      {signingUp ? 'CONNECTING AT 56K...' : 'LET\u0027S GO 🦞'}
                     </button>
                   </form>
                   <p className="text-xs mt-4 text-center" style={{ color: '#555' }}>
-                    Unsubscribe anytime. We respect that.
+                    We need your city + zip to find sales near you. That&apos;s it.
                   </p>
                 </>
               )}
