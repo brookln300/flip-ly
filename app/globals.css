@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════════════
-   FLIP-LY.NET — The Design System That Shouldn't Work (But Does)
-   Deliberately wrong. Intentionally broken. Fully functional.
+   FLIP-LY.NET — GEOCITIES x CRAIGSLIST x WINDOWS 98 x GLITCH AI
+   "This site looks broken." — "Yeah. It works though."
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -15,6 +15,10 @@
   --neon-orange: #FF6600;
   --dark: #1A1A1A;
   --darker: #0D0D0D;
+  --win98-gray: #C0C0C0;
+  --win98-blue: #000080;
+  --win98-title: #0A246A;
+  --craigslist-purple: #800080;
 }
 
 * { box-sizing: border-box; }
@@ -23,8 +27,24 @@ body {
   background: var(--darker);
   color: #ffffff;
   font-family: 'Courier New', Courier, monospace;
-  line-height: 2.0; /* too much space — intentional */
   overflow-x: hidden;
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20'><text y='16' font-size='16'>🦞</text></svg>"), auto;
+}
+
+/* ── SCANLINES OVERLAY ──────────────────────────────────── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
 }
 
 ::selection {
@@ -32,59 +52,88 @@ body {
   color: var(--lime);
 }
 
-/* ── THE WRONG BUTTON ───────────────────────────────────── */
-.btn-chaos {
-  display: inline-block;
-  padding: 16px 48px;
-  background: var(--neon-orange);
-  color: #fff;
-  font-family: 'Comic Sans MS', cursive;
-  font-size: 24px;
-  font-weight: 900;
-  border: 4px solid var(--lime);
-  border-radius: 0; /* rectangles only */
+/* ── WINDOWS 98 WINDOW ──────────────────────────────────── */
+.win98-window {
+  border: 2px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  background: var(--win98-gray);
+  box-shadow: 2px 2px 0 #000, inset 1px 1px 0 #dfdfdf;
+}
+
+.win98-titlebar {
+  background: linear-gradient(90deg, var(--win98-title), #1084d0);
+  padding: 3px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.win98-titlebar-text {
+  font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0;
+}
+
+.win98-btn {
+  width: 16px;
+  height: 14px;
+  border: 1px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
+  background: var(--win98-gray);
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transform: rotate(-3deg);
-  transition: none; /* instant, jarring — intentional */
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  font-family: 'Marlett', sans-serif;
 }
 
-.btn-chaos:hover {
-  transform: rotate(2deg) scale(1.5);
-  font-size: 12px; /* shrinks text while growing button */
-  background: var(--hotpink);
-  border-color: var(--mustard);
+.win98-btn:active {
+  border-color: #808080 #ffffff #ffffff #808080;
 }
 
-.btn-chaos:active {
-  transform: rotate(-8deg) scale(0.9);
+.win98-body {
+  padding: 16px 20px;
+  font-family: 'Tahoma', 'MS Sans Serif', sans-serif;
+  font-size: 12px;
+  color: #000;
 }
 
-/* ── CARD THAT'S TILTED ─────────────────────────────────── */
-.card-wonky {
-  background: var(--dark);
-  border: 2px dashed var(--lime);
-  padding: 24px;
-  position: relative;
-  box-shadow: 8px 8px 0 var(--hotpink); /* offset wrong */
+/* ── BEVEL BORDER (3D) ──────────────────────────────────── */
+.bevel-out {
+  border: 3px solid;
+  border-color: #ffffff #808080 #808080 #ffffff;
 }
 
-.card-wonky:hover {
-  transform: rotate(2deg); /* instant snap, no transition */
-  box-shadow: -8px -8px 0 var(--electric);
+.bevel-in {
+  border: 3px solid;
+  border-color: #808080 #ffffff #ffffff #808080;
 }
 
-/* ── SECTION DIVIDERS (too thick) ───────────────────────── */
-.divider-chaos {
-  height: 8px;
-  background: linear-gradient(90deg, var(--lime), var(--hotpink), var(--mustard), var(--electric), var(--neon-orange));
-  margin: 0;
+/* ── GEOCITIES CONSTRUCTION BANNER ──────────────────────── */
+.construction-banner {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--mustard),
+    var(--mustard) 20px,
+    #000 20px,
+    #000 40px
+  );
+  padding: 8px 16px;
+  text-align: center;
+  font-family: 'Comic Sans MS', cursive;
+  font-weight: 900;
+  font-size: 14px;
+  color: #000;
+  text-shadow: 1px 1px 0 var(--mustard);
 }
 
-/* ── BLINK (the forbidden CSS) ──────────────────────────── */
+/* ── BLINK (FORBIDDEN CSS) ──────────────────────────────── */
 .blink {
-  animation: blink 1.5s step-end infinite;
+  animation: blink 1s step-end infinite;
 }
 
 @keyframes blink {
@@ -92,15 +141,34 @@ body {
   50% { opacity: 0; }
 }
 
-/* ── JITTER ─────────────────────────────────────────────── */
+/* ── JITTER / CRASH ─────────────────────────────────────── */
 .jitter {
-  animation: jitter 0.15s ease-in-out infinite;
+  animation: jitter 0.08s ease-in-out infinite;
 }
 
 @keyframes jitter {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-2px) translateY(1px); }
-  75% { transform: translateX(2px) translateY(-1px); }
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(2px, -1px); }
+  75% { transform: translate(-1px, -2px); }
+  100% { transform: translate(3px, 1px); }
+}
+
+.crash-shake {
+  animation: crashShake 0.5s ease-in-out;
+}
+
+@keyframes crashShake {
+  0%, 100% { transform: translate(0); }
+  10% { transform: translate(-8px, -4px); }
+  20% { transform: translate(6px, 3px); }
+  30% { transform: translate(-4px, -6px); }
+  40% { transform: translate(8px, 2px); }
+  50% { transform: translate(-6px, 4px); }
+  60% { transform: translate(3px, -8px); }
+  70% { transform: translate(-2px, 6px); }
+  80% { transform: translate(4px, -3px); }
+  90% { transform: translate(-3px, 2px); }
 }
 
 /* ── FALL IN ────────────────────────────────────────────── */
@@ -115,54 +183,208 @@ body {
   100% { transform: translateY(0) rotate(0); opacity: 1; }
 }
 
-/* stagger children */
-.fall-in:nth-child(1) { animation-delay: 0.1s; }
-.fall-in:nth-child(2) { animation-delay: 0.3s; }
-.fall-in:nth-child(3) { animation-delay: 0.5s; }
-.fall-in:nth-child(4) { animation-delay: 0.7s; }
-.fall-in:nth-child(5) { animation-delay: 0.9s; }
+/* stagger */
+.fall-in:nth-child(2) { animation-delay: 0.15s; }
+.fall-in:nth-child(3) { animation-delay: 0.3s; }
+.fall-in:nth-child(4) { animation-delay: 0.45s; }
+.fall-in:nth-child(5) { animation-delay: 0.6s; }
 
-/* ── UNDER CONSTRUCTION ─────────────────────────────────── */
-.construction {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--mustard),
-    var(--mustard) 20px,
-    var(--dark) 20px,
-    var(--dark) 40px
-  );
-  padding: 12px 24px;
-  font-family: 'Comic Sans MS', cursive;
-  color: var(--dark);
-  font-weight: 900;
-  text-align: center;
+/* ── GLITCH TEXT ────────────────────────────────────────── */
+.glitch {
+  position: relative;
 }
 
-/* ── SCROLLBAR (wrong colors) ───────────────────────────── */
-::-webkit-scrollbar { width: 16px; } /* too wide */
-::-webkit-scrollbar-track { background: var(--hotpink); }
-::-webkit-scrollbar-thumb { background: var(--lime); border: 3px solid var(--hotpink); }
-::-webkit-scrollbar-thumb:hover { background: var(--mustard); }
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
 
-/* ── INPUTS (misaligned on purpose) ─────────────────────── */
-.input-wonky {
-  background: var(--dark);
-  border: 3px solid var(--lime);
-  color: #fff;
-  padding: 12px 16px;
+.glitch::before {
+  animation: glitch1 2s infinite linear;
+  color: var(--hotpink);
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+}
+
+.glitch::after {
+  animation: glitch2 2s infinite linear;
+  color: var(--lime);
+  clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+}
+
+@keyframes glitch1 {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-3px, 2px); }
+  40% { transform: translate(3px, -1px); }
+  60% { transform: translate(-2px, 1px); }
+  80% { transform: translate(1px, -2px); }
+}
+
+@keyframes glitch2 {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(3px, -2px); }
+  40% { transform: translate(-3px, 1px); }
+  60% { transform: translate(2px, -1px); }
+  80% { transform: translate(-1px, 2px); }
+}
+
+/* ── CRAIGSLIST-STYLE SEARCH ────────────────────────────── */
+.cl-input {
+  background: #fff;
+  border: 2px solid var(--lime);
+  color: #000;
+  padding: 8px 12px;
   font-family: 'Courier New', monospace;
-  font-size: 16px;
+  font-size: 14px;
   outline: none;
   width: 100%;
 }
 
-.input-wonky:focus {
+.cl-input:focus {
   border-color: var(--hotpink);
-  box-shadow: 0 0 20px var(--hotpink);
-  transform: rotate(1deg); /* tilts on focus */
+  box-shadow: 0 0 12px var(--hotpink);
 }
 
-.input-wonky::placeholder {
-  color: var(--electric);
+.cl-input::placeholder {
+  color: var(--craigslist-purple);
   font-style: italic;
+}
+
+/* ── CHAOS BUTTON ───────────────────────────────────────── */
+.btn-chaos {
+  display: inline-block;
+  padding: 14px 40px;
+  background: var(--neon-orange);
+  color: #fff;
+  font-family: 'Comic Sans MS', cursive;
+  font-size: 22px;
+  font-weight: 900;
+  border: 4px solid var(--lime);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: none;
+}
+
+.btn-chaos:hover {
+  transform: scale(1.3) rotate(3deg);
+  font-size: 14px;
+  background: var(--hotpink);
+  border-color: var(--mustard);
+}
+
+.btn-chaos:active {
+  transform: scale(0.9) rotate(-5deg);
+}
+
+/* ── CARD WONKY ─────────────────────────────────────────── */
+.card-wonky {
+  background: var(--dark);
+  border: 2px dashed var(--lime);
+  padding: 24px;
+  position: relative;
+  box-shadow: 8px 8px 0 var(--hotpink);
+}
+
+.card-wonky:hover {
+  transform: rotate(2deg);
+  box-shadow: -8px -8px 0 var(--electric);
+}
+
+/* ── RAINBOW DIVIDER ────────────────────────────────────── */
+.rainbow-divider {
+  height: 8px;
+  background: linear-gradient(90deg, var(--lime), var(--hotpink), var(--mustard), var(--electric), var(--neon-orange), var(--lime));
+  background-size: 200% 100%;
+  animation: rainbowScroll 3s linear infinite;
+}
+
+@keyframes rainbowScroll {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ── MARQUEE ────────────────────────────────────────────── */
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-content {
+  display: inline-block;
+  animation: marqueeScroll 20s linear infinite;
+}
+
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── VISITOR COUNTER ────────────────────────────────────── */
+.visitor-counter {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--lime);
+  background: #000;
+  border: 3px ridge var(--win98-gray);
+  padding: 6px 16px;
+  display: inline-block;
+  letter-spacing: 4px;
+}
+
+/* ── SCROLLBAR (WRONG) ──────────────────────────────────── */
+::-webkit-scrollbar { width: 18px; }
+::-webkit-scrollbar-track { background: var(--hotpink); }
+::-webkit-scrollbar-thumb {
+  background: var(--lime);
+  border: 3px ridge var(--win98-gray);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--mustard); }
+
+/* ── FLOATING MASCOT ────────────────────────────────────── */
+.mascot-bubble {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 4px 10px;
+  background: var(--hotpink);
+  color: #fff;
+  font-family: 'Comic Sans MS', cursive;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+}
+
+.mascot-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--hotpink);
+}
+
+/* ── NETSCAPE BANNER ────────────────────────────────────── */
+.netscape-banner {
+  text-align: center;
+  padding: 6px;
+  background: #000;
+  border: 2px ridge var(--win98-gray);
+  font-family: 'Times New Roman', serif;
+  font-size: 12px;
+  color: var(--lime);
+}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .win98-window { margin: 0 8px; }
 }
