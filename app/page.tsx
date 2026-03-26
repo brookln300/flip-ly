@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import WinampPlayer from './components/WinampPlayer'
+import RetroPopups from './components/RetroPopups'
 
 /* ── VISITOR COUNTER (fake but convincing) ──────────────── */
 function VisitorCounter() {
-  const [count, setCount] = useState(48213)
+  const [count, setCount] = useState(69420)
   useEffect(() => {
     const i = setInterval(() => setCount(c => c + Math.floor(Math.random() * 3)), 4000)
     return () => clearInterval(i)
@@ -150,7 +152,19 @@ export default function Home() {
   return (
     <div className="min-h-screen relative">
       <Mascot />
+      <WinampPlayer />
+      <RetroPopups />
       {showError && <Win98Error onClose={() => setShowError(false)} onSignup={() => { setShowError(false); setShowSignup(true) }} />}
+
+      {/* Mute nostalgia toggle */}
+      <div className="fixed bottom-4 left-4 z-[80]">
+        <button className="px-3 py-1.5 text-xs" style={{
+          background: '#232323', border: '1px solid #404040',
+          color: '#888', fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
+        }}>
+          🔇 Mute Nostalgia
+        </button>
+      </div>
 
       {/* ═══ CONSTRUCTION BANNER ═══ */}
       <div className="construction-banner">
@@ -159,7 +173,7 @@ export default function Home() {
 
       {/* ═══ NETSCAPE BANNER ═══ */}
       <div className="netscape-banner">
-        🌐 Best viewed in Netscape Navigator 4.0 at 800x600 resolution 🌐 | <span style={{ color: 'var(--mustard)' }}>You are visitor #<VisitorCounter /></span>
+        🌐 Best viewed in Netscape Navigator 4.0 at 800x600 resolution 🌐 | <span style={{ color: 'var(--mustard)' }}>You are visitor #<VisitorCounter /> since 1996</span>
       </div>
 
       {/* ═══ HEADER ═══ */}
