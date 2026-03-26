@@ -104,6 +104,262 @@ function Mascot() {
   )
 }
 
+/* ── VALUE PROPS (interactive clickable chaos) ──────────── */
+function ValuePropsSection() {
+  const [clicked, setClicked] = useState<Record<number, boolean>>({})
+  const [emailNum] = useState(() => Math.floor(Math.random() * 9000) + 1000)
+
+  const FIND_TRUTHS = [
+    "OK FINE HERE'S THE TRUTH: We scan Craigslist, EstateSales.net, and Facebook Marketplace in your zip code. Then we email you every Thursday at noon. That's literally it. You're on a website with Comic Sans for a newsletter. Welcome to 2026.",
+    "REAL TALK: We aggregate garage sale listings from across DFW and send you the good ones. Every Thursday. 12:00 PM. One email. No spam. The website looks like this on purpose. We promise the email is normal. Mostly.",
+    "ALRIGHT YOU CAUGHT US: This entire website exists to send you one (1) email per week with garage sales near your zip code. Everything else — the Winamp, the lobster cursor, the LimeWire popups — is just vibes. Expensive, server-burning vibes.",
+  ]
+
+  const ROI_TRUTHS = [
+    "What's ROI? Great question. We googled it. Return On Investment. We put this card here because our Shopify template had it and we were too lazy to delete it. There is no ROI calculator. There might never be. But the card looks professional, right?",
+    "ROI = Return On Investment. We don't actually calculate this. We thought about it for 11 seconds and decided Comic Sans was a better use of our time. Maybe someday. Maybe never. The lamp is still $3 though.",
+    "jk we just had this in our shopify template and thought it sounded smart. If you want real ROI, buy the $3 lamp and sell it for $5. That's 67% ROI. You're welcome. We accept Venmo.",
+  ]
+
+  const cards = [
+    {
+      emoji: '💰', title: 'Find Deals',
+      desc: `We tell you what sales are near you. Every ${emailNum} hours. (Just kidding — every Thursday at noon. One email. That's it.)`,
+      color: 'var(--lime)', rotate: '-3deg',
+      truthPool: FIND_TRUTHS,
+    },
+    {
+      emoji: '📊', title: 'Know the ROI',
+      desc: 'See estimated profit margins before you leave your couch. (Click for the truth.)',
+      color: 'var(--hotpink)', rotate: '2deg', mt: '20px',
+      truthPool: ROI_TRUTHS,
+    },
+    {
+      emoji: '📧', title: `${emailNum} Daily Emails`,
+      desc: `Top ${emailNum} matches every morning. jk — 1 email every Thursday, noon. Stop scrolling Facebook Marketplace at 2 AM like a gremlin.`,
+      color: 'var(--mustard)', rotate: '-1deg', mt: '-10px',
+      truthPool: FIND_TRUTHS,
+    },
+  ]
+
+  return (
+    <section className="px-4 py-16" style={{ background: 'var(--darker)' }}>
+      <h3 className="text-center mb-12" style={{
+        fontFamily: 'Papyrus, fantasy', fontSize: '32px', color: 'var(--mustard)',
+        letterSpacing: '6px',
+      }}>
+        REAL SIMPLE:
+      </h3>
+      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        {cards.map((card, i) => (
+          <div key={i} className="card-wonky fall-in" onClick={() => setClicked(prev => ({ ...prev, [i]: !prev[i] }))} style={{
+            transform: `rotate(${card.rotate})`,
+            marginTop: card.mt || '0',
+            cursor: 'pointer',
+          }}>
+            <div className="text-5xl mb-4">{card.emoji}</div>
+            <h4 className="text-xl font-bold mb-3" style={{
+              fontFamily: '"Comic Sans MS", cursive', color: card.color,
+            }}>
+              {card.title}
+            </h4>
+            {clicked[i] ? (
+              <div>
+                <p className="text-xs mb-2" style={{ color: 'var(--neon-orange)', fontFamily: 'monospace' }}>
+                  ⚠️ THE TRUTH:
+                </p>
+                <p className="text-xs" style={{ color: '#ccc', lineHeight: 1.8 }}>
+                  {card.truthPool[Math.floor(Math.random() * card.truthPool.length)]}
+                </p>
+                <p className="text-[10px] mt-3" style={{ color: '#555' }}>(click again to hide the truth)</p>
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: '#ccc' }}>{card.desc}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/* ── HOW IT WORKS (chaotic honesty) ────────────────────── */
+function HowItWorksSection() {
+  const [revealed, setRevealed] = useState<Record<number, boolean>>({})
+
+  const steps = [
+    {
+      n: '1', c: 'var(--lime)',
+      front: "Give us your email. We won't sell it. Probably. (We definitely won't. We can barely use Supabase.)",
+      back: "FOR REAL: You type your email, city, and zip. We store it in a database. That's step 1. It took us 4 hours to build this form. Please use it.",
+    },
+    {
+      n: '2', c: 'var(--hotpink)',
+      front: "We pretend to scan the internet. (We actually do scan the internet. But the website makes it look fake.)",
+      back: "ACTUAL TRUTH: Our robots crawl Craigslist, EstateSales.net, and Facebook every day looking for garage sales near your zip. This part is real. The Winamp player is not.",
+    },
+    {
+      n: '3', c: 'var(--mustard)',
+      front: "Every Thursday at noon, you get an email. It has garage sales in it. That's the whole product.",
+      back: "YEP THAT'S IT: One email. Thursdays. 12 PM CDT. Contains 5-10 garage sales near you with addresses and dates. The email looks normal. Unlike this website.",
+    },
+    {
+      n: '4', c: 'var(--electric)',
+      front: "Go to the sale. Buy a $3 lamp. Sell it for $30. Tell no one about this website.",
+      back: "THE BUSINESS MODEL: You flip things for profit. We take none of it. We don't even know what you bought. We're just the weird messenger with a lobster cursor.",
+    },
+    {
+      n: '5', c: 'var(--neon-orange)',
+      front: "(Optional) Pay $9/month so we can afford the servers. You get... slightly better emails. And our eternal gratitude. And fewer lobster emojis. Actually no, same amount of lobsters.",
+      back: "BRUTAL HONESTY: The $9/month doesn't do much yet. We'll add ROI estimates someday. For now it just keeps the lights on and the Comic Sans flowing. We love you either way.",
+    },
+  ]
+
+  return (
+    <section className="px-4 py-16" style={{ background: '#000' }}>
+      <h3 className="text-center mb-4" style={{
+        fontFamily: '"Comic Sans MS", cursive', fontSize: '28px', color: 'var(--electric)',
+      }}>
+        HOW IT ACTUALLY WORKS
+      </h3>
+      <p className="text-center mb-12 text-xs" style={{ color: '#555' }}>
+        (click any step for the embarrassingly honest version)
+      </p>
+      <div className="max-w-2xl mx-auto space-y-4">
+        {steps.map((step, i) => (
+          <div key={step.n} onClick={() => setRevealed(prev => ({ ...prev, [i]: !prev[i] }))}
+            className="flex items-start gap-4 fall-in cursor-pointer" style={{
+              paddingLeft: `${i * 12}px`,
+              transform: `rotate(${(i % 2 === 0 ? -0.5 : 0.5)}deg)`,
+              background: revealed[i] ? 'rgba(255,255,255,0.02)' : 'transparent',
+              padding: `8px 8px 8px ${i * 12 + 8}px`,
+              borderLeft: revealed[i] ? `3px solid ${step.c}` : '3px solid transparent',
+              transition: 'all 0.2s',
+            }}>
+            <span className="text-2xl font-bold shrink-0" style={{
+              fontFamily: '"Comic Sans MS", cursive', color: step.c,
+            }}>
+              {step.n}.
+            </span>
+            <div>
+              <p className="text-sm" style={{ color: revealed[i] ? 'var(--neon-orange)' : '#ddd' }}>
+                {revealed[i] ? step.back : step.front}
+              </p>
+              {revealed[i] && (
+                <p className="text-[10px] mt-1" style={{ color: '#444' }}>(click to go back to the lies)</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/* ── TESTIMONIALS (BBS / ANSI / Telnet LORD style) ─────── */
+function TestimonialsSection() {
+  return (
+    <section className="px-4 py-16" style={{ background: '#000' }}>
+      <div className="max-w-4xl mx-auto">
+        {/* BBS header */}
+        <div className="mb-8 text-center" style={{ fontFamily: '"Courier New", monospace' }}>
+          <p style={{ color: 'var(--lime)', fontSize: '11px' }}>
+            ╔══════════════════════════════════════════════════════════╗
+          </p>
+          <p style={{ color: 'var(--mustard)', fontSize: '13px', fontWeight: 700 }}>
+            ║&nbsp;&nbsp;FLIP-LY BBS — TESTIMONIALS DOOR — ANSI MODE&nbsp;&nbsp;║
+          </p>
+          <p style={{ color: 'var(--lime)', fontSize: '11px' }}>
+            ╠══════════════════════════════════════════════════════════╣
+          </p>
+          <p style={{ color: '#666', fontSize: '10px' }}>
+            ║ SysOp: G1TC# | Users Online: 3 | Baud: 56000 | Node: 1 ║
+          </p>
+          <p style={{ color: 'var(--lime)', fontSize: '11px' }}>
+            ╚══════════════════════════════════════════════════════════╝
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {[
+            {
+              user: 'xX_TableFlipper_Xx',
+              level: 'LVL 42 GARAGE WARRIOR',
+              hp: '847/847',
+              msg: 'I found a $400 table for $20 in McKinney. Sold it on Facebook in 2 hours. This cursed website with the lobster cursor literally changed my life. I am not joking. My wife thinks I need help.',
+              gold: '2,847',
+              date: '03/24/26 02:17 AM',
+              color: 'var(--lime)',
+            },
+            {
+              user: 'COUCH_DESTROYER_99',
+              level: 'LVL 69 FLIP MASTER',
+              hp: '420/420',
+              msg: "The website design is so bad it's good. I showed my therapist and she said 'this explains a lot about you.' 10/10 would flip again. Found a vintage Eames chair at an estate sale. The chair was $15. The therapy is $200/session.",
+              gold: '69,420',
+              date: '03/23/26 11:59 PM',
+              color: 'var(--hotpink)',
+            },
+            {
+              user: 'LampQueen_Dallas',
+              level: 'LVL 33 LAMP HOARDER',
+              hp: '333/333',
+              msg: "My husband thinks I'm insane for using a site with Comic Sans and a fake Winamp player. I made $200 last weekend from a single estate sale this site told me about. He now also uses this site. We don't talk about it.",
+              gold: '1,337',
+              date: '03/25/26 08:42 AM',
+              color: 'var(--mustard)',
+            },
+            {
+              user: 'Anonymous_Flipper',
+              level: 'LVL 1 NOOB',
+              hp: '10/10',
+              msg: "I came here because someone shared this on Reddit with the caption 'wtf is this website.' I signed up ironically. I now check my email every Thursday at noon. I have become the thing I mocked. The lobster is my shepherd.",
+              gold: '0',
+              date: '03/26/26 04:20 AM',
+              color: 'var(--electric)',
+            },
+          ].map((t, i) => (
+            <div key={i} style={{
+              background: '#0a0a0a',
+              border: `1px solid ${t.color}`,
+              padding: '16px',
+              fontFamily: '"Courier New", monospace',
+            }}>
+              {/* BBS user header */}
+              <div className="flex flex-wrap items-center gap-3 mb-3" style={{ fontSize: '11px' }}>
+                <span style={{ color: t.color, fontWeight: 700 }}>{t.user}</span>
+                <span style={{ color: '#666' }}>|</span>
+                <span style={{ color: '#888' }}>{t.level}</span>
+                <span style={{ color: '#666' }}>|</span>
+                <span style={{ color: 'var(--lime)' }}>HP: {t.hp}</span>
+                <span style={{ color: '#666' }}>|</span>
+                <span style={{ color: 'var(--mustard)' }}>Gold: {t.gold}</span>
+              </div>
+              {/* Message */}
+              <p style={{ color: '#ccc', fontSize: '12px', lineHeight: 1.8 }}>
+                &gt; {t.msg}
+              </p>
+              {/* Footer */}
+              <div className="flex justify-between mt-3" style={{ fontSize: '9px', color: '#444' }}>
+                <span>Posted: {t.date}</span>
+                <span>Reply | Quote | Report to SysOp</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* BBS footer */}
+        <div className="mt-6 text-center" style={{ fontFamily: '"Courier New", monospace', fontSize: '10px', color: '#444' }}>
+          <p>[Press ENTER to continue, Q to quit, or just sign up already]</p>
+          <p className="mt-1" style={{ color: '#333' }}>
+            ═══ END OF MESSAGES — FLIP-LY BBS v4.20 — NO CARRIER ═══
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ══════════════════════════════════════════════════════════ */
 /* MAIN PAGE — THE CHAOS                                     */
 /* ══════════════════════════════════════════════════════════ */
@@ -444,98 +700,18 @@ export default function Home() {
 
       <div className="rainbow-divider" />
 
-      {/* ═══ VALUE PROPS (tilted Win98 windows) ═══ */}
-      <section className="px-4 py-16" style={{ background: 'var(--darker)' }}>
-        <h3 className="text-center mb-12" style={{
-          fontFamily: 'Papyrus, fantasy', fontSize: '32px', color: 'var(--mustard)',
-          letterSpacing: '6px',
-        }}>
-          REAL SIMPLE:
-        </h3>
-
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { emoji: '💰', title: 'Find Deals', desc: 'We tell you what sales are near you. Every 6 hours.', color: 'var(--lime)', rotate: '-3deg' },
-            { emoji: '📊', title: 'Know the ROI', desc: 'See estimated profit margins before you leave your couch.', color: 'var(--hotpink)', rotate: '2deg', mt: '20px' },
-            { emoji: '📧', title: 'Daily Email', desc: 'Top 5 matches every morning at 8 AM. Stop scrolling Facebook groups.', color: 'var(--mustard)', rotate: '-1deg', mt: '-10px' },
-          ].map((card, i) => (
-            <div key={i} className="card-wonky fall-in" style={{
-              transform: `rotate(${card.rotate})`,
-              marginTop: card.mt || '0',
-            }}>
-              <div className="text-5xl mb-4">{card.emoji}</div>
-              <h4 className="text-xl font-bold mb-3" style={{
-                fontFamily: '"Comic Sans MS", cursive', color: card.color,
-              }}>
-                {card.title}
-              </h4>
-              <p className="text-sm" style={{ color: '#ccc' }}>{card.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ═══ VALUE PROPS (interactive chaos cards) ═══ */}
+      <ValuePropsSection />
 
       <div className="rainbow-divider" />
 
-      {/* ═══ HOW IT WORKS (indented steps) ═══ */}
-      <section className="px-4 py-16" style={{ background: '#000' }}>
-        <h3 className="text-center mb-12" style={{
-          fontFamily: '"Comic Sans MS", cursive', fontSize: '28px', color: 'var(--electric)',
-        }}>
-          HOW IT WORKS <span className="text-sm" style={{ color: '#555' }}>(we think)</span>
-        </h3>
-
-        <div className="max-w-2xl mx-auto space-y-4">
-          {[
-            { n: '1', t: "Sign up (we won't sell your email, probably)", c: 'var(--lime)' },
-            { n: '2', t: 'Save your interests (location, price range, type)', c: 'var(--hotpink)' },
-            { n: '3', t: "Receive daily digest (8 AM CDT, we're consistent)", c: 'var(--mustard)' },
-            { n: '4', t: "Go flip some stuff (make money, we're cool with it)", c: 'var(--electric)' },
-            { n: '5', t: '(Optional) Pay $9/month to see ROI estimates (this pays for the servers)', c: 'var(--neon-orange)' },
-          ].map((step, i) => (
-            <div key={step.n} className="flex items-start gap-4 fall-in" style={{
-              paddingLeft: `${i * 16}px`,
-              transform: `rotate(${(i % 2 === 0 ? -0.5 : 0.5)}deg)`,
-            }}>
-              <span className="text-2xl font-bold shrink-0" style={{
-                fontFamily: '"Comic Sans MS", cursive', color: step.c,
-              }}>
-                {step.n}.
-              </span>
-              <p className="text-sm" style={{ color: '#ddd' }}>{step.t}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ═══ HOW IT WORKS (chaotic truth) ═══ */}
+      <HowItWorksSection />
 
       <div className="rainbow-divider" />
 
-      {/* ═══ TESTIMONIALS ═══ */}
-      <section className="px-4 py-16" style={{ background: 'var(--darker)' }}>
-        <h3 className="text-center mb-12" style={{
-          fontFamily: 'Papyrus, fantasy', fontSize: '24px', color: 'var(--hotpink)',
-          letterSpacing: '3px',
-        }}>
-          &ldquo;TESTIMONIALS&rdquo; <span className="text-xs" style={{ color: '#555' }}>(real ones, pinky promise)</span>
-        </h3>
-
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { q: 'I found a $400 table for $20. This website is weird but it works.', n: 'Sarah', c: 'McKinney TX', r: '-2deg' },
-            { q: "The website design is so bad it's good. 10/10 would flip again.", n: 'Marcus', c: 'Dallas TX', r: '3deg' },
-            { q: 'My husband thinks I\'m insane for using a site with Comic Sans. I made $200 last weekend.', n: 'Lisa', c: 'Plano TX', r: '-1deg' },
-          ].map((t, i) => (
-            <div key={i} className="card-wonky" style={{ transform: `rotate(${t.r})` }}>
-              <p className="text-sm italic mb-4" style={{ color: '#ccc' }}>
-                &ldquo;{t.q}&rdquo;
-              </p>
-              <p className="text-xs font-bold" style={{ color: 'var(--mustard)' }}>
-                — {t.n}, {t.c}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* ═══ TESTIMONIALS (BBS / ANSI / LORD style) ═══ */}
+      <TestimonialsSection />
 
       <div className="rainbow-divider" />
 
