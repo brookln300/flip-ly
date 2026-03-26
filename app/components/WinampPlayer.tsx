@@ -93,8 +93,8 @@ export default function WinampPlayer() {
         </div>
       )}
 
-      {/* Main Winamp window — uses actual skin asset as backdrop */}
-      <div className="fixed right-3 top-20 z-[80] select-none" style={{
+      {/* Main Winamp window — hidden on mobile to prevent overlap */}
+      <div className="fixed right-3 top-20 z-[80] select-none hidden md:block" style={{
         width: '275px',
         backgroundImage: 'url(/assets/winamp-skin.jpg)',
         backgroundSize: 'cover',

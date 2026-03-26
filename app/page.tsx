@@ -4,9 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 import WinampPlayer from './components/WinampPlayer'
 import RetroPopups from './components/RetroPopups'
 import BSOD from './components/BSOD'
-import CRTtv from './components/CRTtv'
-import AOLWelcome from './components/AOLWelcome'
-import Webcam90s from './components/Webcam90s'
 
 /* ── VISITOR COUNTER (fake but convincing) ──────────────── */
 function VisitorCounter() {
@@ -71,16 +68,16 @@ function Mascot() {
   useEffect(() => {
     const i = setInterval(() => {
       setPos({ x: Math.random() * 80 + 5, y: Math.random() * 60 + 20 })
-      if (Math.random() > 0.5) {
+      if (Math.random() > 0.7) { // less frequent bubbles
         setMsg(msgs[Math.floor(Math.random() * msgs.length)])
-        setTimeout(() => setMsg(''), 3000)
+        setTimeout(() => setMsg(''), 4000)
       }
-    }, 5000)
+    }, 8000) // slower movement
     return () => clearInterval(i)
   }, [])
 
   return (
-    <div className="fixed z-50 pointer-events-none select-none transition-all duration-[4000ms] ease-in-out"
+    <div className="fixed z-50 pointer-events-none select-none transition-all duration-[4000ms] ease-in-out hidden sm:block"
       style={{ left: `${pos.x}%`, top: `${pos.y}%` }}>
       <div className="relative">
         <img src="/assets/robot-mascot.jpg" alt="G1TC# mascot" style={{
@@ -147,29 +144,22 @@ export default function Home() {
       <WinampPlayer />
       <RetroPopups />
       <BSOD />
-      <CRTtv />
-      <AOLWelcome />
-      <Webcam90s />
       {showError && <Win98Error onClose={() => setShowError(false)} onSignup={() => { setShowError(false); setShowSignup(true) }} />}
 
-      {/* Mute nostalgia toggle */}
-      <div className="fixed bottom-4 left-4 z-[80]">
-        <button className="px-3 py-1.5 text-xs" style={{
-          background: '#232323', border: '1px solid #404040',
-          color: '#888', fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
-        }}>
-          🔇 Mute Nostalgia
-        </button>
-      </div>
+      {/* Mute toggle removed from here — now in header */}
 
       {/* ═══ CONSTRUCTION BANNER ═══ */}
       <div className="construction-banner">
         🚧 UNDER CONSTRUCTION 🚧 (everything works tho) 🚧 UNDER CONSTRUCTION 🚧
       </div>
 
-      {/* ═══ NETSCAPE BANNER ═══ */}
-      <div className="netscape-banner">
-        🌐 Best viewed in Netscape Navigator 4.0 at 800x600 resolution 🌐 | <span style={{ color: 'var(--mustard)' }}>You are visitor #<VisitorCounter /> since 1996</span>
+      {/* ═══ NETSCAPE + KAZAA BANNER ═══ */}
+      <div className="netscape-banner flex flex-wrap items-center justify-center gap-2">
+        <span className="hidden sm:inline">🌐 Best viewed in Netscape 4.0 at 800x600 🌐</span>
+        <span style={{ color: 'var(--mustard)' }}>Visitor #<VisitorCounter /> since 1996</span>
+        <span className="hidden md:inline" style={{ color: 'var(--electric)' }}>
+          | 📂 Kazaa: 4,269 deals shared
+        </span>
       </div>
 
       {/* ═══ HEADER ═══ */}
@@ -185,6 +175,12 @@ export default function Home() {
           </h1>
         </div>
         <div className="flex gap-2 items-center">
+          <button className="px-2 py-1 text-[10px] font-bold hidden sm:block" style={{
+            background: '#1a1a1a', border: '1px solid #333', color: '#888',
+            fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
+          }}>
+            🔇 Mute Nostalgia
+          </button>
           <span className="text-xs blink hidden sm:inline" style={{ color: 'var(--mustard)' }}>● LIVE</span>
           <button onClick={() => setShowSignup(true)} className="px-3 py-1.5 text-xs font-bold" style={{
             border: '2px solid', borderColor: '#fff #808080 #808080 #fff',

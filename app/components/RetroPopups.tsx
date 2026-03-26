@@ -36,27 +36,27 @@ export default function RetroPopups() {
   const [nextId, setNextId] = useState(0)
 
   useEffect(() => {
-    // Spawn popups randomly
+    // Spawn popups — stabilized: max 1 at a time, slower cadence
     const spawn = () => {
       const types: Popup['type'][] = ['limewire', 'icq', 'aol', 'clippy']
       const type = types[Math.floor(Math.random() * types.length)]
       const id = nextId
       setNextId(n => n + 1)
-      setPopups(prev => [...prev.slice(-3), { // max 4 at once
+      setPopups([{ // only 1 at a time
         id,
         type,
-        x: Math.random() * 60 + 10,
-        y: Math.random() * 50 + 20,
+        x: Math.random() * 50 + 15,
+        y: Math.random() * 40 + 25,
       }])
-      // Auto-dismiss after 6 seconds
+      // Auto-dismiss after 5 seconds
       setTimeout(() => {
         setPopups(prev => prev.filter(p => p.id !== id))
-      }, 6000)
+      }, 5000)
     }
 
-    // First popup after 8 seconds, then every 12-18 seconds
-    const first = setTimeout(spawn, 8000)
-    const interval = setInterval(spawn, 12000 + Math.random() * 6000)
+    // First popup after 15 seconds, then every 20-25 seconds
+    const first = setTimeout(spawn, 15000)
+    const interval = setInterval(spawn, 20000 + Math.random() * 5000)
     return () => { clearTimeout(first); clearInterval(interval) }
   }, [nextId])
 
