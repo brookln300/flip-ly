@@ -69,27 +69,29 @@ export default function RetroPopups() {
           style={{ left: `${popup.x}%`, top: `${popup.y}%`, transform: `rotate(${Math.random() * 4 - 2}deg)` }}>
 
           {popup.type === 'limewire' && (
-            <div className="win98-window" style={{ width: '280px' }}>
-              <div className="win98-titlebar" style={{ background: 'linear-gradient(90deg, #006600, #00aa00)' }}>
-                <span className="win98-titlebar-text">🍋 LimeWire 4.18.8</span>
-                <button className="win98-btn" onClick={() => dismiss(popup.id)}>✕</button>
+            <div style={{ width: '260px', position: 'relative', cursor: 'pointer' }} onClick={() => dismiss(popup.id)}>
+              <img src="/assets/limewire-popup.jpg" alt="LimeWire Download"
+                style={{
+                  width: '100%', borderRadius: '4px',
+                  boxShadow: '4px 4px 0 rgba(0,0,0,0.4)',
+                  border: '2px solid #FFB81C',
+                }}
+              />
+              {/* Overlay with actual filename */}
+              <div style={{
+                position: 'absolute', bottom: '30%', left: '50%', transform: 'translateX(-50%)',
+                fontFamily: 'Tahoma, sans-serif', fontSize: '9px', color: '#000',
+                background: 'rgba(255,255,255,0.8)', padding: '2px 6px', borderRadius: '2px',
+                whiteSpace: 'nowrap',
+              }}>
+                {LIMEWIRE_FILES[Math.floor(Math.random() * LIMEWIRE_FILES.length)]}
               </div>
-              <div className="win98-body" style={{ fontSize: '11px' }}>
-                <p className="font-bold mb-1">📥 Downloading:</p>
-                <p style={{ color: '#006600', fontSize: '10px', wordBreak: 'break-all' }}>
-                  {LIMEWIRE_FILES[Math.floor(Math.random() * LIMEWIRE_FILES.length)]}
-                </p>
-                <div className="mt-2 mb-1" style={{ background: '#ddd', height: '12px', border: '1px inset #999' }}>
-                  <div style={{
-                    width: `${Math.floor(Math.random() * 60 + 20)}%`,
-                    height: '100%',
-                    background: 'linear-gradient(90deg, #0FFF50, #00aa00)',
-                  }} />
-                </div>
-                <p style={{ fontSize: '9px', color: '#666' }}>
-                  {(Math.random() * 3 + 0.1).toFixed(1)} KB/s — 56k modem detected
-                </p>
-              </div>
+              <button onClick={(e) => { e.stopPropagation(); dismiss(popup.id) }} style={{
+                position: 'absolute', top: '4px', right: '4px',
+                width: '16px', height: '16px', background: '#c0c0c0',
+                border: '1px solid #808080', fontSize: '10px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>✕</button>
             </div>
           )}
 

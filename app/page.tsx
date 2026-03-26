@@ -14,52 +14,38 @@ function VisitorCounter() {
   return <span className="visitor-counter">{count.toLocaleString()}</span>
 }
 
-/* ── WINDOWS 98 ERROR DIALOG ────────────────────────────── */
+/* ── WINDOWS 98 ERROR DIALOG (with real asset) ──────────── */
 function Win98Error({ onClose, onSignup }: { onClose: () => void; onSignup: () => void }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,128,0.3)' }}>
-      <div className="win98-window w-full max-w-md" style={{ transform: 'rotate(-1deg)' }}>
-        <div className="win98-titlebar">
-          <div className="flex items-center gap-2">
-            <span style={{ fontSize: '14px' }}>⚠️</span>
-            <span className="win98-titlebar-text">flip-ly.net</span>
-          </div>
-          <div className="flex gap-1">
-            <button className="win98-btn" onClick={onClose}>✕</button>
-          </div>
-        </div>
-        <div className="win98-body">
-          <div className="flex gap-4 items-start mb-4">
-            <span className="text-4xl">⚠️</span>
-            <div>
-              <p className="font-bold mb-2" style={{ fontSize: '13px' }}>
-                FLIP-LY.NET has performed an illegal operation.
-              </p>
-              <p style={{ fontSize: '12px', color: '#333' }}>
-                This program has found garage sales near you and will be
-                shut down unless you sign up immediately.
-              </p>
-              <p style={{ fontSize: '11px', color: '#666', marginTop: '8px' }}>
-                Error code: 0x0000DEAL | Module: BARGAIN.DLL
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2 justify-end mt-4">
-            <button onClick={onClose} className="px-6 py-1.5 text-xs font-bold" style={{
-              border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
-              background: 'var(--win98-gray)', fontFamily: 'Tahoma, sans-serif',
-              cursor: 'pointer',
-            }}>
-              Ignore (bad idea)
-            </button>
-            <button onClick={onSignup} className="px-6 py-1.5 text-xs font-bold blink" style={{
-              border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
-              background: 'var(--neon-orange)', color: '#fff',
-              fontFamily: 'Comic Sans MS, cursive', cursor: 'pointer',
-            }}>
-              OK — SIGN UP ANYWAY
-            </button>
-          </div>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{
+      background: 'rgba(0,0,128,0.4)',
+      backdropFilter: 'blur(2px)',
+    }}>
+      <div className="relative w-full max-w-lg" style={{ transform: 'rotate(-1deg)' }}>
+        {/* The actual error box image as background */}
+        <img src="/assets/hero-error-box.jpg" alt="FLIP-LY.NET HAS PERFORMED AN ILLEGAL OPERATION"
+          className="w-full rounded-lg"
+          style={{ boxShadow: '0 0 60px rgba(255, 16, 240, 0.3), 0 20px 40px rgba(0,0,0,0.5)' }}
+        />
+        {/* Clickable overlay buttons positioned over the image */}
+        <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[80%] flex flex-col items-center gap-3">
+          <button onClick={onSignup} className="w-full py-4 text-lg font-bold blink" style={{
+            background: 'var(--neon-orange)',
+            color: '#fff',
+            border: '4px solid var(--lime)',
+            fontFamily: '"Comic Sans MS", cursive',
+            cursor: 'pointer',
+            boxShadow: '0 0 20px var(--neon-orange), 0 4px 12px rgba(0,0,0,0.4)',
+            letterSpacing: '1px',
+          }}>
+            OK — SIGN UP ANYWAY (it&apos;s free)
+          </button>
+          <button onClick={onClose} className="text-xs underline" style={{
+            color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none',
+            cursor: 'pointer', fontFamily: 'Tahoma, sans-serif',
+          }}>
+            Ignore (bad idea)
+          </button>
         </div>
       </div>
     </div>
@@ -93,11 +79,13 @@ function Mascot() {
     <div className="fixed z-50 pointer-events-none select-none transition-all duration-[4000ms] ease-in-out"
       style={{ left: `${pos.x}%`, top: `${pos.y}%` }}>
       <div className="relative">
-        <span className="text-3xl" style={{
-          filter: 'drop-shadow(0 0 6px var(--lime))',
-          display: 'inline-block',
+        <img src="/assets/robot-mascot.jpg" alt="G1TC# mascot" style={{
+          width: '80px', height: '80px', objectFit: 'cover', objectPosition: 'top left',
+          borderRadius: '50%',
+          filter: 'drop-shadow(0 0 8px var(--lime))',
           animation: 'glitch1 3s infinite',
-        }}>🤖</span>
+          border: '2px solid var(--lime)',
+        }} />
         {msg && <div className="mascot-bubble">{msg}</div>}
       </div>
     </div>
@@ -200,15 +188,42 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ═══ RAINBOW DIVIDER ═══ */}
+      {/* ═══ CRAIGSLIST NAV BAR ═══ */}
+      <div className="px-2 py-1 flex flex-wrap items-center gap-1 justify-center" style={{
+        background: 'var(--hotpink)',
+        borderBottom: '3px solid var(--lime)',
+        fontFamily: 'Tahoma, sans-serif',
+      }}>
+        {['FOR SALE', 'HOUSING', 'JOBS', 'GIGS', 'SERVICES', 'COMMUNITY'].map((cat, i) => (
+          <span key={cat} className="px-3 py-1 text-xs font-bold cursor-pointer" style={{
+            background: i === 0 ? 'var(--lime)' : 'transparent',
+            color: i === 0 ? '#000' : '#fff',
+            border: '2px solid',
+            borderColor: i === 0 ? 'var(--dark)' : 'rgba(255,255,255,0.3)',
+          }}>
+            {cat}
+          </span>
+        ))}
+        <span className="px-4 py-1 text-xs font-bold cursor-pointer blink" style={{
+          background: 'var(--neon-orange)', color: '#fff',
+          border: '2px solid var(--mustard)',
+          fontFamily: '"Comic Sans MS", cursive',
+        }}>
+          📮 POST
+        </span>
+      </div>
+
       <div className="rainbow-divider" />
 
       {/* ═══ HERO — WIN98 ERROR STYLE ═══ */}
       <section className="px-4 py-12 md:py-20 relative">
-        {/* Decorative garbage */}
+        {/* Decorative elements + robot mascot */}
         <div className="absolute top-8 left-6 text-6xl opacity-[0.06] rotate-45 select-none">🗑️</div>
         <div className="absolute bottom-12 right-8 text-5xl opacity-[0.06] -rotate-12 select-none">💎</div>
-        <div className="absolute top-32 right-16 text-4xl opacity-[0.06] rotate-12 select-none">🏷️</div>
+        <img src="/assets/robot-mascot.jpg" alt="" className="absolute bottom-4 left-4 select-none pointer-events-none"
+          style={{ width: '120px', opacity: 0.15, transform: 'rotate(-8deg)', objectFit: 'cover', objectPosition: 'bottom right', borderRadius: '8px' }} />
+        <img src="/assets/robot-mascot.jpg" alt="" className="absolute top-8 right-4 select-none pointer-events-none hidden md:block"
+          style={{ width: '90px', opacity: 0.1, transform: 'rotate(12deg) scaleX(-1)', objectFit: 'cover', objectPosition: 'top right', borderRadius: '8px' }} />
 
         <div className="max-w-3xl mx-auto text-center">
           {/* Hero headline in Win98 window */}

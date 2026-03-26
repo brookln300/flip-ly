@@ -93,8 +93,15 @@ export default function WinampPlayer() {
         </div>
       )}
 
-      {/* Main Winamp window */}
-      <div className="fixed right-3 top-20 z-[80] select-none" style={{ width: '275px' }}>
+      {/* Main Winamp window — uses actual skin asset as backdrop */}
+      <div className="fixed right-3 top-20 z-[80] select-none" style={{
+        width: '275px',
+        backgroundImage: 'url(/assets/winamp-skin.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        borderRadius: '4px',
+        overflow: 'hidden',
+      }}>
         {/* Title bar */}
         <div style={{
           background: 'linear-gradient(180deg, #3a3a3a 0%, #232323 40%, #1a1a1a 100%)',
