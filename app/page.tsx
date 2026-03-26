@@ -715,6 +715,85 @@ export default function Home() {
 
       <div className="rainbow-divider" />
 
+      {/* ═══ CHAOTIC DONATION (real Stripe) ═══ */}
+      <section className="px-4 py-12" style={{ background: '#0a0a0a' }}>
+        <div className="max-w-md mx-auto">
+          <div className="win98-window" style={{ transform: 'rotate(1.5deg)' }}>
+            <div className="win98-titlebar" style={{ background: 'linear-gradient(90deg, #800000, #cc0000)' }}>
+              <span className="win98-titlebar-text">GoFundMe.exe — URGENT</span>
+              <div className="flex gap-1">
+                <div className="win98-btn">_</div>
+                <div className="win98-btn">✕</div>
+              </div>
+            </div>
+            <div style={{ background: '#1a1a1a', padding: '20px' }}>
+              <div className="text-center mb-4">
+                <p className="text-3xl mb-2">🦞</p>
+                <h4 style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--hotpink)', fontSize: '18px', marginBottom: '8px' }}>
+                  HELP KEEP THIS CURSED WEBSITE ALIVE
+                </h4>
+                <p style={{ fontFamily: '"Courier New", monospace', color: '#888', fontSize: '11px', lineHeight: 1.8 }}>
+                  This website costs real money to run. The Comic Sans is free
+                  but the servers are not. Every $1 keeps the lobster cursor
+                  rendering for approximately 4.7 more minutes.
+                </p>
+              </div>
+
+              <div className="flex gap-2 justify-center mb-4">
+                {[1, 3, 5, 10].map(amt => (
+                  <button key={amt} onClick={async () => {
+                    try {
+                      const res = await fetch('/api/donate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: amt }),
+                      })
+                      const data = await res.json()
+                      if (data.url) window.location.href = data.url
+                    } catch { alert('Donation failed. Like our CSS.') }
+                  }}
+                    className="px-4 py-2 text-sm font-bold"
+                    style={{
+                      background: amt === 1 ? 'var(--neon-orange)' : '#222',
+                      color: amt === 1 ? '#fff' : '#888',
+                      border: `2px solid ${amt === 1 ? 'var(--lime)' : '#444'}`,
+                      fontFamily: '"Comic Sans MS", cursive',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ${amt}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-center text-[10px]" style={{ color: '#444' }}>
+                Real money. Real Stripe. Real chaos preservation.
+              </p>
+              <p className="text-center text-[9px] mt-1" style={{ color: '#333' }}>
+                $1 = 4.7 min of lobster cursor | $5 = 23.5 min | $10 = 47 min of chaos
+              </p>
+
+              {/* Progress bar */}
+              <div className="mt-4">
+                <div className="flex justify-between mb-1" style={{ fontSize: '9px', fontFamily: 'monospace' }}>
+                  <span style={{ color: '#666' }}>CHAOS FUND</span>
+                  <span style={{ color: 'var(--lime)' }}>$47 / $100 goal</span>
+                </div>
+                <div style={{ height: '8px', background: '#111', border: '1px inset #333' }}>
+                  <div style={{
+                    width: '47%', height: '100%',
+                    background: 'linear-gradient(90deg, var(--hotpink), var(--neon-orange), var(--lime))',
+                    boxShadow: '0 0 6px var(--hotpink)',
+                  }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="rainbow-divider" />
+
       {/* ═══ FINAL CTA ═══ */}
       <section className="px-4 py-20 text-center" style={{ background: '#000' }}>
         <h3 className="mb-4" style={{
