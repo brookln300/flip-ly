@@ -118,6 +118,7 @@ export default function Home() {
   const [searchCity, setSearchCity] = useState('')
   const [searching, setSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
+  const [showChaosEgg, setShowChaosEgg] = useState(false)
 
   // Show Win98 error after 3 seconds
   useEffect(() => {
@@ -127,8 +128,12 @@ export default function Home() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+    // Easter egg: typing "chaos" exactly
+    if (searchQuery.toLowerCase().trim() === 'chaos') {
+      setShowChaosEgg(true)
+      return
+    }
     setSearching(true)
-    // Crash animation
     setTimeout(() => {
       setSearching(false)
       setShowResults(true)
@@ -547,7 +552,8 @@ export default function Home() {
           🦞 Made by AetherCoreAI
         </p>
         <p className="text-xs mb-2" style={{ color: '#555' }}>
-          Privacy Policy | Terms of Service (we don&apos;t have lawyers, be nice)
+          <a href="/why" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Why does this exist?</a>
+          {' | '}Privacy Policy | Terms of Service (we don&apos;t have lawyers, be nice)
         </p>
         <p className="text-xs" style={{ color: '#333' }}>
           &copy; 1997&ndash;2026 FLIP-LY.NET | Best viewed in Netscape Navigator 4.0
@@ -559,6 +565,42 @@ export default function Home() {
           <VisitorCounter />
         </div>
       </footer>
+
+      {/* ═══ CHAOS EASTER EGG ═══ */}
+      {showChaosEgg && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center cursor-pointer"
+          onClick={() => setShowChaosEgg(false)}
+          style={{
+            background: '#000',
+          }}>
+          <div className="text-center px-8">
+            <p className="text-6xl mb-6 jitter">🦞</p>
+            <h2 className="text-4xl md:text-6xl font-bold mb-4 glitch" data-text="YOU FOUND THE TRUE CHAOS." style={{
+              fontFamily: '"Comic Sans MS", cursive',
+              color: 'var(--hotpink)',
+              textShadow: '0 0 20px var(--hotpink), 0 0 40px var(--hotpink)',
+            }}>
+              YOU FOUND THE TRUE CHAOS.
+            </h2>
+            <p className="text-xl mb-6" style={{
+              color: 'var(--lime)',
+              fontFamily: '"Courier New", monospace',
+              textShadow: '0 0 10px var(--lime)',
+            }}>
+              There is no escape.
+            </p>
+            <p className="text-sm mb-8" style={{ color: 'var(--mustard)' }}>
+              (just kidding. click anywhere to go back.)
+            </p>
+            <p className="text-xs blink" style={{ color: '#444' }}>
+              ...or stay here forever. we don&apos;t judge.
+            </p>
+            <div className="mt-8 text-xs" style={{ color: '#222', fontFamily: 'monospace' }}>
+              CHAOS_LEVEL=MAXIMUM | SANITY=0 | COMIC_SANS=FOREVER | LOBSTER=ETERNAL
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══ SIGNUP MODAL (this part is actually clean) ═══ */}
       {showSignup && (

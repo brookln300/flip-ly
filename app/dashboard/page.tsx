@@ -22,8 +22,9 @@ const PREVIEW_PRICES = ['FREE', '$5', '$10-$50', '$2-$80', 'Make offer', '$15 fi
 
 function DigestPreview({ city }: { city?: string }) {
   const [items, setItems] = useState<Array<{ title: string; date: string; price: string; hot: boolean }>>([])
+  const [refreshCount, setRefreshCount] = useState(0)
 
-  useEffect(() => {
+  const generateItems = () => {
     const shuffled = [...PREVIEW_LISTINGS].sort(() => Math.random() - 0.5).slice(0, 5)
     setItems(shuffled.map(title => ({
       title,
@@ -31,7 +32,9 @@ function DigestPreview({ city }: { city?: string }) {
       price: PREVIEW_PRICES[Math.floor(Math.random() * PREVIEW_PRICES.length)],
       hot: Math.random() > 0.6,
     })))
-  }, [])
+  }
+
+  useEffect(() => { generateItems() }, [])
 
   return (
     <div className="mb-8 p-6" style={{
@@ -42,11 +45,11 @@ function DigestPreview({ city }: { city?: string }) {
         <h3 className="text-sm font-bold" style={{ color: 'var(--hotpink, #FF10F0)', fontFamily: 'monospace', letterSpacing: '2px' }}>
           WEEKLY DIGEST PREVIEW
         </h3>
-        <span className="text-[10px] px-2 py-0.5" style={{
+        <span className="text-[10px] px-2 py-0.5 blink" style={{
           background: 'rgba(255, 16, 240, 0.1)', border: '1px solid rgba(255, 16, 240, 0.2)',
           color: 'var(--hotpink, #FF10F0)', fontFamily: 'monospace',
         }}>
-          SAMPLE — NOT REAL
+          ⚠ SAMPLE — NOT REAL ⚠
         </span>
       </div>
       <p className="text-xs mb-4" style={{ color: '#666', fontStyle: 'italic' }}>
@@ -64,9 +67,22 @@ function DigestPreview({ city }: { city?: string }) {
           </div>
         ))}
       </div>
-      <p className="text-[10px] mt-3 text-center" style={{ color: '#444' }}>
-        Actual digest will contain real-ish listings near {city || 'your area'}. Eventually. Maybe.
-      </p>
+      <div className="flex items-center justify-between mt-4">
+        <p className="text-[10px]" style={{ color: '#444' }}>
+          Actual digest will contain real-ish listings near {city || 'your area'}. Eventually. Maybe.
+        </p>
+        <button
+          onClick={() => { generateItems(); setRefreshCount(r => r + 1) }}
+          className="px-3 py-1.5 text-[10px] font-bold shrink-0 ml-3"
+          style={{
+            background: '#111', border: '1px dashed var(--lime, #0FFF50)',
+            color: 'var(--lime, #0FFF50)', fontFamily: '"Comic Sans MS", cursive',
+            cursor: 'pointer',
+          }}
+        >
+          🎲 New Fake Digest {refreshCount > 0 ? `(${refreshCount})` : ''}
+        </button>
+      </div>
     </div>
   )
 }
