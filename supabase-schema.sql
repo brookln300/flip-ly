@@ -5,14 +5,25 @@
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
+  password_hash TEXT NOT NULL DEFAULT '',
   city TEXT,
   state TEXT,
   zip_code TEXT,
   is_premium BOOLEAN DEFAULT FALSE,
+  x_id TEXT,
+  x_username TEXT,
+  x_oauth_token TEXT,
+  auth_provider TEXT DEFAULT 'email',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Migration: add OAuth columns if table already exists
+ALTER TABLE fliply_users ADD COLUMN IF NOT EXISTS x_id TEXT;
+ALTER TABLE fliply_users ADD COLUMN IF NOT EXISTS x_username TEXT;
+ALTER TABLE fliply_users ADD COLUMN IF NOT EXISTS x_oauth_token TEXT;
+ALTER TABLE fliply_users ADD COLUMN IF NOT EXISTS auth_provider TEXT DEFAULT 'email';
+ALTER TABLE fliply_users ALTER COLUMN password_hash SET DEFAULT '';
 
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
