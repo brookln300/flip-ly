@@ -443,13 +443,44 @@ export default function Home() {
     }
   }
 
+  const [show404, setShow404] = useState(false)
+  const [showReply, setShowReply] = useState(false)
+
+  const CL_FLAVOR = [
+    '(serious inquiries only, no lowballs, I know what I got)',
+    '(cash only, no trades for Beanie Babies)',
+    '(god bless, located in my garage)',
+    '(first come first serve, don\'t ask me to hold it)',
+    '(price is firm, my ex already took everything else)',
+    '(no scammers, I WILL call the police)',
+    '(pickup only, I am not delivering a piano)',
+    '(asking $5 OBO, I paid $400 in 2003)',
+  ]
+  const CL_SIGS = [
+    '– Thanks for looking! No lowballs, I know what I got.',
+    '– Located in my garage, cash only, God bless.',
+    '– Posted from my Motorola RAZR',
+    '– Sent from AOL Mail 5.0',
+    '– If this ad is still up, it\'s still available. Stop asking.',
+    '– I don\'t check email often, just show up Saturday.',
+  ]
+  const CL_EDITS = [
+    'Last edited: 3 minutes ago by user42069',
+    'Posted: Yesterday at 2:14 AM (edited 69 times)',
+    'Last edited: just now by xX_FlipMaster_Xx',
+    'Posted: 4 days ago (bumped 12 times)',
+    'Last edited: 1 hour ago — "updated price, STOP LOWBALLING"',
+  ]
+
   const fakeListings = [
-    { title: 'Entire garage cleanout — tools, furniture, electronics', price: 'Multi-family', city: 'McKinney, TX', date: 'Sat 3/29', hot: true },
-    { title: 'Estate sale — antique furniture, jewelry, art', price: '$5–$500', city: 'Plano, TX', date: 'Fri–Sun', hot: true },
-    { title: 'Moving sale — EVERYTHING MUST GO', price: 'Make offer', city: 'Dallas, TX', date: 'Sat 3/29', hot: false },
-    { title: 'Vintage vinyl records, turntables, speakers', price: '$2–$80', city: 'Denton, TX', date: 'Sat 3/29', hot: true },
-    { title: 'Kids toys, bikes, baby gear — great condition', price: '$1–$40', city: 'Frisco, TX', date: 'Sat–Sun', hot: false },
-    { title: 'Power tools, lawn equipment, workshop cleanout', price: '$5–$200', city: 'Arlington, TX', date: 'Sat 3/29', hot: true },
+    { title: 'Entire garage cleanout — tools, furniture, a cursed lamp', price: 'Multi-family', city: 'McKinney, TX', date: 'Sat 3/29', hot: true },
+    { title: 'Estate sale — antique furniture, possibly haunted mirror', price: '$5–$500', city: 'Plano, TX', date: 'Fri–Sun', hot: true },
+    { title: 'Moving sale — EVERYTHING MUST GO (including the dog, jk)', price: 'Make offer', city: 'Dallas, TX', date: 'Sat 3/29', hot: false },
+    { title: 'Vintage vinyl, turntables, one broken lava lamp', price: '$2–$80', city: 'Denton, TX', date: 'Sat 3/29', hot: true },
+    { title: 'Power tools from a guy who "definitely finished his projects"', price: '$5–$200', city: 'Arlington, TX', date: 'Sat 3/29', hot: true },
+    { title: 'Divorce sale — his stuff. priced to annoy.', price: '$1–$999', city: 'Frisco, TX', date: 'Sat–Sun', hot: false },
+    { title: 'FREE: couch that smells like possibility (and cats)', price: 'FREE', city: 'Fort Worth, TX', date: 'Sun only', hot: true },
+    { title: 'Mannequin — no questions. $15 firm.', price: '$15 FIRM', city: 'Allen, TX', date: 'Sat 3/29', hot: false },
   ]
 
   return (
@@ -661,37 +692,185 @@ export default function Home() {
             </div>
           </form>
 
-          {/* Results — Craigslist style listing rows */}
+          {/* Results — 2001 Craigslist chaos table */}
           {showResults && (
-            <div className="mt-8 space-y-1">
-              <div className="text-xs mb-3 flex justify-between" style={{ color: '#888' }}>
-                <span>{fakeListings.length} results — sorted by date</span>
-                <span style={{ color: 'var(--lime)' }}>🔥 = high ROI potential</span>
-              </div>
-              {fakeListings.map((listing, i) => (
-                <div key={i} className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 cursor-pointer" style={{
-                  borderBottom: '1px solid #222',
-                  transform: `rotate(${(i % 2 === 0 ? -0.3 : 0.3)}deg)`,
-                }}>
-                  <span className="text-xs shrink-0" style={{ color: '#666', fontFamily: 'monospace' }}>{listing.date}</span>
-                  <a href="#" className="text-sm flex-1 hover:underline" style={{
-                    color: 'var(--craigslist-purple)',
+            <div className="mt-8">
+              {/* Sponsored spam */}
+              <div className="mb-4 space-y-1">
+                {[
+                  '📢 Sponsored by LimeWire Premium — Download faster at 56k!',
+                  '💋 Hot Singles in your area want to sell you their couch',
+                  '💊 Click here for free Viagra with every estate sale',
+                ].map((ad, i) => (
+                  <div key={i} className="px-3 py-1.5" style={{
+                    background: i === 2 ? 'rgba(255,0,0,0.08)' : 'rgba(255,255,0,0.04)',
+                    border: '1px solid #333',
                     fontFamily: 'Times New Roman, serif',
+                    fontSize: '11px',
+                    color: i === 2 ? '#ff6666' : '#999',
+                    fontStyle: 'italic',
                   }}>
-                    {listing.title}
-                  </a>
-                  <span className="text-xs shrink-0" style={{ color: 'var(--mustard)' }}>{listing.price}</span>
-                  <span className="text-xs shrink-0" style={{ color: '#888' }}>{listing.city}</span>
-                  {listing.hot && <span className="text-xs">🔥</span>}
-                </div>
-              ))}
+                    {ad} <span style={{ color: '#444', fontSize: '9px' }}>[AD]</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-xs mb-3 flex justify-between" style={{ color: '#888' }}>
+                <span>{fakeListings.length} results — sorted by desperation level</span>
+                <span style={{ color: 'var(--lime)' }}>🔥 = someone is lying about the price</span>
+              </div>
+
+              {/* Craigslist HTML table */}
+              <table style={{
+                width: '100%', borderCollapse: 'collapse',
+                border: '3px ridge var(--lime)',
+                fontFamily: 'Times New Roman, serif',
+              }}>
+                <thead>
+                  <tr style={{ background: '#1a1a1a', borderBottom: '2px solid var(--hotpink)' }}>
+                    <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--mustard)', fontSize: '11px', fontWeight: 700 }}>DATE</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--mustard)', fontSize: '11px', fontWeight: 700 }}>LISTING</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--mustard)', fontSize: '11px', fontWeight: 700 }}>PRICE</th>
+                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--mustard)', fontSize: '11px', fontWeight: 700 }}>AREA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fakeListings.map((listing, i) => {
+                    const flavor = CL_FLAVOR[Math.floor(Math.random() * CL_FLAVOR.length)]
+                    const sig = CL_SIGS[Math.floor(Math.random() * CL_SIGS.length)]
+                    const edit = CL_EDITS[Math.floor(Math.random() * CL_EDITS.length)]
+                    const is404 = Math.random() < 0.2
+
+                    return (
+                      <tr key={i} style={{
+                        background: i % 2 === 0 ? 'rgba(15,255,80,0.04)' : 'rgba(255,16,240,0.04)',
+                        borderBottom: '1px solid #222',
+                      }}>
+                        <td style={{
+                          padding: '8px', fontSize: '11px', color: '#888',
+                          fontFamily: 'monospace', verticalAlign: 'top', whiteSpace: 'nowrap',
+                        }}>
+                          {listing.date}
+                        </td>
+                        <td style={{ padding: '8px', verticalAlign: 'top' }}>
+                          <a href="#" onClick={(e) => {
+                            e.preventDefault()
+                            if (is404) setShow404(true)
+                          }} style={{
+                            color: '#3366CC', textDecoration: 'underline', fontSize: '13px',
+                            fontFamily: 'Times New Roman, serif',
+                          }}>
+                            {listing.title}
+                          </a>
+                          <span style={{ color: '#666', fontSize: '10px', marginLeft: '6px' }}>
+                            {flavor}
+                          </span>
+                          <div style={{ marginTop: '4px' }}>
+                            <span style={{ color: '#444', fontSize: '9px', fontStyle: 'italic' }}>{edit}</span>
+                          </div>
+                          <div style={{ marginTop: '2px' }}>
+                            <span style={{ color: '#555', fontSize: '9px' }}>{sig}</span>
+                          </div>
+                          <div style={{ marginTop: '4px' }}>
+                            <button onClick={() => setShowReply(true)} style={{
+                              background: 'none', border: '1px solid #444', padding: '1px 8px',
+                              fontSize: '9px', color: '#888', cursor: 'pointer',
+                              fontFamily: 'Tahoma, sans-serif',
+                            }}>
+                              reply to this post
+                            </button>
+                            {listing.hot && <span className="ml-2 text-xs">🔥</span>}
+                          </div>
+                        </td>
+                        <td style={{
+                          padding: '8px', textAlign: 'right', verticalAlign: 'top',
+                          color: 'var(--lime)', fontFamily: 'monospace', fontSize: '12px',
+                          fontWeight: 700,
+                          paddingLeft: i % 3 === 0 ? '24px' : '8px',
+                        }}>
+                          {listing.price}
+                        </td>
+                        <td style={{
+                          padding: '8px', textAlign: 'right', verticalAlign: 'top',
+                          color: '#888', fontSize: '10px', whiteSpace: 'nowrap',
+                        }}>
+                          {listing.city}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+
+              {/* CL post button */}
               <div className="text-center mt-6">
-                <button onClick={() => setShowSignup(true)} className="text-sm font-bold px-6 py-2" style={{
-                  background: 'var(--neon-orange)', color: '#fff', border: '2px dashed var(--lime)',
-                  fontFamily: '"Comic Sans MS", cursive', cursor: 'pointer',
+                <button onClick={() => setShowSignup(true)} className="px-8 py-2 text-sm font-bold" style={{
+                  background: '#c0c0c0', color: '#000',
+                  border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
+                  fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
                 }}>
-                  Sign up to save searches + get daily emails →
+                  post to classifieds (sign up first)
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* 404 popup */}
+          {show404 && (
+            <div className="fixed inset-0 z-[85] flex items-center justify-center" onClick={() => setShow404(false)} style={{ background: 'rgba(0,0,0,0.5)' }}>
+              <div className="win98-window" onClick={e => e.stopPropagation()} style={{ width: '360px', transform: 'rotate(-1deg)' }}>
+                <div className="win98-titlebar">
+                  <span className="win98-titlebar-text">Internet Explorer</span>
+                  <button className="win98-btn" onClick={() => setShow404(false)}>✕</button>
+                </div>
+                <div className="win98-body text-center py-6">
+                  <p className="text-3xl mb-3">❌</p>
+                  <p className="font-bold mb-2" style={{ fontSize: '13px' }}>
+                    {Math.random() > 0.5
+                      ? '404 — Garage Sale Not Found'
+                      : 'This post has been flagged for too many lamps'}
+                  </p>
+                  <p style={{ fontSize: '11px', color: '#666' }}>
+                    The garage sale you requested is no longer available. The seller
+                    probably sold the good stuff before 7 AM to the dealers who showed
+                    up at 5:30 AM even though the ad said NO EARLY BIRDS.
+                  </p>
+                  <button onClick={() => setShow404(false)} className="mt-4 px-6 py-1.5 text-xs" style={{
+                    border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
+                    background: '#c0c0c0', cursor: 'pointer', fontFamily: 'Tahoma, sans-serif',
+                  }}>
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Reply modal */}
+          {showReply && (
+            <div className="fixed inset-0 z-[85] flex items-center justify-center" onClick={() => setShowReply(false)} style={{ background: 'rgba(0,0,0,0.5)' }}>
+              <div className="win98-window" onClick={e => e.stopPropagation()} style={{ width: '320px', transform: 'rotate(1deg)' }}>
+                <div className="win98-titlebar">
+                  <span className="win98-titlebar-text">Sending Message...</span>
+                  <button className="win98-btn" onClick={() => setShowReply(false)}>✕</button>
+                </div>
+                <div className="win98-body text-center py-6">
+                  <p className="text-3xl mb-3">📧</p>
+                  <p className="font-bold mb-2" style={{ fontSize: '13px' }}>
+                    Message sent to seller... probably.
+                  </p>
+                  <p style={{ fontSize: '11px', color: '#666' }}>
+                    Good luck champ. They might reply. They might not.
+                    They might have already sold it to their neighbor
+                    for $2 and a bag of Doritos.
+                  </p>
+                  <button onClick={() => setShowReply(false)} className="mt-4 px-6 py-1.5 text-xs" style={{
+                    border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
+                    background: '#c0c0c0', cursor: 'pointer', fontFamily: 'Tahoma, sans-serif',
+                  }}>
+                    OK
+                  </button>
+                </div>
               </div>
             </div>
           )}
