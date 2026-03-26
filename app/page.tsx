@@ -6,6 +6,7 @@ import RetroPopups from './components/RetroPopups'
 import BSOD from './components/BSOD'
 import Y2KCountdown from './components/Y2KCountdown'
 import MeltdownSequence from './components/MeltdownSequence'
+import SketchyPopups from './components/SketchyPopups'
 
 /* ── VISITOR COUNTER (fake but convincing) ──────────────── */
 function VisitorCounter() {
@@ -202,6 +203,7 @@ export default function Home() {
       <RetroPopups />
       <BSOD />
       <MeltdownSequence active={meltdownActive} onComplete={() => setMeltdownDone(true)} />
+      <SketchyPopups />
       {showError && <Win98Error onClose={() => setShowError(false)} onSignup={() => { setShowError(false); setShowSignup(true) }} />}
 
       {/* Mute toggle removed from here — now in header */}
