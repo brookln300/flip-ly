@@ -22,8 +22,8 @@ export function rateLimit(ip: string, limit = 100, windowMs = 60000): { allowed:
 if (typeof setInterval !== 'undefined') {
   setInterval(() => {
     const now = Date.now()
-    for (const [key, val] of requests.entries()) {
+    requests.forEach((val, key) => {
       if (now > val.resetAt) requests.delete(key)
-    }
+    })
   }, 300000)
 }
