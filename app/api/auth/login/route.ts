@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
     // Find user
     const { data: user, error } = await supabase
-      .from('users')
+      .from('fliply_users')
       .select('id, email, password_hash')
       .eq('email', email.toLowerCase())
       .single()

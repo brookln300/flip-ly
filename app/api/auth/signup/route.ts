@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     // Check if user exists
     const { data: existing } = await supabase
-      .from('users')
+      .from('fliply_users')
       .select('id')
       .eq('email', email.toLowerCase())
       .single()
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     // Insert user
     const { data: user, error } = await supabase
-      .from('users')
+      .from('fliply_users')
       .insert({
         email: email.toLowerCase(),
         password_hash,
