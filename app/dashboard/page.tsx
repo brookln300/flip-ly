@@ -2,6 +2,75 @@
 
 import { useState, useEffect } from 'react'
 
+const PREVIEW_LISTINGS = [
+  'Haunted dollhouse — priced to move (it moves on its own)',
+  'Winamp skin collection on 14 floppy disks',
+  'Divorce sale — his stuff. priced to annoy.',
+  'Full-size cardboard cutout of Guy Fieri',
+  'LimeWire laptop — 40,000 "songs" (50% viruses)',
+  'Chia Pet (fully grown, sentient, answers to "Gerald")',
+  'Piano — free if you can carry it. it weighs 800 lbs.',
+  'Mannequin — no questions. $15 firm.',
+  'Broken drone — ironic given our other website',
+  'AOL installation CDs — 947 free hours across 38 discs',
+  'Fog machine from a DJ phase that lasted 2 weekends',
+  'Surfboard in Texas — I don\'t have answers, only deals',
+]
+
+const PREVIEW_DATES = ['Sat 3/29', 'Sun 3/30', 'Sat-Sun', 'Fri-Sun', 'This weekend']
+const PREVIEW_PRICES = ['FREE', '$5', '$10-$50', '$2-$80', 'Make offer', '$15 firm']
+
+function DigestPreview({ city }: { city?: string }) {
+  const [items, setItems] = useState<Array<{ title: string; date: string; price: string; hot: boolean }>>([])
+
+  useEffect(() => {
+    const shuffled = [...PREVIEW_LISTINGS].sort(() => Math.random() - 0.5).slice(0, 5)
+    setItems(shuffled.map(title => ({
+      title,
+      date: PREVIEW_DATES[Math.floor(Math.random() * PREVIEW_DATES.length)],
+      price: PREVIEW_PRICES[Math.floor(Math.random() * PREVIEW_PRICES.length)],
+      hot: Math.random() > 0.6,
+    })))
+  }, [])
+
+  return (
+    <div className="mb-8 p-6" style={{
+      background: '#1a1a1a', border: '2px dashed var(--hotpink, #FF10F0)',
+      boxShadow: '4px 4px 0 var(--mustard, #FFB81C)',
+    }}>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-bold" style={{ color: 'var(--hotpink, #FF10F0)', fontFamily: 'monospace', letterSpacing: '2px' }}>
+          WEEKLY DIGEST PREVIEW
+        </h3>
+        <span className="text-[10px] px-2 py-0.5" style={{
+          background: 'rgba(255, 16, 240, 0.1)', border: '1px solid rgba(255, 16, 240, 0.2)',
+          color: 'var(--hotpink, #FF10F0)', fontFamily: 'monospace',
+        }}>
+          SAMPLE — NOT REAL
+        </span>
+      </div>
+      <p className="text-xs mb-4" style={{ color: '#666', fontStyle: 'italic' }}>
+        Here&apos;s a taste of what your Monday 8 AM email looks like. These are fake. Like everything else here.
+      </p>
+      <div className="space-y-2">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-center gap-3 px-3 py-2" style={{
+            background: '#111', borderLeft: `3px solid ${item.hot ? 'var(--neon-orange, #FF6600)' : '#333'}`,
+          }}>
+            <span className="text-xs shrink-0" style={{ color: '#555', fontFamily: 'monospace' }}>{item.date}</span>
+            <span className="text-xs flex-1" style={{ color: '#ccc' }}>{item.title}</span>
+            <span className="text-xs shrink-0" style={{ color: 'var(--lime, #0FFF50)', fontFamily: 'monospace' }}>{item.price}</span>
+            {item.hot && <span className="text-xs">🔥</span>}
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] mt-3 text-center" style={{ color: '#444' }}>
+        Actual digest will contain real-ish listings near {city || 'your area'}. Eventually. Maybe.
+      </p>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -181,6 +250,9 @@ export default function Dashboard() {
             </p>
           )}
         </div>
+
+        {/* Weekly Digest Preview (fake) */}
+        <DigestPreview city={user.city} />
 
         {/* What to expect */}
         <div className="p-6" style={{

@@ -28,6 +28,7 @@ export default function WinampPlayer() {
   const [elapsed, setElapsed] = useState(0)
   const [connected, setConnected] = useState(false)
   const [showConnectPopup, setShowConnectPopup] = useState(false)
+  const [showToast, setShowToast] = useState(false)
 
   useEffect(() => {
     if (!playing) return
@@ -37,11 +38,13 @@ export default function WinampPlayer() {
 
   const handleConnect = () => {
     setShowConnectPopup(true)
-    // Play modem sound would go here
     setTimeout(() => {
       setConnected(true)
       setShowConnectPopup(false)
       setPlaying(true)
+      // Show toast after connecting
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 5000)
     }, 3000)
   }
 
@@ -71,6 +74,26 @@ export default function WinampPlayer() {
 
   return (
     <>
+      {/* Connected toast */}
+      {showToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[110] px-6 py-3" style={{
+          background: '#000', border: '2px solid #0FFF50',
+          boxShadow: '0 0 20px rgba(15, 255, 80, 0.3), 4px 4px 0 rgba(0,0,0,0.4)',
+          fontFamily: '"Comic Sans MS", cursive',
+          animation: 'fallIn 0.4s ease-out',
+        }}>
+          <p className="text-sm font-bold" style={{ color: '#0FFF50' }}>
+            📡 Connected at 56,000 bps
+          </p>
+          <p className="text-xs" style={{ color: '#FFB81C' }}>
+            69 new chaotic listings found in your area
+          </p>
+          <p className="text-[10px] mt-1" style={{ color: '#555' }}>
+            (none of them are real)
+          </p>
+        </div>
+      )}
+
       {/* Connect popup */}
       {showConnectPopup && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>
