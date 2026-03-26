@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { trackEvent } from '../../../lib/analytics'
 
 export async function GET(req: NextRequest) {
   // Verify cron secret (Vercel sets this header automatically)
@@ -34,6 +35,12 @@ export async function GET(req: NextRequest) {
         listing_count: listingCount,
         status: 'skipped', // stub — not actually sending
       })
+
+      // GA4: digest_triggered
+      trackEvent('digest_triggered', {
+        trigger_type: 'cron',
+        listing_count: listingCount,
+      }, user.id)
 
       results.push({
         user_id: user.id,

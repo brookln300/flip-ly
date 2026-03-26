@@ -3,6 +3,7 @@ import TwitterProvider from 'next-auth/providers/twitter'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { supabase } from './supabase'
+import { trackEvent } from './analytics'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -69,6 +70,7 @@ export const authOptions: NextAuthOptions = {
 
           if (newUser) {
             user.id = newUser.id
+            trackEvent('signup_complete', { signup_source: 'twitter', x_username: user.name || '' }, newUser.id)
           }
         } else {
           // Existing user — link X account
@@ -82,6 +84,7 @@ export const authOptions: NextAuthOptions = {
             .eq('id', existing.id)
 
           user.id = existing.id
+          trackEvent('login_complete', { auth_provider: 'twitter' }, existing.id)
         }
       }
       return true

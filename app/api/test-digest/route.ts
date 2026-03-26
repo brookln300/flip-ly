@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '../../lib/auth'
 import { supabase } from '../../lib/supabase'
+import { trackEvent } from '../../lib/analytics'
 
 export async function POST() {
   const session = await getSession()
@@ -17,6 +18,12 @@ export async function POST() {
     listing_count: listingCount,
     status: 'skipped',
   })
+
+  // GA4: digest_triggered
+  trackEvent('digest_triggered', {
+    trigger_type: 'manual',
+    listing_count: listingCount,
+  }, session.userId)
 
   return NextResponse.json({
     success: true,

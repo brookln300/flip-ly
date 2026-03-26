@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { supabase } from '../../../lib/supabase'
 import { createToken } from '../../../lib/auth'
+import { trackEvent } from '../../../lib/analytics'
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,6 +28,9 @@ export async function POST(req: NextRequest) {
     if (!valid) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
+
+    // GA4: login_complete
+    trackEvent('login_complete', { auth_provider: 'email' }, user.id)
 
     // Create JWT
     const token = await createToken(user.id, user.email)

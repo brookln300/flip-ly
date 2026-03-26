@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { trackEvent } from '../../lib/analytics'
 
 // Chaotic random listing generator — NOT real data
 const TITLES = [
@@ -158,6 +159,12 @@ export async function GET(req: NextRequest) {
     source: Math.random() > 0.5 ? 'craigslist' : 'estatesales.net',
     posted_ago: `${Math.floor(Math.random() * 48 + 1)}h ago`,
   }))
+
+  // GA4: listing_search
+  trackEvent('listing_search', {
+    query: query || 'browse',
+    result_count: listings.length,
+  })
 
   return NextResponse.json({
     results: listings,

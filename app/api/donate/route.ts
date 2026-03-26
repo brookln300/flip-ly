@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { trackEvent } from '../../lib/analytics'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -26,6 +27,12 @@ export async function POST(req: NextRequest) {
       mode: 'payment',
       success_url: `${req.nextUrl.origin}/donated?status=success`,
       cancel_url: `${req.nextUrl.origin}/donated?status=cancelled`,
+    })
+
+    // GA4: donation_initiated
+    trackEvent('donation_initiated', {
+      amount_cents: cents,
+      stripe_session_id: session.id,
     })
 
     return NextResponse.json({ url: session.url })

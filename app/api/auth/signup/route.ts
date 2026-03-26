@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { supabase } from '../../../lib/supabase'
 import { createToken } from '../../../lib/auth'
+import { trackEvent } from '../../../lib/analytics'
 import { Resend } from 'resend'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
@@ -136,6 +137,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Signup failed' }, { status: 500 })
     }
 
+    // GA4: signup_complete
+    trackEvent('signup_complete', {
+      signup_source: 'email',
+      city: city || 'unknown',
+      zip_code: zip_code || 'unknown',
+    }, user.id)
+
     // Send chaotic welcome email via Resend
     if (resend) {
       try {
@@ -149,6 +157,8 @@ export async function POST(req: NextRequest) {
           html,
         })
         console.log(`[SIGNUP] Welcome email sent to ${email}`)
+        // GA4: welcome_email_sent
+        trackEvent('welcome_email_sent', { email_type: 'welcome' }, user.id)
       } catch (emailErr) {
         // Don't fail signup if email fails — just log it
         console.error('[SIGNUP] Welcome email failed:', emailErr)
