@@ -100,6 +100,13 @@ function Mascot() {
 export default function Home() {
   const [showError, setShowError] = useState(false)
   const [showSignup, setShowSignup] = useState(false)
+  const [muted, setMuted] = useState(true) // default muted
+
+  // Persist mute state
+  useEffect(() => {
+    const saved = localStorage.getItem('fliply-muted')
+    if (saved !== null) setMuted(saved === 'true')
+  }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [signupCity, setSignupCity] = useState('')
@@ -207,11 +214,13 @@ export default function Home() {
           </h1>
         </div>
         <div className="flex gap-2 items-center">
-          <button className="px-2 py-1 text-[10px] font-bold hidden sm:block" style={{
-            background: '#1a1a1a', border: '1px solid #333', color: '#888',
+          <button onClick={() => { const next = !muted; setMuted(next); localStorage.setItem('fliply-muted', String(next)) }} className="px-2 py-1 text-[10px] font-bold" style={{
+            background: muted ? '#1a1a1a' : '#0FFF50',
+            border: `1px solid ${muted ? '#333' : '#0FFF50'}`,
+            color: muted ? '#888' : '#000',
             fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
           }}>
-            🔇 Mute Nostalgia
+            {muted ? '🔇 Muted' : '🔊 Chaos ON'}
           </button>
           <span className="text-xs blink hidden sm:inline" style={{ color: 'var(--mustard)' }}>● LIVE</span>
           <button onClick={() => setShowSignup(true)} className="px-3 py-1.5 text-xs font-bold" style={{
