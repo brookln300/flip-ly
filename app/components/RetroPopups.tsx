@@ -63,7 +63,7 @@ export default function RetroPopups() {
   const dismiss = (id: number) => setPopups(prev => prev.filter(p => p.id !== id))
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[70]">
+    <div className="pointer-events-none fixed inset-0 z-[40]">
       {popups.map(popup => (
         <div key={popup.id} className="pointer-events-auto absolute fall-in"
           style={{ left: `${popup.x}%`, top: `${popup.y}%`, transform: `rotate(${Math.random() * 4 - 2}deg)` }}>

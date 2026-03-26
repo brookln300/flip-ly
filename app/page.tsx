@@ -18,34 +18,42 @@ function VisitorCounter() {
 /* ── WINDOWS 98 ERROR DIALOG (with real asset) ──────────── */
 function Win98Error({ onClose, onSignup }: { onClose: () => void; onSignup: () => void }) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{
-      background: 'rgba(0,0,128,0.4)',
-      backdropFilter: 'blur(2px)',
-    }}>
-      <div className="relative w-full max-w-lg" style={{ transform: 'rotate(-1deg)' }}>
-        {/* The actual error box image as background */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      onClick={onClose}
+      style={{
+        background: 'rgba(0,0,128,0.4)',
+        backdropFilter: 'blur(2px)',
+        cursor: 'pointer',
+      }}>
+      <div className="relative w-full max-w-md" onClick={e => e.stopPropagation()} style={{ transform: 'rotate(-1deg)' }}>
+        {/* Close X button — always visible, top right */}
+        <button onClick={onClose} className="absolute -top-3 -right-3 z-10 w-8 h-8 flex items-center justify-center text-sm font-bold" style={{
+          background: '#c0c0c0', border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
+          cursor: 'pointer', fontFamily: 'Tahoma, sans-serif',
+        }}>✕</button>
+
+        {/* The actual error box image */}
         <img src="/assets/hero-error-box.jpg" alt="FLIP-LY.NET HAS PERFORMED AN ILLEGAL OPERATION"
           className="w-full rounded-lg"
           style={{ boxShadow: '0 0 60px rgba(255, 16, 240, 0.3), 0 20px 40px rgba(0,0,0,0.5)' }}
         />
-        {/* Clickable overlay buttons positioned over the image */}
-        <div className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[80%] flex flex-col items-center gap-3">
-          <button onClick={onSignup} className="w-full py-4 text-lg font-bold blink" style={{
+        {/* Buttons below the image — guaranteed visible */}
+        <div className="flex flex-col items-center gap-2 mt-3">
+          <button onClick={onSignup} className="w-full py-3 text-base font-bold" style={{
             background: 'var(--neon-orange)',
             color: '#fff',
-            border: '4px solid var(--lime)',
+            border: '3px solid var(--lime)',
             fontFamily: '"Comic Sans MS", cursive',
             cursor: 'pointer',
-            boxShadow: '0 0 20px var(--neon-orange), 0 4px 12px rgba(0,0,0,0.4)',
-            letterSpacing: '1px',
+            boxShadow: '0 0 16px var(--neon-orange)',
           }}>
             OK — SIGN UP ANYWAY (it&apos;s free)
           </button>
           <button onClick={onClose} className="text-xs underline" style={{
-            color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none',
+            color: 'rgba(255,255,255,0.6)', background: 'none', border: 'none',
             cursor: 'pointer', fontFamily: 'Tahoma, sans-serif',
           }}>
-            Ignore (bad idea)
+            Ignore (bad idea) — or click anywhere outside
           </button>
         </div>
       </div>
@@ -120,10 +128,11 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false)
   const [showChaosEgg, setShowChaosEgg] = useState(false)
 
-  // Show Win98 error after 3 seconds
+  // Show Win98 error after 3 seconds, auto-dismiss after 15 seconds
   useEffect(() => {
-    const t = setTimeout(() => setShowError(true), 3000)
-    return () => clearTimeout(t)
+    const show = setTimeout(() => setShowError(true), 3000)
+    const autoDismiss = setTimeout(() => setShowError(false), 18000)
+    return () => { clearTimeout(show); clearTimeout(autoDismiss) }
   }, [])
 
   const handleSearch = (e: React.FormEvent) => {
@@ -604,8 +613,16 @@ export default function Home() {
 
       {/* ═══ SIGNUP MODAL (this part is actually clean) ═══ */}
       {showSignup && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.85)' }}>
-          <div className="win98-window w-full max-w-md" style={{ transform: 'rotate(-1deg)' }}>
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+          onClick={() => setShowSignup(false)}
+          style={{ background: 'rgba(0,0,0,0.85)', cursor: 'pointer' }}>
+          <div className="win98-window w-full max-w-md relative" onClick={e => e.stopPropagation()} style={{ transform: 'rotate(-1deg)', cursor: 'default' }}>
+            {/* Large close button — always visible */}
+            <button onClick={() => { setShowSignup(false); setSubmitted(false); setSignupError('') }}
+              className="absolute -top-3 -right-3 z-10 w-8 h-8 flex items-center justify-center text-sm font-bold"
+              style={{ background: '#c0c0c0', border: '2px solid', borderColor: '#fff #808080 #808080 #fff', cursor: 'pointer' }}>
+              ✕
+            </button>
             <div className="win98-titlebar">
               <span className="win98-titlebar-text">signup.exe — Join the Chaos</span>
               <button className="win98-btn" onClick={() => setShowSignup(false)}>✕</button>
