@@ -3,6 +3,10 @@
 import { useState, useEffect, useRef } from 'react'
 import WinampPlayer from './components/WinampPlayer'
 import RetroPopups from './components/RetroPopups'
+import BSOD from './components/BSOD'
+import CRTtv from './components/CRTtv'
+import AOLWelcome from './components/AOLWelcome'
+import Webcam90s from './components/Webcam90s'
 
 /* ── VISITOR COUNTER (fake but convincing) ──────────────── */
 function VisitorCounter() {
@@ -142,6 +146,10 @@ export default function Home() {
       <Mascot />
       <WinampPlayer />
       <RetroPopups />
+      <BSOD />
+      <CRTtv />
+      <AOLWelcome />
+      <Webcam90s />
       {showError && <Win98Error onClose={() => setShowError(false)} onSignup={() => { setShowError(false); setShowSignup(true) }} />}
 
       {/* Mute nostalgia toggle */}
