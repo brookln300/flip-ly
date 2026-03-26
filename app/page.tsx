@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import WinampPlayer from './components/WinampPlayer'
 import RetroPopups from './components/RetroPopups'
 import BSOD from './components/BSOD'
+import Y2KCountdown from './components/Y2KCountdown'
+import MeltdownSequence from './components/MeltdownSequence'
 
 /* ── VISITOR COUNTER (fake but convincing) ──────────────── */
 function VisitorCounter() {
@@ -127,6 +129,8 @@ export default function Home() {
   const [searching, setSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [showChaosEgg, setShowChaosEgg] = useState(false)
+  const [meltdownActive, setMeltdownActive] = useState(false)
+  const [meltdownDone, setMeltdownDone] = useState(false)
 
   // Show Win98 error after 3 seconds, auto-dismiss after 15 seconds
   useEffect(() => {
@@ -197,6 +201,7 @@ export default function Home() {
       <WinampPlayer />
       <RetroPopups />
       <BSOD />
+      <MeltdownSequence active={meltdownActive} onComplete={() => setMeltdownDone(true)} />
       {showError && <Win98Error onClose={() => setShowError(false)} onSignup={() => { setShowError(false); setShowSignup(true) }} />}
 
       {/* Mute toggle removed from here — now in header */}
@@ -246,6 +251,11 @@ export default function Home() {
           </button>
         </div>
       </header>
+
+      {/* ═══ Y2K COUNTDOWN ═══ */}
+      {!meltdownDone && (
+        <Y2KCountdown onMeltdown={() => setMeltdownActive(true)} />
+      )}
 
       {/* ═══ CRAIGSLIST NAV BAR ═══ */}
       <div className="px-2 py-1 flex flex-wrap items-center gap-1 justify-center" style={{
