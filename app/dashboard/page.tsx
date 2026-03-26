@@ -81,14 +81,35 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold mb-4" style={{
             fontFamily: '"Comic Sans MS", cursive', color: 'var(--lime)',
           }}>
-            Welcome to the chaos.
+            Welcome to the chaos, {user.email.split('@')[0]}.
           </h1>
           <p className="text-base mb-2" style={{ color: '#ccc', fontFamily: 'monospace' }}>
-            You made it. You signed up for a website with Comic Sans and a lobster cursor.
+            Your weekly dose of questionable deals drops soon. We&apos;re already scanning {user.city || 'your area'} for treasures disguised as garbage.
           </p>
-          <p className="text-sm" style={{ color: '#888' }}>
-            Your first weekly email will arrive soon. Until then, here&apos;s what&apos;s happening:
+          <p className="text-sm mb-6" style={{ color: '#888' }}>
+            Every Monday at 8 AM CDT, you&apos;ll get an email so weird it might end up in spam. Check there too.
           </p>
+
+          {/* Share this cursed website */}
+          <button
+            onClick={() => {
+              const msg = `I just signed up for flip-ly.net — a garage sale aggregator built on a 1996 Geocities website possessed by Winamp and LimeWire. The CSS is a war crime. It actually works though. 🦞`
+              navigator.clipboard.writeText(msg + '\n\nhttps://flip-ly.net')
+                .then(() => alert('Copied! Now paste it somewhere cursed.'))
+                .catch(() => alert('Copy failed. Like our design choices.'))
+            }}
+            className="px-5 py-2.5 text-sm font-bold"
+            style={{
+              background: 'var(--hotpink, #FF10F0)',
+              color: '#fff',
+              border: '3px dashed var(--lime, #0FFF50)',
+              fontFamily: '"Comic Sans MS", cursive',
+              cursor: 'pointer',
+              transform: 'rotate(-1deg)',
+            }}
+          >
+            📋 Share This Cursed Website
+          </button>
         </div>
 
         {/* User info card */}
