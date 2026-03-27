@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { supabase } from '../../../lib/supabase'
 import { createToken } from '../../../lib/auth'
 import { trackEvent } from '../../../lib/analytics'
+import { discoverSourcesForZip } from '../../../lib/discovery/source-discovery'
 import { Resend } from 'resend'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
@@ -95,7 +96,7 @@ function getWelcomeEmail(email: string, city: string | null) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, city, state, zip_code } = await req.json()
+    const { email, password, city, state, zip_code, include_events } = await req.json()
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
@@ -128,6 +129,8 @@ export async function POST(req: NextRequest) {
         city: city || null,
         state: state || null,
         zip_code: zip_code || null,
+        include_events: include_events !== false, // default true
+        user_status: 'trial',
       })
       .select('id, email')
       .single()
@@ -185,6 +188,11 @@ export async function POST(req: NextRequest) {
     })
 
     console.log(`[SIGNUP] New user: ${email} from ${city || 'unknown'} (${zip_code || 'no zip'})`)
+
+    // Auto-discover sources for this user's area (fire-and-forget)
+    if (zip_code) {
+      discoverSourcesForZip(zip_code, include_events !== false)
+    }
 
     return response
   } catch (err) {
