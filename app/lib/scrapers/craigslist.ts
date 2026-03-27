@@ -1,9 +1,6 @@
-import Parser from 'rss-parser'
 import { supabase } from '../supabase'
 import { extractPrice, extractZipCode, getNextSaturday, formatDate, generateExternalId } from './parse-utils'
 import type { ScraperResult, CraigslistConfig } from './types'
-
-const parser = new Parser()
 
 /**
  * Scrape Craigslist garage sales via RSS feed.
@@ -17,19 +14,20 @@ export async function scrapeCraigslist(
   const result: ScraperResult = { inserted: 0, skipped: 0, errors: [] }
 
   try {
-    // Fetch with user-agent header (Craigslist blocks default serverless UA)
-    const rssRes = await fetch(config.rss_url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'application/rss+xml, application/xml, text/xml',
-      },
-    })
+    // Use rss2json proxy to bypass Craigslist's serverless IP blocks
+    const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(config.rss_url)}&count=50`
+    const rssRes = await fetch(proxyUrl)
     if (!rssRes.ok) {
-      result.errors.push(`RSS fetch ${rssRes.status}: ${rssRes.statusText}`)
+      result.errors.push(`RSS proxy ${rssRes.status}: ${rssRes.statusText}`)
       return result
     }
-    const rssText = await rssRes.text()
-    const feed = await parser.parseString(rssText)
+    const json = await rssRes.json()
+    if (json.status !== 'ok') {
+      result.errors.push(`RSS proxy error: ${json.message || 'unknown'}`)
+      return result
+    }
+    // rss2json returns { items: [{title, link, description, ...}] }
+    const feed = { items: json.items || [] }
 
     if (!feed.items || feed.items.length === 0) {
       result.errors.push('Empty RSS feed')
@@ -42,8 +40,9 @@ export async function scrapeCraigslist(
       if (!item.title || !item.link) continue
 
       const externalId = generateExternalId(item.link)
-      const priceInfo = extractPrice(item.title + ' ' + (item.contentSnippet || ''))
-      const zipCode = extractZipCode(item.contentSnippet || item.title || '')
+      const desc = item.contentSnippet || item.description || ''
+      const priceInfo = extractPrice(item.title + ' ' + desc)
+      const zipCode = extractZipCode(desc || item.title || '')
 
       // Extract city from title if possible (CL often has "city" in parens)
       const cityMatch = item.title.match(/\(([^)]+)\)\s*$/)
@@ -54,7 +53,7 @@ export async function scrapeCraigslist(
         market_id: marketId,
         external_id: externalId,
         title: item.title.replace(/\([^)]*\)\s*$/, '').trim(), // Remove trailing (city)
-        description: item.contentSnippet || null,
+        description: desc || null,
         price_text: priceInfo.price_text,
         price_low_cents: priceInfo.price_low_cents,
         price_high_cents: priceInfo.price_high_cents,
