@@ -14,6 +14,7 @@ import type { ScraperResult, CraigslistConfig, EventbriteConfig, AiExtractConfig
 export async function GET(req: NextRequest) {
   const start = Date.now()
   const results: { source: string; result: ScraperResult }[] = []
+  const forceAll = new URL(req.url).searchParams.get('force') === 'true'
 
   try {
     // Fetch all active, approved sources that are due for scraping
@@ -30,8 +31,8 @@ export async function GET(req: NextRequest) {
     const now = new Date()
 
     for (const source of sources) {
-      // Check if due for scraping
-      if (source.last_scraped_at) {
+      // Check if due for scraping (skip check if force=true)
+      if (!forceAll && source.last_scraped_at) {
         const lastScraped = new Date(source.last_scraped_at)
         const hoursSince = (now.getTime() - lastScraped.getTime()) / (1000 * 60 * 60)
         if (hoursSince < source.scrape_frequency_hours) {
