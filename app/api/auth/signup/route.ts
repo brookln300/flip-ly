@@ -194,9 +194,45 @@ export async function POST(req: NextRequest) {
       discoverSourcesForZip(zip_code, include_events !== false)
     }
 
+    // Enroll in welcome drip sequence (fire-and-forget)
+    enrollInWelcomeSequence(user.id).catch(err =>
+      console.error('[SIGNUP] Drip enrollment failed:', err.message)
+    )
+
     return response
   } catch (err) {
     console.error('Signup error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+}
+
+/**
+ * Enroll a new user in the welcome-to-convert drip sequence.
+ * Randomly assigns A/B variant for subject line testing.
+ */
+async function enrollInWelcomeSequence(userId: string) {
+  // Find the active welcome sequence
+  const { data: seqs } = await supabase
+    .from('drip_sequences')
+    .select('id')
+    .eq('name', 'welcome-to-convert')
+    .eq('is_active', true)
+    .limit(1)
+
+  if (!seqs?.length) {
+    console.log('[DRIP] No active welcome sequence found — skipping enrollment')
+    return
+  }
+
+  const variant = Math.random() < 0.5 ? 'a' : 'b'
+
+  await supabase.from('sequence_enrollments').upsert({
+    user_id: userId,
+    sequence_id: seqs[0].id,
+    current_step: 0,
+    status: 'active',
+    variant,
+  }, { onConflict: 'user_id,sequence_id' })
+
+  console.log(`[DRIP] User ${userId} enrolled in welcome sequence (variant ${variant})`)
 }
