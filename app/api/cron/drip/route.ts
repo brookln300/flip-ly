@@ -29,22 +29,25 @@ export async function GET(req: NextRequest) {
   let errors = 0
 
   try {
-    // Fetch all active enrollments
-    const { data: enrollments, error: enrollErr } = await supabase
+    // Fetch all enrollments (then filter in code to debug RLS issues)
+    const { data: allEnrollments, error: enrollErr } = await supabase
       .from('sequence_enrollments')
-      .select('id, user_id, sequence_id, current_step, variant, enrolled_at, last_sent_at')
-      .eq('status', 'active')
+      .select('id, user_id, sequence_id, current_step, variant, status, enrolled_at, last_sent_at')
 
     if (enrollErr) {
       return NextResponse.json({ error: String(enrollErr.message), hint: enrollErr.hint || null })
     }
 
-    if (!enrollments || enrollments.length === 0) {
-      // Debug: also check total count
-      const { count } = await supabase
-        .from('sequence_enrollments')
-        .select('*', { count: 'exact', head: true })
-      return NextResponse.json({ message: 'No active enrollments', sent: 0, total_enrollments_in_db: count })
+    // Filter active in application code (bypasses any RLS/index weirdness)
+    const enrollments = (allEnrollments || []).filter(e => e.status === 'active')
+
+    if (!enrollments.length) {
+      return NextResponse.json({
+        message: 'No active enrollments',
+        sent: 0,
+        total_in_db: allEnrollments?.length || 0,
+        statuses: allEnrollments?.map(e => ({ id: e.id?.substring(0, 8), status: e.status, step: e.current_step })),
+      })
     }
 
     for (const enrollment of enrollments) {
