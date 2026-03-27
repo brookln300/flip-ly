@@ -30,20 +30,21 @@ export async function GET(req: NextRequest) {
 
   try {
     // Fetch all active enrollments
-    const { data: enrollments, error: enrollError } = await supabase
+    const { data: enrollments, error: enrollErr } = await supabase
       .from('sequence_enrollments')
-      .select(`
-        id, user_id, sequence_id, current_step, variant,
-        enrolled_at, last_sent_at
-      `)
+      .select('id, user_id, sequence_id, current_step, variant, enrolled_at, last_sent_at')
       .eq('status', 'active')
 
-    if (enrollError) {
-      return NextResponse.json({ error: `Enrollment query failed: ${enrollError.message}`, code: enrollError.code })
+    if (enrollErr) {
+      return NextResponse.json({ error: String(enrollErr.message), hint: enrollErr.hint || null })
     }
 
-    if (!enrollments?.length) {
-      return NextResponse.json({ message: 'No active enrollments', sent: 0, debug: { enrollError: enrollError?.message || null } })
+    if (!enrollments || enrollments.length === 0) {
+      // Debug: also check total count
+      const { count } = await supabase
+        .from('sequence_enrollments')
+        .select('*', { count: 'exact', head: true })
+      return NextResponse.json({ message: 'No active enrollments', sent: 0, total_enrollments_in_db: count })
     }
 
     for (const enrollment of enrollments) {
