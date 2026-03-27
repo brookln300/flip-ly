@@ -7,8 +7,9 @@ import { sendTelegramAlert } from '../../../lib/telegram'
 import { trackEvent } from '../../../lib/analytics'
 import { scrapeCraigslist } from '../../../lib/scrapers/craigslist'
 import { scrapeEventbrite } from '../../../lib/scrapers/eventbrite'
+import { scrapeWithAI } from '../../../lib/scrapers/ai-extract'
 import { enrichAllPending } from '../../../lib/ai/enrich-listing'
-import type { ScraperResult, CraigslistConfig, EventbriteConfig } from '../../../lib/scrapers/types'
+import type { ScraperResult, CraigslistConfig, EventbriteConfig, AiExtractConfig } from '../../../lib/scrapers/types'
 
 export async function GET(req: NextRequest) {
   const start = Date.now()
@@ -48,7 +49,17 @@ export async function GET(req: NextRequest) {
           case 'eventbrite_api':
             result = await scrapeEventbrite(source.id, source.market_id, source.config as EventbriteConfig)
             break
-          // city_permits — Phase 2 expansion
+          case 'ai_extract':
+            result = await scrapeWithAI(source.id, source.market_id, source.config as AiExtractConfig)
+            break
+          case 'city_permits':
+            // Treat city permits as AI extraction too
+            result = await scrapeWithAI(source.id, source.market_id, {
+              url: (source.config as any).url,
+              source_name: source.name,
+              source_hint: 'City government garage sale permit page',
+            })
+            break
           default:
             result.errors.push(`Unknown source type: ${source.source_type}`)
         }

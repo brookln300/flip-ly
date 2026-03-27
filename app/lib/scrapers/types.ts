@@ -23,3 +23,11 @@ export interface CityPermitConfig {
   state: string
   url: string
 }
+
+export interface AiExtractConfig {
+  url: string
+  source_name: string
+  source_hint?: string
+  max_pages?: number
+  pagination_hint?: string
+}
