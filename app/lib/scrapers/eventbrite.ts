@@ -21,17 +21,19 @@ export async function scrapeEventbrite(
 
   for (const keyword of config.keywords) {
     try {
-      const url = new URL('https://www.eventbriteapi.com/v3/events/search/')
+      // Use Eventbrite destination search (current API)
+      const url = new URL('https://www.eventbriteapi.com/v3/destination/search/')
       url.searchParams.set('q', keyword)
-      url.searchParams.set('location.latitude', String(config.latitude))
-      url.searchParams.set('location.longitude', String(config.longitude))
-      url.searchParams.set('location.within', config.radius)
-      url.searchParams.set('start_date.range_start', new Date().toISOString().replace('Z', ''))
-      url.searchParams.set('expand', 'venue')
+      url.searchParams.set('latitude', String(config.latitude))
+      url.searchParams.set('longitude', String(config.longitude))
+      url.searchParams.set('within', config.radius)
       url.searchParams.set('page_size', '20')
 
       const res = await fetch(url.toString(), {
-        headers: { Authorization: `Bearer ${EVENTBRITE_TOKEN}` },
+        headers: {
+          Authorization: `Bearer ${EVENTBRITE_TOKEN}`,
+          'Accept': 'application/json',
+        },
       })
 
       if (!res.ok) {

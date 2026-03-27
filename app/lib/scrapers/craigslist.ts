@@ -17,7 +17,19 @@ export async function scrapeCraigslist(
   const result: ScraperResult = { inserted: 0, skipped: 0, errors: [] }
 
   try {
-    const feed = await parser.parseURL(config.rss_url)
+    // Fetch with user-agent header (Craigslist blocks default serverless UA)
+    const rssRes = await fetch(config.rss_url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/rss+xml, application/xml, text/xml',
+      },
+    })
+    if (!rssRes.ok) {
+      result.errors.push(`RSS fetch ${rssRes.status}: ${rssRes.statusText}`)
+      return result
+    }
+    const rssText = await rssRes.text()
+    const feed = await parser.parseString(rssText)
 
     if (!feed.items || feed.items.length === 0) {
       result.errors.push('Empty RSS feed')
