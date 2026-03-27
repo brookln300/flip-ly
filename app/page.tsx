@@ -385,6 +385,9 @@ export default function Home() {
   const [searchCity, setSearchCity] = useState('')
   const [searching, setSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
+  const [realListings, setRealListings] = useState<any[]>([])
+  const [totalResults, setTotalResults] = useState(0)
+  const [butlerMsg, setButlerMsg] = useState('')
   const [showChaosEgg, setShowChaosEgg] = useState(false)
   const [meltdownActive, setMeltdownActive] = useState(false)
   const [meltdownDone, setMeltdownDone] = useState(false)
@@ -396,7 +399,17 @@ export default function Home() {
     return () => { clearTimeout(show); clearTimeout(autoDismiss) }
   }, [])
 
-  const handleSearch = (e: React.FormEvent) => {
+  const BUTLER_QUIPS = [
+    'Very good, sir. I have located the following sales in your vicinity.',
+    'Splendid choice. Here are the deals I have uncovered for you.',
+    'Ah yes, I found several promising leads. Shall we proceed?',
+    'Your wish is my command. I present these offerings post-haste.',
+    'Indeed. The estate sales in this area are... quite something.',
+    'I have interrogated the internet on your behalf. Results below.',
+    'Allow me to present these treasures from the DFW metroplex.',
+  ]
+
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     // Easter egg: typing "chaos" exactly
     if (searchQuery.toLowerCase().trim() === 'chaos') {
@@ -404,10 +417,24 @@ export default function Home() {
       return
     }
     setSearching(true)
-    setTimeout(() => {
-      setSearching(false)
+    setButlerMsg('')
+    try {
+      const params = new URLSearchParams()
+      if (searchQuery) params.set('q', searchQuery)
+      if (searchCity) params.set('city', searchCity)
+      params.set('limit', '20')
+      const res = await fetch(`/api/listings?${params}`)
+      const data = await res.json()
+      setRealListings(data.results || [])
+      setTotalResults(data.total || 0)
       setShowResults(true)
-    }, 600)
+      setButlerMsg(BUTLER_QUIPS[Math.floor(Math.random() * BUTLER_QUIPS.length)])
+    } catch (err) {
+      setRealListings([])
+      setButlerMsg('I regret to inform you that the internet has failed us. Try again.')
+    } finally {
+      setSearching(false)
+    }
   }
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -638,178 +665,233 @@ export default function Home() {
 
       <div className="rainbow-divider" />
 
-      {/* ═══ CRAIGSLIST SEARCH (the functional part) ═══ */}
-      <section className={`px-4 py-12 ${searching ? 'crash-shake' : ''}`} style={{ background: '#000' }}>
+      {/* ═══ ASK FLIP-LY — The AskJeeves Search Engine ═══ */}
+      <section className={`px-4 py-12 ${searching ? 'crash-shake' : ''}`} style={{
+        background: 'linear-gradient(180deg, #FFFEF0 0%, #F5F0D0 50%, #EDE8C0 100%)',
+        borderTop: '4px solid #996633',
+        borderBottom: '4px solid #996633',
+      }}>
         <div className="max-w-3xl mx-auto">
-          {/* Craigslist-style header */}
+          {/* AskJeeves header */}
           <div className="mb-6 text-center">
+            <div style={{ fontSize: '48px', marginBottom: '4px' }}>🎩</div>
             <h3 style={{
-              fontFamily: 'Times New Roman, serif', fontSize: '28px',
-              color: 'var(--craigslist-purple)', textDecoration: 'underline',
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontSize: '32px', fontWeight: 'bold',
+              color: '#333', letterSpacing: '-0.5px',
             }}>
-              garage sales / estate sales / yard sales
+              Ask <span style={{ color: '#CC3300' }}>flip-ly</span>
             </h3>
-            <p className="text-xs mt-1" style={{ color: '#666' }}>
-              [ <span style={{ color: 'var(--lime)' }}>dallas</span> | austin | houston | san antonio | all DFW ]
+            <p style={{
+              fontFamily: 'Georgia, serif', fontSize: '14px',
+              color: '#666', fontStyle: 'italic', marginTop: '4px',
+            }}>
+              Your personal butler for garage sale intelligence
             </p>
+            <div className="mt-2 flex items-center justify-center gap-2" style={{ fontSize: '10px', color: '#999' }}>
+              <span>Powered by AI</span>
+              <span>|</span>
+              <span style={{ color: 'var(--lime)', textShadow: '0 0 4px var(--lime)' }}>{totalResults || 260}+ real listings</span>
+              <span>|</span>
+              <span>DFW Metro</span>
+            </div>
           </div>
 
-          {/* Search form — Craigslist style with chaos colors */}
-          <form onSubmit={handleSearch} className="space-y-3">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="search garage sales (furniture, tools, vintage...)"
-                className="cl-input flex-1"
-              />
-              <select
-                value={searchCity}
-                onChange={e => setSearchCity(e.target.value)}
-                className="cl-input"
-                style={{ width: '160px', color: '#000', cursor: 'pointer' }}
-              >
-                <option value="">all cities</option>
-                <option value="dallas">Dallas</option>
-                <option value="plano">Plano</option>
-                <option value="frisco">Frisco</option>
-                <option value="mckinney">McKinney</option>
-                <option value="denton">Denton</option>
-                <option value="arlington">Arlington</option>
-              </select>
+          {/* Search form — AskJeeves style */}
+          <form onSubmit={handleSearch}>
+            <div style={{
+              background: '#fff',
+              border: '3px solid #996633',
+              borderRadius: '8px',
+              padding: '4px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.8)',
+            }}>
+              <div className="flex gap-1">
+                <div className="flex-1 flex items-center gap-2 px-3">
+                  <span style={{ fontSize: '20px' }}>🔍</span>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Ask me anything... tools, vintage, furniture, free stuff..."
+                    style={{
+                      width: '100%', padding: '12px 4px', border: 'none', outline: 'none',
+                      fontFamily: 'Georgia, serif', fontSize: '16px', color: '#333',
+                      background: 'transparent',
+                    }}
+                  />
+                </div>
+                <select
+                  value={searchCity}
+                  onChange={e => setSearchCity(e.target.value)}
+                  style={{
+                    padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px',
+                    fontFamily: 'Tahoma, sans-serif', fontSize: '12px',
+                    color: '#333', background: '#f5f5f5', cursor: 'pointer',
+                  }}
+                >
+                  <option value="">All DFW</option>
+                  <option value="dallas">Dallas</option>
+                  <option value="fort worth">Fort Worth</option>
+                  <option value="plano">Plano</option>
+                  <option value="frisco">Frisco</option>
+                  <option value="arlington">Arlington</option>
+                  <option value="denton">Denton</option>
+                  <option value="mckinney">McKinney</option>
+                  <option value="richardson">Richardson</option>
+                  <option value="garland">Garland</option>
+                </select>
+                <button type="submit" disabled={searching} style={{
+                  padding: '8px 24px',
+                  background: searching ? '#999' : '#CC3300',
+                  color: '#fff', border: 'none', borderRadius: '4px',
+                  fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold',
+                  fontSize: '15px', cursor: searching ? 'wait' : 'pointer',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                }}>
+                  {searching ? '🔄' : 'ASK'}
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button type="submit" className="px-8 py-2 font-bold text-sm" style={{
-                background: 'var(--lime)', color: '#000', border: '3px solid var(--hotpink)',
-                fontFamily: '"Comic Sans MS", cursive', cursor: 'pointer',
-              }}>
-                🔍 SEARCH
-              </button>
-              <span className="text-xs self-center" style={{ color: '#555' }}>
-                {searching ? '💥 CRASHING...' : showResults ? `${fakeListings.length} results` : 'try it, it works'}
-              </span>
+
+            {/* Quick search tags */}
+            <div className="mt-3 flex flex-wrap gap-2 justify-center">
+              {['tools', 'vintage', 'furniture', 'free', 'electronics', 'estate sale'].map(tag => (
+                <button key={tag} type="button" onClick={() => { setSearchQuery(tag); }} style={{
+                  padding: '2px 10px', border: '1px solid #ccc', borderRadius: '12px',
+                  fontFamily: 'Tahoma, sans-serif', fontSize: '11px', color: '#666',
+                  background: '#fff', cursor: 'pointer',
+                }}>
+                  {tag}
+                </button>
+              ))}
             </div>
           </form>
 
-          {/* Results — 2001 Craigslist chaos table */}
+          {/* Butler response + Results */}
           {showResults && (
             <div className="mt-8">
-              {/* Sponsored spam */}
-              <div className="mb-4 space-y-1">
-                {[
-                  '📢 Sponsored by LimeWire Premium — Download faster at 56k!',
-                  '💋 Hot Singles in your area want to sell you their couch',
-                  '💊 Click here for free Viagra with every estate sale',
-                ].map((ad, i) => (
-                  <div key={i} className="px-3 py-1.5" style={{
-                    background: i === 2 ? 'rgba(255,0,0,0.08)' : 'rgba(255,255,0,0.04)',
-                    border: '1px solid #333',
-                    fontFamily: 'Times New Roman, serif',
-                    fontSize: '11px',
-                    color: i === 2 ? '#ff6666' : '#999',
-                    fontStyle: 'italic',
+              {/* Butler speech bubble */}
+              {butlerMsg && (
+                <div className="mb-6 flex items-start gap-3">
+                  <div style={{ fontSize: '36px', flexShrink: 0 }}>🎩</div>
+                  <div style={{
+                    background: '#fff', border: '2px solid #996633', borderRadius: '12px',
+                    padding: '12px 16px', position: 'relative',
+                    fontFamily: 'Georgia, serif', fontSize: '14px', color: '#444',
+                    fontStyle: 'italic', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   }}>
-                    {ad} <span style={{ color: '#444', fontSize: '9px' }}>[AD]</span>
+                    &ldquo;{butlerMsg}&rdquo;
+                    <div style={{
+                      position: 'absolute', left: '-8px', top: '14px',
+                      width: 0, height: 0, borderTop: '6px solid transparent',
+                      borderBottom: '6px solid transparent', borderRight: '8px solid #996633',
+                    }} />
+                  </div>
+                </div>
+              )}
+
+              <div className="text-xs mb-3 flex justify-between items-center" style={{ color: '#666' }}>
+                <span style={{ fontFamily: 'Tahoma, sans-serif' }}>
+                  Showing {realListings.length} of {totalResults} results
+                  {searchQuery ? ` for "${searchQuery}"` : ''}
+                </span>
+                <span style={{ color: '#CC3300', fontFamily: 'Tahoma, sans-serif' }}>
+                  🔥 = AI Deal Score 8+/10
+                </span>
+              </div>
+
+              {/* Results — real data from Supabase */}
+              <div className="space-y-3">
+                {realListings.map((listing, i) => (
+                  <div key={listing.id || i} style={{
+                    background: listing.hot ? 'rgba(255,51,0,0.04)' : '#fff',
+                    border: listing.hot ? '2px solid #CC3300' : '1px solid #ddd',
+                    borderRadius: '6px', padding: '12px 16px',
+                    boxShadow: listing.hot ? '0 2px 8px rgba(204,51,0,0.15)' : '0 1px 3px rgba(0,0,0,0.05)',
+                  }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          {listing.hot && <span style={{
+                            background: '#CC3300', color: '#fff', padding: '1px 6px',
+                            borderRadius: '3px', fontSize: '10px', fontWeight: 'bold',
+                            fontFamily: 'Tahoma, sans-serif',
+                          }}>🔥 HOT</span>}
+                          {listing.deal_score && (
+                            <span style={{
+                              background: listing.deal_score >= 8 ? '#0a6' : '#666',
+                              color: '#fff', padding: '1px 6px', borderRadius: '3px',
+                              fontSize: '10px', fontWeight: 'bold', fontFamily: 'monospace',
+                            }}>{listing.deal_score}/10</span>
+                          )}
+                          <span style={{
+                            fontSize: '9px', color: '#999', fontFamily: 'Tahoma, sans-serif',
+                            textTransform: 'uppercase',
+                          }}>{listing.source}</span>
+                        </div>
+                        <a href={listing.source_url || '#'} target="_blank" rel="noopener noreferrer" style={{
+                          color: '#1a0dab', textDecoration: 'underline', fontSize: '15px',
+                          fontFamily: 'Georgia, serif', display: 'block', marginTop: '4px',
+                        }}>
+                          {listing.title}
+                        </a>
+                        {listing.description && (
+                          <p style={{
+                            color: '#555', fontSize: '12px', marginTop: '4px',
+                            fontFamily: 'Tahoma, sans-serif', lineHeight: '1.4',
+                          }}>
+                            {listing.description}
+                          </p>
+                        )}
+                        {listing.tags?.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {listing.tags.slice(0, 5).map((tag: string) => (
+                              <span key={tag} style={{
+                                padding: '1px 6px', border: '1px solid #ddd', borderRadius: '8px',
+                                fontSize: '9px', color: '#888', fontFamily: 'Tahoma, sans-serif',
+                                background: '#f9f9f9',
+                              }}>{tag}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-right" style={{ flexShrink: 0 }}>
+                        <div style={{
+                          fontFamily: 'monospace', fontWeight: 'bold', fontSize: '14px',
+                          color: listing.price === 'FREE' ? '#0a6' : '#333',
+                        }}>
+                          {listing.price || '—'}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#888', fontFamily: 'Tahoma, sans-serif', marginTop: '2px' }}>
+                          {listing.city || 'DFW'}
+                        </div>
+                        {listing.date && (
+                          <div style={{ fontSize: '10px', color: '#aaa', fontFamily: 'Tahoma, sans-serif' }}>
+                            {listing.date}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div className="text-xs mb-3 flex justify-between" style={{ color: '#888' }}>
-                <span>{fakeListings.length} results — sorted by desperation level</span>
-                <span style={{ color: 'var(--lime)' }}>🔥 = someone is lying about the price</span>
-              </div>
-
-              {/* Craigslist HTML table */}
-              <table style={{
-                width: '100%', borderCollapse: 'collapse',
-                border: '3px ridge var(--lime)',
-                fontFamily: 'Times New Roman, serif',
-              }}>
-                <thead>
-                  <tr style={{ background: '#1a1a1a', borderBottom: '2px solid var(--hotpink)' }}>
-                    <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--mustard)', fontSize: '11px', fontWeight: 700 }}>DATE</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'left', color: 'var(--mustard)', fontSize: '11px', fontWeight: 700 }}>LISTING</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--mustard)', fontSize: '11px', fontWeight: 700 }}>PRICE</th>
-                    <th style={{ padding: '6px 8px', textAlign: 'right', color: 'var(--mustard)', fontSize: '11px', fontWeight: 700 }}>AREA</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fakeListings.map((listing, i) => {
-                    const flavor = CL_FLAVOR[Math.floor(Math.random() * CL_FLAVOR.length)]
-                    const sig = CL_SIGS[Math.floor(Math.random() * CL_SIGS.length)]
-                    const edit = CL_EDITS[Math.floor(Math.random() * CL_EDITS.length)]
-                    const is404 = Math.random() < 0.2
-
-                    return (
-                      <tr key={i} style={{
-                        background: i % 2 === 0 ? 'rgba(15,255,80,0.04)' : 'rgba(255,16,240,0.04)',
-                        borderBottom: '1px solid #222',
-                      }}>
-                        <td style={{
-                          padding: '8px', fontSize: '11px', color: '#888',
-                          fontFamily: 'monospace', verticalAlign: 'top', whiteSpace: 'nowrap',
-                        }}>
-                          {listing.date}
-                        </td>
-                        <td style={{ padding: '8px', verticalAlign: 'top' }}>
-                          <a href="#" onClick={(e) => {
-                            e.preventDefault()
-                            if (is404) setShow404(true)
-                          }} style={{
-                            color: '#3366CC', textDecoration: 'underline', fontSize: '13px',
-                            fontFamily: 'Times New Roman, serif',
-                          }}>
-                            {listing.title}
-                          </a>
-                          <span style={{ color: '#666', fontSize: '10px', marginLeft: '6px' }}>
-                            {flavor}
-                          </span>
-                          <div style={{ marginTop: '4px' }}>
-                            <span style={{ color: '#444', fontSize: '9px', fontStyle: 'italic' }}>{edit}</span>
-                          </div>
-                          <div style={{ marginTop: '2px' }}>
-                            <span style={{ color: '#555', fontSize: '9px' }}>{sig}</span>
-                          </div>
-                          <div style={{ marginTop: '4px' }}>
-                            <button onClick={() => setShowReply(true)} style={{
-                              background: 'none', border: '1px solid #444', padding: '1px 8px',
-                              fontSize: '9px', color: '#888', cursor: 'pointer',
-                              fontFamily: 'Tahoma, sans-serif',
-                            }}>
-                              reply to this post
-                            </button>
-                            {listing.hot && <span className="ml-2 text-xs">🔥</span>}
-                          </div>
-                        </td>
-                        <td style={{
-                          padding: '8px', textAlign: 'right', verticalAlign: 'top',
-                          color: 'var(--lime)', fontFamily: 'monospace', fontSize: '12px',
-                          fontWeight: 700,
-                          paddingLeft: i % 3 === 0 ? '24px' : '8px',
-                        }}>
-                          {listing.price}
-                        </td>
-                        <td style={{
-                          padding: '8px', textAlign: 'right', verticalAlign: 'top',
-                          color: '#888', fontSize: '10px', whiteSpace: 'nowrap',
-                        }}>
-                          {listing.city}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-
-              {/* CL post button */}
-              <div className="text-center mt-6">
-                <button onClick={() => setShowSignup(true)} className="px-8 py-2 text-sm font-bold" style={{
-                  background: '#c0c0c0', color: '#000',
-                  border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
-                  fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
+              {/* Load more / signup CTA */}
+              <div className="text-center mt-8 space-y-3">
+                {totalResults > realListings.length && (
+                  <p style={{ fontSize: '12px', color: '#888', fontFamily: 'Tahoma, sans-serif' }}>
+                    {totalResults - realListings.length} more results available
+                  </p>
+                )}
+                <button onClick={() => setShowSignup(true)} style={{
+                  padding: '10px 32px',
+                  background: '#CC3300', color: '#fff', border: 'none',
+                  borderRadius: '6px', fontFamily: '"Comic Sans MS", cursive',
+                  fontWeight: 'bold', fontSize: '14px', cursor: 'pointer',
+                  boxShadow: '0 3px 8px rgba(204,51,0,0.3)',
                 }}>
-                  post to classifieds (sign up first)
+                  Sign up for weekly deal alerts (it&apos;s free, the butler insists)
                 </button>
               </div>
             </div>
