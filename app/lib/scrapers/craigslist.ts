@@ -15,7 +15,7 @@ export async function scrapeCraigslist(
   const result: ScraperResult = { inserted: 0, skipped: 0, errors: [] }
 
   // Resolve area_id: use config.area_id if set, otherwise look it up by hostname
-  let areaId = config.area_id
+  let areaId: number | null = config.area_id || null
   if (!areaId && config.hostname) {
     areaId = await lookupAreaId(config.hostname)
   }

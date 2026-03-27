@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { trackEvent } from '../../lib/analytics'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null
 
 export async function POST(req: NextRequest) {
+  if (!stripe) {
+    return NextResponse.json({ error: 'Donations not configured' }, { status: 503 })
+  }
+
   try {
     const { amount } = await req.json()
 
