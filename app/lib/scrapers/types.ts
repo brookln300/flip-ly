@@ -5,15 +5,17 @@ export interface ScraperResult {
 }
 
 export interface CraigslistConfig {
-  rss_url: string
-  hostname: string
+  rss_url: string       // kept for backwards compat, unused by new scraper
+  hostname: string      // e.g. "dallas"
+  area_id: number       // CL SAPI area ID (dallas = 21)
 }
 
 export interface EventbriteConfig {
   latitude: number
   longitude: number
-  radius: string
+  radius: string        // e.g. "50mi"
   keywords: string[]
+  city_slug: string     // e.g. "tx--dallas" for eventbrite.com/d/tx--dallas/
 }
 
 export interface CityPermitConfig {

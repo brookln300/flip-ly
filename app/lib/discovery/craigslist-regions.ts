@@ -5,6 +5,7 @@
 
 interface CraigslistArea {
   Hostname: string
+  AreaID: number
   Latitude: number
   Longitude: number
   Description: string
@@ -55,6 +56,7 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
  */
 export async function findCraigslistRegion(lat: number, lng: number): Promise<{
   hostname: string
+  areaId: number
   rssUrl: string
   distance: number
 } | null> {
@@ -77,6 +79,7 @@ export async function findCraigslistRegion(lat: number, lng: number): Promise<{
 
   return {
     hostname: closest.Hostname,
+    areaId: closest.AreaID,
     rssUrl: `https://${closest.Hostname}.craigslist.org/search/gms?format=rss`,
     distance: Math.round(closestDist),
   }
