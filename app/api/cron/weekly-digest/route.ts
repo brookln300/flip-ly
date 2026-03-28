@@ -6,10 +6,26 @@ import { supabase } from '../../../lib/supabase'
 import { trackEvent } from '../../../lib/analytics'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { Resend } from 'resend'
+import { getUnsubscribeUrl } from '../../../lib/unsubscribe'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
-const SUBJECTS = [
+function addUtm(url: string, source: string, medium: string, campaign: string, content?: string): string {
+  const u = new URL(url)
+  u.searchParams.set('utm_source', source)
+  u.searchParams.set('utm_medium', medium)
+  u.searchParams.set('utm_campaign', campaign)
+  if (content) u.searchParams.set('utm_content', content)
+  return u.toString()
+}
+
+const SUBJECTS_PRO = [
+  "🦞 FIRST DIBS: {count} deals before anyone else",
+  "🥇 Pro early access: {count} deals — 6hrs before the peasants",
+  "⚡ Your First Dibs digest: {count} deals, 0 competition (for now)",
+]
+
+const SUBJECTS_FREE = [
   "🎩 Your butler found {count} deals this week",
   "🔥 {count} garage sales near you — the butler insists",
   "📢 {count} new deals in DFW — from your favorite chaos engine",
@@ -19,18 +35,33 @@ const SUBJECTS = [
 
 export async function GET(req: NextRequest) {
   const start = Date.now()
+  const { searchParams } = new URL(req.url)
+
+  // tier=pro sends only to pro users (called 6hrs earlier by separate cron)
+  // tier=free sends only to free users (called at normal time)
+  // no tier param = legacy behavior, sends to all
+  const tier = searchParams.get('tier') as 'pro' | 'free' | null
 
   try {
-    // Fetch users
-    const { data: users, error: userError } = await supabase
+    // Fetch users based on tier
+    let userQuery = supabase
       .from('fliply_users')
-      .select('id, email, city, state, zip_code')
+      .select('id, email, city, state, zip_code, is_premium')
+      .or('unsubscribed.is.null,unsubscribed.eq.false')  // Skip unsubscribed users
 
-    if (userError || !users?.length) {
-      return NextResponse.json({ message: 'No users to send to', error: userError?.message })
+    if (tier === 'pro') {
+      userQuery = userQuery.eq('is_premium', true)
+    } else if (tier === 'free') {
+      userQuery = userQuery.eq('is_premium', false)
     }
 
-    // Fetch this week's hottest listings (enriched, scored)
+    const { data: users, error: userError } = await userQuery
+
+    if (userError || !users?.length) {
+      return NextResponse.json({ message: `No ${tier || 'any'} users to send to`, error: userError?.message })
+    }
+
+    // Fetch this week's hottest listings
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     const { data: hotListings } = await supabase
       .from('fliply_listings')
@@ -40,7 +71,6 @@ export async function GET(req: NextRequest) {
       .order('deal_score', { ascending: false, nullsFirst: false })
       .limit(15)
 
-    // Also get total counts for stats
     const { count: totalNew } = await supabase
       .from('fliply_listings')
       .select('*', { count: 'exact', head: true })
@@ -65,13 +95,15 @@ export async function GET(req: NextRequest) {
 
     for (const user of users) {
       try {
-        const subjectTemplate = SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)]
+        const isPro = user.is_premium
+        const subjectPool = isPro ? SUBJECTS_PRO : SUBJECTS_FREE
+        const subjectTemplate = subjectPool[Math.floor(Math.random() * subjectPool.length)]
         const subject = subjectTemplate.replace('{count}', String(listings.length))
-        const html = buildDigestEmail(user, listings, stats)
+        const html = buildDigestEmail(user, listings, stats, isPro, user.email)
 
         if (resend) {
           await resend.emails.send({
-            from: 'flip-ly.net <noreply@dronepools.com>',
+            from: process.env.RESEND_FROM_ADDRESS || 'Jeeves at flip-ly.net <jeeves@flip-ly.net>',
             to: user.email.toLowerCase(),
             subject,
             html,
@@ -79,14 +111,13 @@ export async function GET(req: NextRequest) {
           sent++
         }
 
-        // Log to digest_log
         await supabase.from('fliply_digest_log').insert({
           user_id: user.id,
           listing_count: listings.length,
           status: resend ? 'sent' : 'skipped',
         })
 
-        results.push({ email: user.email, status: resend ? 'sent' : 'no-resend-key' })
+        results.push({ email: user.email, status: resend ? 'sent' : 'no-resend-key', tier: isPro ? 'pro' : 'free' })
       } catch (err: any) {
         failed++
         results.push({ email: user.email, status: 'failed', error: err.message })
@@ -101,9 +132,8 @@ export async function GET(req: NextRequest) {
 
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
 
-    // Telegram summary
     await sendTelegramAlert([
-      `<b>Weekly Digest Sent</b> (${elapsed}s)`,
+      `<b>Weekly Digest — ${tier || 'all'} tier</b> (${elapsed}s)`,
       `Users: ${users.length}`,
       `Sent: ${sent} | Failed: ${failed}`,
       `Listings featured: ${listings.length}`,
@@ -115,6 +145,7 @@ export async function GET(req: NextRequest) {
       sent_count: sent,
       failed_count: failed,
       listings_featured: listings.length,
+      tier: tier || 'all',
     })
 
     return NextResponse.json({
@@ -123,36 +154,53 @@ export async function GET(req: NextRequest) {
       users_processed: users.length,
       sent, failed,
       listings_featured: listings.length,
+      tier: tier || 'all',
       stats,
       results,
     })
   } catch (err: any) {
     console.error('Digest cron error:', err)
-    await sendTelegramAlert(`Weekly Digest FAILED: ${err.message}`)
+    await sendTelegramAlert(`Weekly Digest (${tier || 'all'}) FAILED: ${err.message}`)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
 
 function buildDigestEmail(
-  user: { email: string; city?: string; state?: string },
+  user: { email: string; city?: string; state?: string; is_premium?: boolean },
   listings: any[],
-  stats: { total_new: number; hot_deals: number; top_score: number }
+  stats: { total_new: number; hot_deals: number; top_score: number },
+  isPro: boolean,
+  userEmail: string
 ): string {
   const city = user.city || 'DFW'
-  const hotDeals = listings.filter(l => l.is_hot)
-  const regularDeals = listings.filter(l => !l.is_hot)
+  const campaign = isPro ? 'digest_pro' : 'digest_free'
+  const utm = (url: string, content?: string) => addUtm(url, 'email', 'digest', campaign, content)
+  const unsubUrl = getUnsubscribeUrl(userEmail)
 
-  const listingRows = listings.slice(0, 10).map((l, i) => `
+  const listingRows = listings.slice(0, isPro ? 15 : 10).map((l, i) => {
+    const scoreDisplay = isPro
+      ? (l.deal_score ? `<span style="background:${l.deal_score >= 8 ? '#006600' : '#666'};color:${l.deal_score >= 8 ? '#0f0' : '#fff'};padding:1px 6px;font-size:10px;font-weight:bold;font-family:monospace;">${l.deal_score}/10</span> ` : '')
+      : (l.deal_score ? `<span style="background:#333;color:#888;padding:1px 6px;font-size:10px;font-weight:bold;font-family:monospace;">&#x2588;&#x2588;/10</span> ` : '')
+
+    const aiDesc = isPro
+      ? (l.ai_description ? `<br/><span style="color:#555;font-size:11px;font-family:Tahoma,sans-serif;font-style:italic;">&#x1F916; ${escapeHtml(l.ai_description.substring(0, 120))}</span>` : '')
+      : (l.ai_description ? `<br/><span style="color:#999;font-size:11px;font-family:Tahoma,sans-serif;font-style:italic;">&#x1F916; ${escapeHtml(l.ai_description.substring(0, 40))}... <a href="${utm('https://flip-ly.net/pro', 'ai-analysis')}" style="color:#FF10F0;font-size:10px;">[PRO: see full AI analysis]</a></span>` : '')
+
+    const linkUrl = isPro ? (l.source_url || utm('https://flip-ly.net', 'listing')) : utm('https://flip-ly.net', 'listing')
+    const linkNote = isPro ? '' : `<br/><span style="font-size:9px;color:#FF10F0;">&#x1F512; <a href="${utm('https://flip-ly.net/pro', 'listing-lock')}" style="color:#FF10F0;">Upgrade to Pro for direct links</a></span>`
+
+    return `
     <tr style="background:${l.is_hot ? '#FFF5F0' : i % 2 === 0 ? '#FFFFF8' : '#FFF'}; border-bottom:1px solid #ddd;">
       <td style="padding:10px 12px; vertical-align:top;">
         ${l.is_hot ? '<span style="background:#CC3300;color:#fff;padding:1px 6px;font-size:10px;font-weight:bold;font-family:Comic Sans MS,cursive;">&#x1F525; HOT</span> ' : ''}
-        ${l.deal_score ? `<span style="background:${l.deal_score >= 8 ? '#006600' : '#666'};color:${l.deal_score >= 8 ? '#0f0' : '#fff'};padding:1px 6px;font-size:10px;font-weight:bold;font-family:monospace;">${l.deal_score}/10</span> ` : ''}
+        ${scoreDisplay}
         <br/>
-        <a href="${l.source_url || 'https://flip-ly.net'}" style="color:#0000CC;text-decoration:underline;font-size:14px;font-family:Times New Roman,serif;font-weight:${l.is_hot ? 'bold' : 'normal'};">
+        <a href="${linkUrl}" style="color:#0000CC;text-decoration:underline;font-size:14px;font-family:Times New Roman,serif;font-weight:${l.is_hot ? 'bold' : 'normal'};">
           ${l.is_hot ? '&#x2B50; ' : ''}${escapeHtml(l.title)}
         </a>
-        ${l.ai_description ? `<br/><span style="color:#555;font-size:11px;font-family:Tahoma,sans-serif;font-style:italic;">&#x1F916; ${escapeHtml(l.ai_description.substring(0, 120))}</span>` : ''}
-        ${l.ai_tags?.length ? `<br/><span style="font-size:9px;color:#888;">${l.ai_tags.slice(0, 4).map((t: string) => `#${t}`).join(' ')}</span>` : ''}
+        ${aiDesc}
+        ${linkNote}
+        ${l.ai_tags?.length ? `<br/><span style="font-size:9px;color:#888;">${(isPro ? l.ai_tags.slice(0, 4) : l.ai_tags.slice(0, 2)).map((t: string) => `#${t}`).join(' ')}</span>` : ''}
       </td>
       <td style="padding:10px 12px;text-align:right;vertical-align:top;white-space:nowrap;">
         <span style="font-family:Comic Sans MS,cursive;font-weight:bold;font-size:13px;color:${l.price_text === 'FREE' ? '#009900' : '#CC3300'};">
@@ -161,14 +209,42 @@ function buildDigestEmail(
         <br/><span style="font-size:10px;color:#888;">&#x1F4CD; ${escapeHtml(l.city || 'DFW')}</span>
         ${l.event_date ? `<br/><span style="font-size:10px;color:#aaa;">&#x1F4C5; ${l.event_date}</span>` : ''}
       </td>
-    </tr>
-  `).join('')
+    </tr>`
+  }).join('')
+
+  const proBanner = isPro
+    ? `<div style="background:linear-gradient(90deg,#FFD700,#FF8C00);color:#000;padding:8px 16px;font-family:Comic Sans MS,cursive;font-size:12px;text-align:center;font-weight:bold;">
+        &#x1F451; FIRST DIBS — You're seeing this 6 hours before everyone else &#x1F451;
+      </div>`
+    : `<div style="background:#1a1a1a;color:#888;padding:8px 16px;font-family:monospace;font-size:11px;text-align:center;">
+        &#x2728; FREELOADER EDITION &#x2728; &mdash;
+        <a href="${utm('https://flip-ly.net/pro', 'banner-upsell')}" style="color:#FF10F0;font-weight:bold;">Get this 6hrs early for $5/mo</a>
+      </div>`
+
+  const proUpsell = isPro
+    ? ''
+    : `<div style="background:#111;border:2px solid #FF10F0;padding:16px;margin:16px;text-align:center;">
+        <p style="font-family:Comic Sans MS,cursive;color:#FF10F0;font-size:14px;margin:0 0 8px;">
+          &#x1F512; ${stats.hot_deals} deals had their scores hidden from you
+        </p>
+        <p style="font-family:monospace;color:#888;font-size:11px;margin:0 0 12px;">
+          Pro members see: full AI scores &bull; direct source links &bull; address &amp; map data &bull; deal reasons
+        </p>
+        <a href="${utm('https://flip-ly.net/pro', 'upsell-cta')}" style="display:inline-block;padding:10px 28px;background:#FF10F0;color:#fff;text-decoration:none;font-family:Comic Sans MS,cursive;font-weight:bold;font-size:14px;border:2px solid #FFD700;">
+          &#x1F451; UPGRADE — $5/mo — FIRST DIBS
+        </a>
+        <p style="font-family:monospace;color:#555;font-size:9px;margin:8px 0 0;">
+          We genuinely don't know what this is worth. But $5 seems right for you n00bz.
+        </p>
+      </div>`
 
   return `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#000;font-family:Tahoma,sans-serif;">
+
+${proBanner}
 
 <!-- Marquee banner -->
 <div style="background:#000080;color:#ffff00;padding:6px 12px;font-family:Comic Sans MS,cursive;font-size:11px;text-align:center;">
@@ -198,8 +274,8 @@ function buildDigestEmail(
       <div style="font-size:10px;color:#888;">&#x1F525; HOT DEALS</div>
     </td>
     <td style="text-align:center;padding:8px;">
-      <div style="font-size:24px;font-weight:bold;color:#FFD700;font-family:monospace;">${stats.top_score}/10</div>
-      <div style="font-size:10px;color:#888;">TOP AI SCORE</div>
+      <div style="font-size:24px;font-weight:bold;color:#FFD700;font-family:monospace;">${isPro ? stats.top_score + '/10' : '&#x2588;&#x2588;/10'}</div>
+      <div style="font-size:10px;color:#888;">TOP AI SCORE${isPro ? '' : ' &#x1F512;'}</div>
     </td>
   </tr></table>
 </div>
@@ -209,7 +285,7 @@ function buildDigestEmail(
   <table cellpadding="0" cellspacing="0"><tr>
     <td style="vertical-align:top;padding-right:12px;font-size:36px;">&#x1F3A9;</td>
     <td style="font-family:Comic Sans MS,cursive;font-size:13px;color:#333;font-style:italic;">
-      &ldquo;Good ${new Date().getHours() < 12 ? 'morning' : 'afternoon'}, sir. I have curated the finest deals from across the ${escapeHtml(city)} metropolitan area. ${hotDeals.length > 0 ? `I found ${hotDeals.length} particularly compelling offerings.` : 'Slim pickings this week, but the butler perseveres.'} Do peruse at your leisure.&rdquo;
+      &ldquo;Good ${new Date().getHours() < 12 ? 'morning' : 'afternoon'}, ${isPro ? 'esteemed Pro member' : 'sir'}. I have curated the finest deals from across the ${escapeHtml(city)} metropolitan area. ${isPro ? `As a First Dibs member, you're seeing this before the commoners wake up.` : `I found ${listings.length} offerings for your consideration.`}&rdquo;
       <br/><span style="font-size:10px;color:#999;font-style:normal;">&mdash; Jeeves, your AI-powered garage sale butler (est. 1998)</span>
     </td>
   </tr></table>
@@ -227,15 +303,17 @@ function buildDigestEmail(
   </table>
 </div>
 
+${proUpsell}
+
 <!-- CTA -->
 <div style="background:#000;padding:24px;text-align:center;border-top:4px solid #FF10F0;">
-  <a href="https://flip-ly.net" style="display:inline-block;padding:12px 32px;background:linear-gradient(180deg,#ff6633,#cc3300);color:#fff;text-decoration:none;font-family:Comic Sans MS,cursive;font-weight:bold;font-size:16px;border:3px outset #ff9966;text-shadow:2px 2px 0 rgba(0,0,0,0.3);">
+  <a href="${utm('https://flip-ly.net', 'main-cta')}" style="display:inline-block;padding:12px 32px;background:linear-gradient(180deg,#ff6633,#cc3300);color:#fff;text-decoration:none;font-family:Comic Sans MS,cursive;font-weight:bold;font-size:16px;border:3px outset #ff9966;text-shadow:2px 2px 0 rgba(0,0,0,0.3);">
     &#x1F3A9; Search All Deals on flip-ly.net
   </a>
   <p style="color:#666;font-size:10px;margin-top:12px;font-family:Tahoma,sans-serif;">
     You're receiving this because you signed up on flip-ly.net. The butler does not send spam. He's British.
     <br/>
-    <a href="https://flip-ly.net" style="color:#888;">Unsubscribe</a> (the butler will be disappointed)
+    <a href="${unsubUrl}" style="color:#888;">Unsubscribe</a> (the butler will be disappointed)
   </p>
 </div>
 

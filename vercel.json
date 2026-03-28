@@ -5,7 +5,11 @@
       "schedule": "0 11 * * 2,4"
     },
     {
-      "path": "/api/cron/weekly-digest",
+      "path": "/api/cron/weekly-digest?tier=pro",
+      "schedule": "0 11 * * 4"
+    },
+    {
+      "path": "/api/cron/weekly-digest?tier=free",
       "schedule": "0 17 * * 4"
     },
     {

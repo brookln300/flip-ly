@@ -84,10 +84,10 @@ export async function GET(req: NextRequest) {
           continue
         }
 
-        // Get user email
+        // Get user email + check unsubscribe
         const { data: users } = await supabase
           .from('fliply_users')
-          .select('id, email, city, state, zip_code')
+          .select('id, email, city, state, zip_code, unsubscribed')
           .eq('id', enrollment.user_id)
           .limit(1)
 
@@ -97,6 +97,16 @@ export async function GET(req: NextRequest) {
         }
 
         const user = users[0]
+
+        // Skip unsubscribed users and cancel their enrollment
+        if (user.unsubscribed) {
+          await supabase
+            .from('sequence_enrollments')
+            .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
+            .eq('id', enrollment.id)
+          skipped++
+          continue
+        }
 
         // Choose subject (A/B variant)
         const subject = enrollment.variant === 'b' && step.subject_variant_b
@@ -114,7 +124,7 @@ export async function GET(req: NextRequest) {
 
         // Send via Resend
         const { data: sendResult, error: sendError } = await resend.emails.send({
-          from: 'flip-ly.net <noreply@dronepools.com>',
+          from: process.env.RESEND_FROM_ADDRESS || 'Jeeves at flip-ly.net <jeeves@flip-ly.net>',
           to: user.email.toLowerCase(),
           subject: subject.replace('{city}', user.city || 'DFW'),
           html,

@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
         const html = getWelcomeEmail(email, city)
 
         await resend.emails.send({
-          from: 'flip-ly.net <noreply@dronepools.com>', // using verified domain
+          from: process.env.RESEND_FROM_ADDRESS || 'Jeeves at flip-ly.net <jeeves@flip-ly.net>',
           to: email.toLowerCase(),
           subject,
           html,

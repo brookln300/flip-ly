@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS users (
   state TEXT,
   zip_code TEXT,
   is_premium BOOLEAN DEFAULT FALSE,
+  stripe_customer_id TEXT,
+  stripe_subscription_id TEXT,
   x_id TEXT,
   x_username TEXT,
   x_oauth_token TEXT,
