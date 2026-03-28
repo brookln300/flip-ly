@@ -400,6 +400,7 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false)
   const [signupError, setSignupError] = useState('')
   const [signingUp, setSigningUp] = useState(false)
+  const [isLoginMode, setIsLoginMode] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchCity, setSearchCity] = useState('')
   const [searching, setSearching] = useState(false)
@@ -508,6 +509,33 @@ export default function Home() {
       setTimeout(() => {
         window.location.href = '/dashboard'
       }, 2000)
+    } catch {
+      setSignupError('Something broke. Like our CSS.')
+      setSigningUp(false)
+    }
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email || !password) return
+    setSigningUp(true)
+    setSignupError('')
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setSignupError(data.error || 'Login failed')
+        setSigningUp(false)
+        return
+      }
+      setSubmitted(true)
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 1500)
     } catch {
       setSignupError('Something broke. Like our CSS.')
       setSigningUp(false)
@@ -2000,24 +2028,26 @@ export default function Home() {
               ✕
             </button>
             <div className="win98-titlebar">
-              <span className="win98-titlebar-text">signup.exe — Join the Chaos</span>
+              <span className="win98-titlebar-text">{isLoginMode ? 'login.exe — Welcome Back' : 'signup.exe — Join the Chaos'}</span>
               <button className="win98-btn" onClick={() => setShowSignup(false)}>✕</button>
             </div>
             <div style={{ background: 'var(--darker)', padding: '24px' }}>
               {submitted ? (
                 <div className="text-center py-6">
-                  <div className="text-5xl mb-4">🎉</div>
+                  <div className="text-5xl mb-4">{isLoginMode ? '🦞' : '🎉'}</div>
                   <h3 className="text-2xl font-bold mb-3" style={{
                     fontFamily: '"Comic Sans MS", cursive', color: 'var(--lime)',
                   }}>
-                    YOU&apos;RE IN, WEIRDO
+                    {isLoginMode ? 'WELCOME BACK, AGENT' : 'YOU\'RE IN, WEIRDO'}
                   </h3>
                   <p className="text-sm mb-2" style={{ color: '#ccc' }}>
-                    Welcome to the chaos. Check your email for confirmation.
+                    {isLoginMode ? 'The lobster remembers you. Redirecting...' : 'Welcome to the chaos. Check your email for confirmation.'}
                   </p>
-                  <p className="text-xs" style={{ color: '#666' }}>
-                    (check spam too. we get it.)
-                  </p>
+                  {!isLoginMode && (
+                    <p className="text-xs" style={{ color: '#666' }}>
+                      (check spam too. we get it.)
+                    </p>
+                  )}
                   <button onClick={() => { setShowSignup(false); setSubmitted(false) }}
                     className="mt-6 px-6 py-2 text-sm font-bold" style={{
                       background: 'var(--lime)', color: '#000', border: 'none',
@@ -2026,6 +2056,56 @@ export default function Home() {
                     COOL →
                   </button>
                 </div>
+              ) : isLoginMode ? (
+                <>
+                  <h3 className="text-xl font-bold mb-1" style={{
+                    fontFamily: '"Comic Sans MS", cursive', color: 'var(--lime)',
+                  }}>
+                    WELCOME BACK
+                  </h3>
+                  <p className="text-xs mb-6" style={{ color: '#777' }}>
+                    The lobster missed you.
+                  </p>
+                  <form onSubmit={handleLogin} className="space-y-3">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      required
+                      className="cl-input"
+                    />
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="password"
+                      required
+                      className="cl-input"
+                    />
+                    {signupError && (
+                      <p className="text-xs" style={{ color: 'var(--hotpink)' }}>
+                        ⚠️ {signupError}
+                      </p>
+                    )}
+                    <button type="submit" disabled={signingUp} className="w-full py-3 font-bold text-lg" style={{
+                      background: signingUp ? '#666' : 'var(--lime)', color: '#000',
+                      border: '3px solid var(--neon-orange)',
+                      fontFamily: '"Comic Sans MS", cursive', cursor: signingUp ? 'wait' : 'pointer',
+                    }}>
+                      {signingUp ? 'DIALING IN AT 56K...' : 'LOG IN 🦞'}
+                    </button>
+                  </form>
+                  <p className="text-xs mt-4 text-center">
+                    <button onClick={() => { setIsLoginMode(false); setSignupError('') }} style={{
+                      background: 'none', border: 'none', color: 'var(--neon-orange)',
+                      fontFamily: '"Comic Sans MS", cursive', cursor: 'pointer',
+                      textDecoration: 'underline', fontSize: '12px',
+                    }}>
+                      Don&apos;t have an account? Sign up
+                    </button>
+                  </p>
+                </>
               ) : (
                 <>
                   <h3 className="text-xl font-bold mb-1" style={{
@@ -2087,8 +2167,14 @@ export default function Home() {
                       {signingUp ? 'CONNECTING AT 56K...' : 'LET\u0027S GO 🦞'}
                     </button>
                   </form>
-                  <p className="text-xs mt-4 text-center" style={{ color: '#555' }}>
-                    We need your city + zip to find sales near you. That&apos;s it.
+                  <p className="text-xs mt-4 text-center">
+                    <button onClick={() => { setIsLoginMode(true); setSignupError('') }} style={{
+                      background: 'none', border: 'none', color: 'var(--lime)',
+                      fontFamily: '"Comic Sans MS", cursive', cursor: 'pointer',
+                      textDecoration: 'underline', fontSize: '12px',
+                    }}>
+                      Already have an account? Log in
+                    </button>
                   </p>
                 </>
               )}
