@@ -204,6 +204,140 @@ export async function getDripEmailHtml(
         One good find pays for a year of Pro. The butler has done the math. Repeatedly.
       </p>
     `),
+
+    // ═══ CONTEST SEQUENCE — for Lobster Hunt acquired users ═══
+
+    'contest-welcome': () => wrapEmail(`
+      <h1 style="font-family:'Comic Sans MS',cursive;color:#FF10F0;font-size:24px;margin:0 0 16px;">
+        &#x1F99E; You Found the Lobster Hunt.
+      </h1>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        ${esc(username)}, you found a hidden pixel on a website built in Comic Sans, opened a fake classified terminal, and entered a passphrase.
+      </p>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        That's more effort than most people put into their actual jobs. The Lobster Council is watching. &#x1F440;
+      </p>
+      <div style="border:2px solid #FF10F0;padding:16px;margin:16px 0;">
+        <p style="color:#FF10F0;font-size:12px;margin:0 0 8px;font-family:monospace;">CONTEST STATUS</p>
+        <p style="color:#fff;font-size:14px;margin:0;">7 decoy passwords. 1 real one. Nobody has cracked it yet.</p>
+        <p style="color:#888;font-size:11px;margin:8px 0 0;">The clues are scattered across the source code in hex, base64, morse, NATO alphabet, and ASCII decimal.</p>
+      </div>
+      <p style="color:#FFB81C;font-size:14px;line-height:1.8;">
+        Oh, and the website you found this on? It actually does something useful.
+      </p>
+      <p style="color:#ccc;font-size:13px;line-height:1.8;">
+        flip-ly.net is an AI-powered garage sale finder. We scrape Craigslist and Eventbrite, score every deal with AI, and email the best ones weekly. The easter egg is the chaos. The deals are real.
+      </p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="https://flip-ly.net/lobster-hunt" style="${btnStyle}">
+          &#x1F99E; Check the Hall of Almost
+        </a>
+      </div>
+    `),
+
+    'contest-depth': () => wrapEmail(`
+      <h1 style="font-family:'Comic Sans MS',cursive;color:#0FFF50;font-size:24px;margin:0 0 16px;">
+        &#x1F9E0; The Clues Go Deeper
+      </h1>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        ${esc(username)}, since you're clearly the type who reads source code for fun:
+      </p>
+      <div style="background:#0a0a0a;border:1px solid #333;padding:16px;margin:16px 0;font-family:monospace;font-size:12px;">
+        <p style="color:#0f0;margin:0 0 8px;">&gt; CLUE TYPES CONFIRMED:</p>
+        <p style="color:#888;margin:0 0 4px;">- Hex strings in HTML comments</p>
+        <p style="color:#888;margin:0 0 4px;">- Base64 in image alt attributes</p>
+        <p style="color:#888;margin:0 0 4px;">- Morse code in a BBS section</p>
+        <p style="color:#888;margin:0 0 4px;">- NATO phonetic alphabet in data attributes</p>
+        <p style="color:#888;margin:0 0 4px;">- ASCII decimal in CSS comments</p>
+        <p style="color:#ff0;margin:8px 0 0;">&gt; HINT: Each one decodes to a word or phrase.</p>
+        <p style="color:#ff0;margin:0;">&gt; HINT: None of them are the answer by themselves.</p>
+        <p style="color:#f0f;margin:8px 0 0;">&gt; HINT: The real answer combines fragments.</p>
+      </div>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        The Hall of Almost shows who's found decoys. Some of them are <em>very</em> close. Tier 7 is impressive. But close isn't a lobster dinner.
+      </p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="https://flip-ly.net" style="${btnStyle}">
+          &#x1F50D; Back to the Source Code
+        </a>
+      </div>
+    `),
+
+    'contest-reveal': () => wrapEmail(`
+      <h1 style="font-family:'Comic Sans MS',cursive;color:#FFB81C;font-size:24px;margin:0 0 16px;">
+        &#x1F3A9; OK But Seriously — This Website Finds Real Deals
+      </h1>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        ${esc(username)}, while you were decoding hex strings, some people were using flip-ly.net to actually find garage sales. Wild concept.
+      </p>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        Here's the deal (literally):
+      </p>
+      <ul style="color:#ccc;font-size:13px;line-height:2.2;">
+        <li>We have <strong style="color:#0FFF50;">480+ real listings</strong> from Craigslist &amp; Eventbrite</li>
+        <li>Our AI <strong style="color:#FFB81C;">scores every deal</strong> on a 1-10 scale</li>
+        <li>Free users get a <strong style="color:#ccc;">weekly email</strong> every Thursday</li>
+        <li>Pro users ($5/mo) get it <strong style="color:#FF10F0;">6 hours early</strong> + unlimited search</li>
+      </ul>
+      <p style="color:#888;font-size:13px;line-height:1.8;font-style:italic;">
+        We know. A website with Comic Sans and a lobster cursor that actually provides value. The cognitive dissonance is the brand.
+      </p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="https://flip-ly.net" style="${btnStyle}">
+          &#x1F50D; Search Real Deals Near ${esc(vars.city)}
+        </a>
+      </div>
+    `),
+
+    'contest-leaderboard': () => wrapEmail(`
+      <h1 style="font-family:'Comic Sans MS',cursive;color:#FF10F0;font-size:24px;margin:0 0 16px;">
+        &#x1F4CA; Hall of Almost — Leaderboard Update
+      </h1>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        ${esc(username)}, the Lobster Hunt is heating up.
+      </p>
+      <div style="border:2px solid #FF10F0;padding:16px;margin:16px 0;">
+        <p style="color:#FF10F0;font-size:12px;margin:0 0 12px;font-family:monospace;">LOBSTER HUNT STATUS REPORT</p>
+        <p style="color:#fff;font-size:14px;margin:0 0 4px;">&#x1F99E; Winner found: <strong style="color:#ff0;">NOT YET</strong></p>
+        <p style="color:#fff;font-size:14px;margin:0 0 4px;">&#x1F3C6; Highest decoy cracked: <strong>Tier 7</strong> (NATO Phonetic)</p>
+        <p style="color:#888;font-size:12px;margin:8px 0 0;">The real password has never been entered. Our boss doesn't know it. This is real.</p>
+      </div>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        Reminder: the prize for the real password is an actual lobster dinner delivered to your door. Not a metaphor. Real lobster. Real delivery.
+      </p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="https://flip-ly.net/lobster-hunt" style="${btnStyle}">
+          &#x1F99E; Check the Full Leaderboard
+        </a>
+      </div>
+    `),
+
+    'contest-final-hint': () => wrapEmail(`
+      <h1 style="font-family:'Comic Sans MS',cursive;color:#FFD700;font-size:24px;margin:0 0 16px;">
+        &#x1F513; One Last Clue
+      </h1>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        ${esc(username)}, the Lobster Council has authorized one final hint.
+      </p>
+      <div style="background:#0a0a0a;border:2px solid #FFD700;padding:20px;margin:16px 0;font-family:monospace;font-size:13px;">
+        <p style="color:#FFD700;margin:0 0 12px;font-weight:bold;">&gt; DECLASSIFIED INTEL:</p>
+        <p style="color:#ccc;margin:0 0 8px;">The real password is NOT any single decoded string.</p>
+        <p style="color:#ccc;margin:0 0 8px;">It combines fragments from <strong style="color:#0FFF50;">3 different encoding types</strong>.</p>
+        <p style="color:#ccc;margin:0 0 8px;">The HTML comments contain meta-hints about which fragments to use.</p>
+        <p style="color:#ff0;margin:12px 0 0;">The words "entry" and "split" are not decoration.</p>
+      </div>
+      <p style="color:#ccc;font-size:14px;line-height:1.8;">
+        This is the last email from the Lobster Council. The rest is up to you.
+      </p>
+      <p style="color:#888;font-size:12px;line-height:1.8;font-style:italic;">
+        P.S. — If you want to keep getting weekly deal alerts for ${esc(vars.city)} while you work on the puzzle, flip-ly.net does actually send those. For free. The chaos is the shell. The deals are real.
+      </p>
+      <div style="text-align:center;margin:24px 0;">
+        <a href="https://flip-ly.net" style="${btnStyle}">
+          &#x1F99E; Return to the Source
+        </a>
+      </div>
+    `),
   }
 
   const renderer = templates[templateKey]

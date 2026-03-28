@@ -393,6 +393,14 @@ export default function Home() {
     const saved = localStorage.getItem('fliply-muted')
     if (saved !== null) setMuted(saved === 'true')
   }, [])
+
+  // Check if user is logged in
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.user) setLoggedInUser(data.user) })
+      .catch(() => {})
+  }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [signupCity, setSignupCity] = useState('')
@@ -401,6 +409,7 @@ export default function Home() {
   const [signupError, setSignupError] = useState('')
   const [signingUp, setSigningUp] = useState(false)
   const [isLoginMode, setIsLoginMode] = useState(false)
+  const [loggedInUser, setLoggedInUser] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchCity, setSearchCity] = useState('')
   const [searching, setSearching] = useState(false)
@@ -789,13 +798,44 @@ export default function Home() {
             {muted ? '🔇 Muted' : '🔊 Chaos ON'}
           </button>
           <span className="text-xs blink hidden sm:inline" style={{ color: 'var(--mustard)' }}>● LIVE</span>
-          <button onClick={() => setShowSignup(true)} className="px-3 py-1.5 text-xs font-bold" style={{
-            border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
-            background: 'var(--win98-gray)', color: '#000',
-            fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
-          }}>
-            Sign In
-          </button>
+          {loggedInUser ? (
+            <div className="flex items-center gap-2">
+              {loggedInUser.is_premium && (
+                <span className="px-2 py-0.5 text-[10px] font-bold hidden sm:inline" style={{
+                  background: 'linear-gradient(90deg, #FFD700, #FF8C00)',
+                  color: '#000', fontFamily: 'Tahoma, sans-serif',
+                  border: '1px solid #FFD700',
+                }}>
+                  🦞 FIRST DIBS
+                </span>
+              )}
+              {!loggedInUser.is_premium && (
+                <span className="px-2 py-0.5 text-[10px] hidden sm:inline blink" style={{
+                  background: '#1a1a1a', color: 'var(--hotpink)',
+                  fontFamily: '"Comic Sans MS", cursive',
+                  border: '1px solid var(--hotpink)',
+                }}>
+                  ✨ FREELOADER ✨
+                </span>
+              )}
+              <a href="/dashboard" className="px-3 py-1.5 text-xs font-bold" style={{
+                border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
+                background: 'var(--win98-gray)', color: '#000',
+                fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
+                textDecoration: 'none',
+              }}>
+                {loggedInUser.email.split('@')[0]}
+              </a>
+            </div>
+          ) : (
+            <button onClick={() => setShowSignup(true)} className="px-3 py-1.5 text-xs font-bold" style={{
+              border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
+              background: 'var(--win98-gray)', color: '#000',
+              fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
+            }}>
+              Sign In
+            </button>
+          )}
         </div>
       </header>
 

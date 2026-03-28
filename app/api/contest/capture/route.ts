@@ -100,6 +100,30 @@ export async function POST(req: NextRequest) {
       decoy_tier: decoy_tier || 0,
     }, newUser?.id)
 
+    // Auto-enroll in contest drip sequence
+    if (newUser?.id) {
+      try {
+        const { data: seqs } = await supabase
+          .from('drip_sequences')
+          .select('id')
+          .eq('name', 'contest-to-convert')
+          .eq('is_active', true)
+          .limit(1)
+
+        if (seqs?.length) {
+          await supabase.from('sequence_enrollments').upsert({
+            user_id: newUser.id,
+            sequence_id: seqs[0].id,
+            current_step: 0,
+            status: 'active',
+            variant: Math.random() < 0.5 ? 'a' : 'b',
+          }, { onConflict: 'user_id,sequence_id' })
+        }
+      } catch (err) {
+        console.error('[CONTEST] Drip enrollment failed:', err)
+      }
+    }
+
     return NextResponse.json({
       success: true,
       is_new: true,
