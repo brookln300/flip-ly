@@ -1820,6 +1820,29 @@ export default function Home() {
                     </div>
                   )}
 
+                  {/* Share buttons */}
+                  <div className="flex gap-2 justify-center mb-4">
+                    <button onClick={() => {
+                      const text = `I found Tier ${contestResult.tier}/7 on flip-ly.net's Lobster Hunt 🦞 My prize: ${contestResult.prize}\n\n7 decoys. 1 real password. Can you crack it?\nhttps://flip-ly.net?utm_source=share&utm_medium=twitter&utm_campaign=contest`
+                      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank')
+                    }} style={{
+                      padding: '6px 14px', background: '#1DA1F2', color: '#fff', border: 'none',
+                      fontFamily: 'monospace', fontSize: '10px', cursor: 'pointer',
+                    }}>
+                      Share on X
+                    </button>
+                    <button onClick={() => {
+                      const text = `I found Tier ${contestResult.tier}/7 on flip-ly.net's Lobster Hunt 🦞 Prize: ${contestResult.prize}`
+                      navigator.clipboard?.writeText(text + '\nhttps://flip-ly.net')
+                      alert('Copied to clipboard!')
+                    }} style={{
+                      padding: '6px 14px', background: '#333', color: '#fff', border: '1px solid #555',
+                      fontFamily: 'monospace', fontSize: '10px', cursor: 'pointer',
+                    }}>
+                      📋 Copy
+                    </button>
+                  </div>
+
                   <div className="flex gap-2 justify-center">
                     <button onClick={() => { setContestResult(null); setAdminPass(''); setAdminLoading(false); setAdminMessages([]); setCaptureSent(false); setCaptureEmail(''); setCaptureMsg('') }}
                       style={{
