@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabase } from '../../../lib/supabase'
 import { trackEvent } from '../../../lib/analytics'
+import { sendTelegramAlert } from '../../../lib/telegram'
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -54,6 +55,13 @@ export async function POST(req: NextRequest) {
           }, userId)
 
           console.log(`[Stripe] Pro activated for user ${userId}`)
+
+          sendTelegramAlert([
+            `💰 <b>NEW PRO SUBSCRIBER!</b> 💰`,
+            `User: ${userId}`,
+            `Subscription: ${subscriptionId}`,
+            `$5/mo activated. The lobster is pleased.`,
+          ].join('\n'))
         }
         break
       }
@@ -76,6 +84,12 @@ export async function POST(req: NextRequest) {
           }, userId)
 
           console.log(`[Stripe] Pro cancelled for user ${userId}`)
+
+          sendTelegramAlert([
+            `😢 <b>Pro Cancelled</b>`,
+            `User: ${userId}`,
+            `The lobster is disappointed.`,
+          ].join('\n'))
         } else {
           // Fallback: find by customer ID
           const customerId = subscription.customer as string

@@ -215,6 +215,17 @@ export async function POST(req: NextRequest) {
         passphrase: normalizedPass,
       })
 
+      // Telegram alert for high-tier decoys (someone's getting close)
+      if (decoy.tier >= 6) {
+        sendTelegramAlert([
+          `🦞 <b>High-Tier Decoy Found!</b>`,
+          `Agent: ${agent_name}`,
+          `Tier: ${decoy.tier}/7 — ${decoy.title}`,
+          `IP: ${ip}`,
+          `Someone's getting close to the real one...`,
+        ].join('\n'))
+      }
+
       return NextResponse.json({
         result: 'decoy',
         ...decoy,

@@ -5,10 +5,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
 import { trackEvent } from '../../../lib/analytics'
 import { sendTelegramAlert } from '../../../lib/telegram'
-import { Resend } from 'resend'
+import { sendEmail } from '../../../lib/email/send'
 import { getUnsubscribeUrl } from '../../../lib/unsubscribe'
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 function addUtm(url: string, source: string, medium: string, campaign: string, content?: string): string {
   const u = new URL(url)
@@ -101,23 +99,29 @@ export async function GET(req: NextRequest) {
         const subject = subjectTemplate.replace('{count}', String(listings.length))
         const html = buildDigestEmail(user, listings, stats, isPro, user.email)
 
-        if (resend) {
-          await resend.emails.send({
-            from: process.env.RESEND_FROM_ADDRESS || 'Jeeves at flip-ly.net <jeeves@flip-ly.net>',
-            to: user.email.toLowerCase(),
-            subject,
-            html,
-          })
+        const { error: sendError } = await sendEmail({
+          to: user.email,
+          subject,
+          html,
+          tags: [
+            { name: 'sequence', value: 'digest' },
+            { name: 'tier', value: isPro ? 'pro' : 'free' },
+          ],
+        })
+
+        if (!sendError) {
           sent++
+        } else {
+          throw new Error(sendError)
         }
 
         await supabase.from('fliply_digest_log').insert({
           user_id: user.id,
           listing_count: listings.length,
-          status: resend ? 'sent' : 'skipped',
+          status: 'sent',
         })
 
-        results.push({ email: user.email, status: resend ? 'sent' : 'no-resend-key', tier: isPro ? 'pro' : 'free' })
+        results.push({ email: user.email, status: 'sent', tier: isPro ? 'pro' : 'free' })
       } catch (err: any) {
         failed++
         results.push({ email: user.email, status: 'failed', error: err.message })

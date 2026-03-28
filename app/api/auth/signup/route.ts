@@ -4,9 +4,8 @@ import { supabase } from '../../../lib/supabase'
 import { createToken } from '../../../lib/auth'
 import { trackEvent } from '../../../lib/analytics'
 import { discoverSourcesForZip } from '../../../lib/discovery/source-discovery'
-import { Resend } from 'resend'
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+import { sendEmail } from '../../../lib/email/send'
+import { sendTelegramAlert } from '../../../lib/telegram'
 
 // Random chaotic welcome subjects
 const SUBJECTS = [
@@ -147,27 +146,28 @@ export async function POST(req: NextRequest) {
       zip_code: zip_code || 'unknown',
     }, user.id)
 
-    // Send chaotic welcome email via Resend
-    if (resend) {
-      try {
-        const subject = SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)]
-        const html = getWelcomeEmail(email, city)
+    // Send chaotic welcome email via centralized sender
+    try {
+      const subject = SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)]
+      const html = getWelcomeEmail(email, city)
 
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_ADDRESS || 'Jeeves at flip-ly.net <jeeves@flip-ly.net>',
-          to: email.toLowerCase(),
-          subject,
-          html,
-        })
-        console.log(`[SIGNUP] Welcome email sent to ${email}`)
-        // GA4: welcome_email_sent
-        trackEvent('welcome_email_sent', { email_type: 'welcome' }, user.id)
-      } catch (emailErr) {
-        // Don't fail signup if email fails — just log it
-        console.error('[SIGNUP] Welcome email failed:', emailErr)
-      }
-    } else {
-      console.log(`[SIGNUP] No RESEND_API_KEY — skipped welcome email for ${email}`)
+      await sendEmail({
+        to: email,
+        subject,
+        html,
+        tags: [{ name: 'sequence', value: 'welcome' }],
+      })
+      console.log(`[SIGNUP] Welcome email sent to ${email}`)
+      trackEvent('welcome_email_sent', { email_type: 'welcome' }, user.id)
+
+      // Telegram: new signup alert
+      sendTelegramAlert([
+        `<b>New Signup</b> 🎉`,
+        `Email: ${email}`,
+        `Location: ${city || '?'}, ${state || '?'} ${zip_code || ''}`,
+      ].join('\n'))
+    } catch (emailErr) {
+      console.error('[SIGNUP] Welcome email failed:', emailErr)
     }
 
     // Create JWT

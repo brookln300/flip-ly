@@ -3,10 +3,8 @@ export const maxDuration = 30
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
-import { Resend } from 'resend'
 import { getDripEmailHtml } from '../../../lib/email/drip-templates'
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+import { sendEmail } from '../../../lib/email/send'
 
 /**
  * Drip processor — runs every 5 minutes via Vercel cron.
@@ -18,7 +16,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
  * 4. Log everything to email_sends
  */
 export async function GET(req: NextRequest) {
-  if (!resend) {
+  if (!process.env.RESEND_API_KEY) {
     return NextResponse.json({ error: 'No RESEND_API_KEY' })
   }
 
@@ -122,19 +120,24 @@ export async function GET(req: NextRequest) {
           variant: enrollment.variant,
         })
 
-        // Send via Resend
-        const { data: sendResult, error: sendError } = await resend.emails.send({
-          from: process.env.RESEND_FROM_ADDRESS || 'Jeeves at flip-ly.net <jeeves@flip-ly.net>',
-          to: user.email.toLowerCase(),
+        // Send via centralized sender (adds List-Unsubscribe headers)
+        const { id: messageId, error: sendError } = await sendEmail({
+          to: user.email,
           subject: subject.replace('{city}', user.city || 'DFW'),
           html,
+          tags: [
+            { name: 'sequence', value: 'drip' },
+            { name: 'step', value: String(step.step_order) },
+            { name: 'template', value: step.template_key },
+          ],
         })
 
         if (sendError) {
-          console.error(`[DRIP] Send failed for ${user.email}:`, sendError.message)
+          console.error(`[DRIP] Send failed for ${user.email}:`, sendError)
           errors++
           continue
         }
+        const sendResult = messageId ? { id: messageId } : null
 
         // Log the send
         await supabase.from('email_sends').insert({
