@@ -28,15 +28,15 @@ const LINKS = [
   {
     emoji: '🐦',
     title: 'FOLLOW ON X',
-    subtitle: '@fliplynet',
-    url: 'https://x.com/fliplynet?utm_source=linkinbio&utm_medium=social&utm_campaign=links&utm_content=twitter',
+    subtitle: '@fliply_dot_net',
+    url: 'https://x.com/fliply_dot_net?utm_source=linkinbio&utm_medium=social&utm_campaign=links&utm_content=twitter',
     color: 'var(--electric)',
   },
   {
     emoji: '🎵',
     title: 'TIKTOK',
-    subtitle: '@fliplynet',
-    url: 'https://tiktok.com/@fliplynet?utm_source=linkinbio&utm_medium=social&utm_campaign=links&utm_content=tiktok',
+    subtitle: '@ctrl_alt_flip',
+    url: 'https://tiktok.com/@ctrl_alt_flip?utm_source=linkinbio&utm_medium=social&utm_campaign=links&utm_content=tiktok',
     color: '#ff0050',
   },
   {
