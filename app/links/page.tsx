@@ -40,6 +40,13 @@ const LINKS = [
     color: '#ff0050',
   },
   {
+    emoji: '📸',
+    title: 'INSTAGRAM',
+    subtitle: '@ctrl_alt_flip',
+    url: 'https://instagram.com/ctrl_alt_flip?utm_source=linkinbio&utm_medium=social&utm_campaign=links&utm_content=instagram',
+    color: '#E1306C',
+  },
+  {
     emoji: '❓',
     title: 'WHY DOES THIS EXIST',
     subtitle: 'A genuine question we ask ourselves daily',

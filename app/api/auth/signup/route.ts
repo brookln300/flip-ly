@@ -95,7 +95,7 @@ function getWelcomeEmail(email: string, city: string | null) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, city, state, zip_code, include_events } = await req.json()
+    const { email, password, city, state, zip_code, include_events, utm_source, utm_medium, utm_campaign } = await req.json()
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
@@ -125,6 +125,11 @@ export async function POST(req: NextRequest) {
     // Hash password
     const password_hash = await bcrypt.hash(password, 12)
 
+    // Determine acquisition source from UTM or default to 'signup'
+    const acquisitionSource = utm_source
+      ? String(utm_source).substring(0, 50).replace(/[^a-zA-Z0-9_-]/g, '')
+      : 'signup'
+
     // Insert user
     const { data: user, error } = await supabase
       .from('fliply_users')
@@ -136,6 +141,7 @@ export async function POST(req: NextRequest) {
         zip_code: zip_code || null,
         include_events: include_events !== false, // default true
         user_status: 'trial',
+        acquisition_source: acquisitionSource,
       })
       .select('id, email')
       .single()
@@ -147,9 +153,11 @@ export async function POST(req: NextRequest) {
 
     // GA4: signup_complete
     trackEvent('signup_complete', {
-      signup_source: 'email',
+      signup_source: acquisitionSource,
       city: city || 'unknown',
       zip_code: zip_code || 'unknown',
+      utm_medium: utm_medium || '',
+      utm_campaign: utm_campaign || '',
     }, user.id)
 
     // Send chaotic welcome email via centralized sender
@@ -171,6 +179,7 @@ export async function POST(req: NextRequest) {
         `<b>New Signup</b> 🎉`,
         `Email: ${email}`,
         `Location: ${city || '?'}, ${state || '?'} ${zip_code || ''}`,
+        `Source: ${acquisitionSource}${utm_medium ? ` / ${utm_medium}` : ''}${utm_campaign ? ` / ${utm_campaign}` : ''}`,
       ].join('\n'))
     } catch (emailErr) {
       console.error('[SIGNUP] Welcome email failed:', emailErr)

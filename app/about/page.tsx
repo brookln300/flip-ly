@@ -75,6 +75,7 @@ export default function About() {
           <div className="flex gap-4 mt-2">
             <a href="https://x.com/fliply_dot_net" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime)', textDecoration: 'underline' }}>X (Twitter)</a>
             <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--hotpink)', textDecoration: 'underline' }}>TikTok</a>
+            <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#E1306C', textDecoration: 'underline' }}>Instagram</a>
           </div>
         </section>
       </div>

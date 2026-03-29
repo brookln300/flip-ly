@@ -387,6 +387,22 @@ export default function Home() {
   const [showError, setShowError] = useState(false)
   const [showSignup, setShowSignup] = useState(false)
   const [muted, setMuted] = useState(true) // default muted
+  const [utmSource, setUtmSource] = useState<string | null>(null)
+
+  // Capture UTM source on page load (persists in sessionStorage for signup)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const source = params.get('utm_source')
+    if (source) {
+      sessionStorage.setItem('fliply_utm_source', source)
+      sessionStorage.setItem('fliply_utm_medium', params.get('utm_medium') || '')
+      sessionStorage.setItem('fliply_utm_campaign', params.get('utm_campaign') || '')
+      setUtmSource(source)
+    } else {
+      const saved = sessionStorage.getItem('fliply_utm_source')
+      if (saved) setUtmSource(saved)
+    }
+  }, [])
 
   // Persist mute state
   useEffect(() => {
@@ -505,6 +521,9 @@ export default function Home() {
           password,
           city: signupCity,
           zip_code: signupZip,
+          utm_source: sessionStorage.getItem('fliply_utm_source') || undefined,
+          utm_medium: sessionStorage.getItem('fliply_utm_medium') || undefined,
+          utm_campaign: sessionStorage.getItem('fliply_utm_campaign') || undefined,
         }),
       })
       const data = await res.json()
@@ -1520,6 +1539,11 @@ export default function Home() {
         <p className="text-sm mb-2" style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--electric)' }}>
           🦞 Made by AetherCoreAI
         </p>
+        <div className="flex justify-center gap-4 mb-3">
+          <a href="https://x.com/fliply_dot_net" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime)', textDecoration: 'none', fontSize: '14px' }} title="X (Twitter)">𝕏</a>
+          <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--hotpink)', textDecoration: 'none', fontSize: '14px' }} title="TikTok">♪</a>
+          <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#E1306C', textDecoration: 'none', fontSize: '14px' }} title="Instagram">📸</a>
+        </div>
         <p className="text-xs mb-2" style={{ color: '#555' }}>
           <a href="/why" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Why does this exist?</a>
           {' | '}
