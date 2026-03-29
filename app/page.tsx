@@ -7,6 +7,7 @@ import BSOD from './components/BSOD'
 import Y2KCountdown from './components/Y2KCountdown'
 import MeltdownSequence from './components/MeltdownSequence'
 import SketchyPopups from './components/SketchyPopups'
+import StickyNote from './components/StickyNote'
 
 {/* build: v0.69.420 | compiled Thu Mar 27 2026 03:14:15
     chunk-hash: 4c4f4253544552 | entry: 6a65657665735f | split: 6b6e6565 */}
@@ -753,6 +754,7 @@ export default function Home() {
       <BSOD />
       <MeltdownSequence active={meltdownActive} onComplete={() => setMeltdownDone(true)} />
       <SketchyPopups />
+      <StickyNote />
       {showError && <Win98Error onClose={() => setShowError(false)} onSignup={() => { setShowError(false); setShowSignup(true) }} />}
 
       {/* ═══ SEARCH RATE LIMIT BSOD ═══ */}
