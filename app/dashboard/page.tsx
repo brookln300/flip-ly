@@ -212,6 +212,30 @@ export default function Dashboard() {
             <p><span style={{ color: '#666' }}>plan:</span> <span style={{ color: user.is_premium ? 'var(--mustard)' : '#888' }}>{user.is_premium ? 'PREMIUM 👑' : 'free (the good kind)'}</span></p>
             <p><span style={{ color: '#666' }}>joined:</span> <span style={{ color: '#888' }}>{new Date(user.created_at).toLocaleDateString()}</span></p>
           </div>
+          {!user.is_premium && (
+            <a href="/pro" className="inline-block mt-4 px-5 py-2.5 text-sm font-bold text-center" style={{
+              background: 'var(--neon-orange, #FF6600)',
+              color: '#fff',
+              border: '3px solid var(--lime, #0FFF50)',
+              fontFamily: '"Comic Sans MS", cursive',
+              cursor: 'pointer',
+              boxShadow: '0 0 12px var(--neon-orange, #FF6600)',
+              textDecoration: 'none',
+            }}>
+              🦞 UPGRADE TO PRO — $5/mo
+            </a>
+          )}
+          {user.is_premium && (
+            <a href="/pro" className="inline-block mt-4 px-4 py-2 text-xs" style={{
+              background: '#111',
+              color: '#888',
+              border: '1px solid #333',
+              fontFamily: 'monospace',
+              textDecoration: 'none',
+            }}>
+              Manage subscription
+            </a>
+          )}
         </div>
 
         {/* Weekly email status */}
@@ -289,7 +313,7 @@ export default function Dashboard() {
             </li>
             <li className="flex items-start gap-2">
               <span style={{ color: 'var(--mustard)' }}>→</span>
-              <span>Premium ($9/mo): ROI estimates, early access, and fewer lobster emojis</span>
+              <span>Premium ($5/mo): ROI estimates, early access, and fewer lobster emojis</span>
             </li>
           </ul>
         </div>
