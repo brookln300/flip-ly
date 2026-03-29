@@ -44,6 +44,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url })
   } catch (err: any) {
     console.error('Donation error:', err)
-    return NextResponse.json({ error: err.message || 'Donation failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Donation failed' }, { status: 500 })
   }
 }
