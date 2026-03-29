@@ -441,6 +441,7 @@ export default function Home() {
   const [adminLoading, setAdminLoading] = useState(false)
   const [adminMessages, setAdminMessages] = useState<string[]>([])
   const [contestResult, setContestResult] = useState<any>(null)
+  const [honeypotValue, setHoneypotValue] = useState('')  // Anti-bot honeypot
   const [captureEmail, setCaptureEmail] = useState('')
   const [captureSent, setCaptureSent] = useState(false)
   const [captureMsg, setCaptureMsg] = useState('')
@@ -570,15 +571,51 @@ export default function Home() {
     }
   }
 
+  // Generate a simple browser fingerprint (canvas + screen + timezone)
+  const getFingerprint = (): string => {
+    try {
+      const parts = [
+        navigator.userAgent,
+        screen.width + 'x' + screen.height,
+        screen.colorDepth,
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
+        navigator.language,
+        navigator.hardwareConcurrency || 0,
+        new Date().getTimezoneOffset(),
+      ]
+      return parts.join('|')
+    } catch {
+      return 'unknown'
+    }
+  }
+
+  // Solve a proof-of-work challenge (find nonce where SHA256(challenge+nonce) starts with zeros)
+  const solveProofOfWork = async (challenge: string, difficulty: number): Promise<string> => {
+    const prefix = '0'.repeat(difficulty)
+    const encoder = new TextEncoder()
+    for (let nonce = 0; nonce < 10000000; nonce++) {
+      const input = challenge + nonce.toString()
+      const data = encoder.encode(input)
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+      const hashArray = Array.from(new Uint8Array(hashBuffer))
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+      if (hashHex.startsWith(prefix)) {
+        return nonce.toString()
+      }
+    }
+    throw new Error('Could not solve challenge')
+  }
+
   const submitContest = async () => {
     if (!adminUser || !adminPass || adminLoading) return
     setAdminLoading(true)
     setAdminMessages([])
     setContestResult(null)
 
-    // Theatrical authentication sequence
     const msgs = [
       'Initializing secure handshake...',
+      'Requesting proof-of-work challenge...',
+      'Solving computational puzzle...',
       'Verifying biometric signature...',
       'Cross-referencing agent database...',
       'Decrypting clearance tokens...',
@@ -591,39 +628,60 @@ export default function Home() {
       '...',
       'Comparing passphrase against Lobster Council records...',
     ]
-    let i = 0
+
+    let msgIdx = 0
     const interval = setInterval(() => {
-      if (i < msgs.length) {
-        setAdminMessages(prev => [...prev, msgs[i]])
-        i++
-      } else {
-        clearInterval(interval)
-        // Now actually call the API
-        fetch('/api/contest/attempt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ agent_name: adminUser, passphrase: adminPass }),
-        })
-          .then(res => res.json())
-          .then(data => {
-            // Final terminal messages based on result
-            if (data.result === 'winner') {
-              setAdminMessages(prev => [...prev, '', '✅ PASSPHRASE ACCEPTED.', '🦞 🦞 🦞 THE LOBSTER BOWS. 🦞 🦞 🦞', '🏆 WINNER DETECTED — ALERTING LOBSTER COUNCIL...'])
-            } else if (data.result === 'decoy') {
-              setAdminMessages(prev => [...prev, '', `⚠ DECOY TIER ${data.tier} DETECTED`, `You found: "${data.title}"`, '...but that\'s not the real one.'])
-            } else if (data.result === 'rate_limited') {
-              setAdminMessages(prev => [...prev, '', '🐌 TOO MANY ATTEMPTS', 'The Lobster Council has rate-limited you.'])
-            } else {
-              setAdminMessages(prev => [...prev, '', '⛔ PASSPHRASE REJECTED.', 'The Lobster Council does not recognize this phrase.', '🦞 Try harder.'])
-            }
-            setTimeout(() => setContestResult(data), 2500)
-          })
-          .catch(() => {
-            setAdminMessages(prev => [...prev, '', '⛔ SYSTEM ERROR', 'The lobster broke something. Try again.'])
-            setAdminLoading(false)
-          })
+      if (msgIdx < msgs.length) {
+        setAdminMessages(prev => [...prev, msgs[msgIdx]])
+        msgIdx++
       }
     }, 350)
+
+    try {
+      // Fetch PoW challenge and solve it while theatrical messages play
+      const challengeRes = await fetch('/api/contest/challenge')
+      const challengeData = await challengeRes.json()
+      const nonce = await solveProofOfWork(challengeData.challenge, challengeData.difficulty)
+      const fingerprint = getFingerprint()
+
+      // Wait for theatrical messages to finish
+      const msgsRemaining = msgs.length - msgIdx
+      if (msgsRemaining > 0) {
+        await new Promise(resolve => setTimeout(resolve, msgsRemaining * 350 + 200))
+      }
+      clearInterval(interval)
+
+      const res = await fetch('/api/contest/attempt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agent_name: adminUser,
+          passphrase: adminPass,
+          pow_challenge: challengeData.challenge,
+          pow_nonce: nonce,
+          pow_signature: challengeData.signature,
+          pow_expires: challengeData.expires,
+          website_url: honeypotValue,
+          fingerprint,
+        }),
+      })
+      const data = await res.json()
+
+      if (data.result === 'winner') {
+        setAdminMessages(prev => [...prev, '', '✅ PASSPHRASE ACCEPTED.', '🦞 🦞 🦞 THE LOBSTER BOWS. 🦞 🦞 🦞', '🏆 WINNER DETECTED — ALERTING LOBSTER COUNCIL...'])
+      } else if (data.result === 'decoy') {
+        setAdminMessages(prev => [...prev, '', `⚠ DECOY TIER ${data.tier} DETECTED`, `You found: "${data.title}"`, "...but that's not the real one."])
+      } else if (data.result === 'rate_limited') {
+        setAdminMessages(prev => [...prev, '', '🐌 TOO MANY ATTEMPTS', 'The Lobster Council has rate-limited you.'])
+      } else {
+        setAdminMessages(prev => [...prev, '', '⛔ PASSPHRASE REJECTED.', 'The Lobster Council does not recognize this phrase.', '🦞 Try harder.'])
+      }
+      setTimeout(() => setContestResult(data), 2500)
+    } catch {
+      clearInterval(interval)
+      setAdminMessages(prev => [...prev, '', '⛔ SYSTEM ERROR', 'The lobster broke something. Try again.'])
+      setAdminLoading(false)
+    }
   }
 
   const submitCapture = async () => {
@@ -1540,7 +1598,7 @@ export default function Home() {
           🦞 Made by AetherCoreAI
         </p>
         <div className="flex justify-center gap-4 mb-3">
-          <a href="https://x.com/fliply_dot_net" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime)', textDecoration: 'none', fontSize: '14px' }} title="X (Twitter)">𝕏</a>
+          <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime)', textDecoration: 'none', fontSize: '14px' }} title="X (Twitter)">𝕏</a>
           <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--hotpink)', textDecoration: 'none', fontSize: '14px' }} title="TikTok">♪</a>
           <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#E1306C', textDecoration: 'none', fontSize: '14px' }} title="Instagram">📸</a>
         </div>
@@ -1584,7 +1642,7 @@ export default function Home() {
           <div
             onClick={(e) => { e.stopPropagation(); setShowAdmin(true) }}
             style={{
-              width: '8px', height: '8px',
+              width: '16px', height: '16px',
               background: 'transparent',
               cursor: 'default',
               position: 'absolute',
@@ -1594,7 +1652,7 @@ export default function Home() {
             }}
           >
             <div style={{
-              width: '1px', height: '1px',
+              width: '5px', height: '5px', borderRadius: '50%',
               background: '#0a0a0a',
               position: 'absolute',
               top: '50%', left: '50%',
@@ -1671,6 +1729,19 @@ export default function Home() {
                       }}
                       onFocus={e => e.target.style.borderColor = '#0f0'}
                       onBlur={e => e.target.style.borderColor = '#333'}
+                    />
+                  </div>
+                  {/* Honeypot field — hidden from humans, bots auto-fill it */}
+                  <div style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }} aria-hidden="true" tabIndex={-1}>
+                    <label htmlFor="website_url">Website URL</label>
+                    <input
+                      id="website_url"
+                      name="website_url"
+                      type="text"
+                      value={honeypotValue}
+                      onChange={e => setHoneypotValue(e.target.value)}
+                      tabIndex={-1}
+                      autoComplete="off"
                     />
                   </div>
                   <div style={{ marginBottom: '20px' }}>
