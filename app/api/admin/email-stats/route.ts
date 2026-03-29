@@ -122,6 +122,6 @@ export async function GET(req: Request) {
     })
   } catch (err: any) {
     console.error('Email stats error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: 'Email stats failed' }, { status: 500 })
   }
 }

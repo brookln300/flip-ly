@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+export const maxDuration = 120
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
@@ -12,9 +12,15 @@ import { enrichAllPending } from '../../../lib/ai/enrich-listing'
 import type { ScraperResult, CraigslistConfig, EventbriteConfig, AiExtractConfig } from '../../../lib/scrapers/types'
 
 export async function GET(req: NextRequest) {
+  // Auth: require CRON_SECRET for automated + manual triggers
+  const authHeader = req.headers.get('authorization')
+  const forceAll = new URL(req.url).searchParams.get('force') === 'true'
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const start = Date.now()
   const results: { source: string; result: ScraperResult }[] = []
-  const forceAll = new URL(req.url).searchParams.get('force') === 'true'
 
   try {
     // Fetch all active, approved sources that are due for scraping

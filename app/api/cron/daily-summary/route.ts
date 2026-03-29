@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
 import { sendTelegramAlert } from '../../../lib/telegram'
 
@@ -8,7 +8,11 @@ import { sendTelegramAlert } from '../../../lib/telegram'
  * Daily summary — fires once per day via Vercel cron.
  * Sends a Telegram digest of everything that happened in the last 24 hours.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authHeader = req.headers.get('authorization')
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
   try {

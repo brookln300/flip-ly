@@ -16,6 +16,11 @@ import { sendEmail } from '../../../lib/email/send'
  * 4. Log everything to email_sends
  */
 export async function GET(req: NextRequest) {
+  const authHeader = req.headers.get('authorization')
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   if (!process.env.RESEND_API_KEY) {
     return NextResponse.json({ error: 'No RESEND_API_KEY' })
   }

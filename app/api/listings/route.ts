@@ -111,13 +111,18 @@ export async function GET(req: NextRequest) {
     .range(offset, offset + effectiveLimit - 1)
 
   if (query) {
-    dbQuery = dbQuery.or(`title.ilike.%${query}%,description.ilike.%${query}%,ai_description.ilike.%${query}%`)
+    // Escape SQL wildcards in user input
+    const safeQuery = query.replace(/%/g, '\\%').replace(/_/g, '\\_')
+    dbQuery = dbQuery.or(`title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,ai_description.ilike.%${safeQuery}%`)
   }
   if (zip) {
-    dbQuery = dbQuery.eq('zip_code', zip)
+    // Validate zip format
+    const safeZip = zip.replace(/[^0-9]/g, '').substring(0, 5)
+    if (safeZip) dbQuery = dbQuery.eq('zip_code', safeZip)
   }
   if (city) {
-    dbQuery = dbQuery.ilike('city', `%${city}%`)
+    const safeCity = city.replace(/%/g, '\\%').replace(/_/g, '\\_')
+    dbQuery = dbQuery.ilike('city', `%${safeCity}%`)
   }
   if (hot) {
     dbQuery = dbQuery.eq('is_hot', true)
@@ -126,7 +131,8 @@ export async function GET(req: NextRequest) {
   const { data: listings, count, error } = await dbQuery
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Listings query error:', error.message)
+    return NextResponse.json({ error: 'Search failed. Try again.' }, { status: 500 })
   }
 
   // ── Format results — gate fields for free users ──

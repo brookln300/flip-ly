@@ -88,6 +88,7 @@ export async function GET(req: NextRequest) {
         : '0%',
     })
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    console.error('Contest stats error:', err)
+    return NextResponse.json({ error: 'Contest stats failed' }, { status: 500 })
   }
 }
