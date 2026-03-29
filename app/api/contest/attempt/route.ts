@@ -24,17 +24,12 @@ function sha256(input: string): string {
   return createHash('sha256').update(input.toLowerCase().trim()).digest('hex')
 }
 
-// Compute the real hash at build time from env (set only during deployment, never committed)
-// Fallback: the hardcoded hash above
+// Winner hash loaded from env var ONLY — never hardcoded
 function getWinnerHash(): string {
-  if (process.env.LOBSTER_HUNT_WINNER_HASH) {
-    return process.env.LOBSTER_HUNT_WINNER_HASH
+  if (!process.env.LOBSTER_HUNT_WINNER_HASH) {
+    throw new Error('LOBSTER_HUNT_WINNER_HASH environment variable is required')
   }
-  // The REAL hash — computed from the actual password
-  // Password construction requires: hex(entry) + ASCII(anim) + hex(footer-sector)
-  // jeeves_ + kneel + _sector7 → "jeeves_kneel_sector7"
-  // sha256("jeeves_kneel_sector7") =
-  return sha256('jeeves_kneel_sector7')
+  return process.env.LOBSTER_HUNT_WINNER_HASH
 }
 
 interface DecoyEntry {

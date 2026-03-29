@@ -1,7 +1,10 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fliply-dev-secret-change-me')
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required')
+}
+const secret = new TextEncoder().encode(process.env.JWT_SECRET)
 
 export async function createToken(userId: string, email: string) {
   return new SignJWT({ userId, email })
@@ -25,4 +28,21 @@ export async function getSession() {
   const token = cookieStore.get('flip-session')?.value
   if (!token) return null
   return verifyToken(token)
+}
+
+// Admin emails allowed to access /api/admin/* endpoints
+const ADMIN_EMAILS = ['aethercoreai@outlook.com', 'knation@gmail.com']
+
+export async function requireAdmin(req: Request): Promise<{ userId: string; email: string } | null> {
+  // Check for CRON_SECRET (for automated calls)
+  const authHeader = req.headers.get('authorization')
+  if (authHeader === `Bearer ${process.env.CRON_SECRET}` && process.env.CRON_SECRET) {
+    return { userId: 'system', email: 'cron@flip-ly.net' }
+  }
+
+  // Check session-based auth
+  const session = await getSession()
+  if (!session) return null
+  if (!ADMIN_EMAILS.includes(session.email)) return null
+  return session
 }

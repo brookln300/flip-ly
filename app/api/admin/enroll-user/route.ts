@@ -2,12 +2,16 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { requireAdmin } from '../../../lib/auth'
 
 /**
  * Manually enroll a user in the welcome drip sequence.
  * Usage: /api/admin/enroll-user?email=knation@gmail.com
  */
 export async function GET(req: NextRequest) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const email = new URL(req.url).searchParams.get('email')
   if (!email) return NextResponse.json({ error: 'email param required' })
 

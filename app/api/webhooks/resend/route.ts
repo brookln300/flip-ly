@@ -19,7 +19,7 @@ import { createHmac, timingSafeEqual } from 'crypto'
 const WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET
 
 function verifySignature(payload: string, headers: Headers): boolean {
-  if (!WEBHOOK_SECRET) return true // Skip verification if no secret configured (dev mode)
+  if (!WEBHOOK_SECRET) return false // Reject all webhooks if secret not configured
 
   const svixId = headers.get('svix-id')
   const svixTimestamp = headers.get('svix-timestamp')

@@ -1,14 +1,17 @@
 export const dynamic = 'force-dynamic'
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { requireAdmin } from '../../../lib/auth'
 
 /**
  * Contest analytics — how's the Lobster Hunt performing?
  *
  * GET /api/admin/contest-stats
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     // Total attempts
     const { count: totalAttempts } = await supabase

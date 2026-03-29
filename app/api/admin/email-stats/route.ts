@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { requireAdmin } from '../../../lib/auth'
 
 /**
  * Email stats dashboard endpoint.
@@ -12,6 +13,8 @@ import { supabase } from '../../../lib/supabase'
  * GET /api/admin/email-stats?sequence=welcome-to-convert
  */
 export async function GET(req: Request) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { searchParams } = new URL(req.url)
   const days = parseInt(searchParams.get('days') || '30')
   const sequence = searchParams.get('sequence') || null

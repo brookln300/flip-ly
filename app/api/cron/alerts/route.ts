@@ -7,7 +7,7 @@ import { sendTelegramAlert } from '../../../lib/telegram'
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    // Allow manual triggers without auth for testing
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
