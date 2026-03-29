@@ -65,3 +65,54 @@ export function isLikelyBot(userAgent: string): boolean {
 
   return false
 }
+
+/**
+ * Profanity filter for agent names.
+ * Replaces vulgar names with lobster-themed substitutes.
+ */
+const PROFANITY_PATTERNS = [
+  /f+u+c+k/i, /s+h+i+t/i, /a+s+s+h+o+l+e/i, /b+i+t+c+h/i,
+  /d+i+c+k/i, /c+u+n+t/i, /p+u+s+s+y/i, /c+o+c+k/i,
+  /n+i+g+g/i, /f+a+g/i, /r+e+t+a+r+d/i, /w+h+o+r+e/i,
+  /s+l+u+t/i, /d+a+m+n/i, /p+e+n+i+s/i, /v+a+g+i+n+a/i,
+  /t+i+t+s/i, /b+o+n+e+r/i, /j+i+z+z/i, /c+u+m/i,
+  /a+n+u+s/i, /b+a+l+l+s+a+c+k/i, /t+w+a+t/i,
+]
+
+const LOBSTER_REPLACEMENTS = [
+  'CluelessLobster',
+  'Agent_RedClaw',
+  'Barnacle_Brain',
+  'PlanktonForBrains',
+  'ShrimpOfShame',
+  'BottomFeeder42',
+  'Lobster_Reject',
+  'CrabbyMcFail',
+  'The_Mollusk',
+  'SeaCucumber99',
+  'KelpBrain',
+  'TidalPoolDweller',
+]
+
+export function sanitizeAgentName(name: string): string {
+  const trimmed = name.trim().substring(0, 50)
+  if (!trimmed) return 'Anonymous_Lobster'
+
+  for (const pattern of PROFANITY_PATTERNS) {
+    if (pattern.test(trimmed)) {
+      const idx = Math.abs(hashCode(trimmed)) % LOBSTER_REPLACEMENTS.length
+      return LOBSTER_REPLACEMENTS[idx]
+    }
+  }
+
+  return trimmed
+}
+
+function hashCode(s: string): number {
+  let hash = 0
+  for (let i = 0; i < s.length; i++) {
+    hash = ((hash << 5) - hash) + s.charCodeAt(i)
+    hash |= 0
+  }
+  return hash
+}
