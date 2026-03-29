@@ -70,45 +70,7 @@ function Win98Error({ onClose, onSignup }: { onClose: () => void; onSignup: () =
 
 {/* mascot sprite-sheet: row 76 col 33 80 84 76 69 82 | anim: 95 75 78 69 69 76 */}
 
-/* ── FLOATING MASCOT ────────────────────────────────────── */
-function Mascot() {
-  const [pos, setPos] = useState({ x: 80, y: 25 })
-  const [msg, setMsg] = useState('')
-  const msgs = [
-    'why are you here?', 'nice margins bro', 'stop clicking me',
-    'is this a real website?', 'i live here now', 'this is fine.',
-    'Comic Sans is valid.', '404: taste not found', 'hire me (im a robot)',
-    'FATAL_BARGAIN_DETECTED', 'have you tried Netscape?', '*dial-up noises*',
-    'ur mom uses Papyrus', 'this CSS is cursed', 'embrace the chaos',
-  ]
-
-  useEffect(() => {
-    const i = setInterval(() => {
-      setPos({ x: Math.random() * 80 + 5, y: Math.random() * 60 + 20 })
-      if (Math.random() > 0.7) { // less frequent bubbles
-        setMsg(msgs[Math.floor(Math.random() * msgs.length)])
-        setTimeout(() => setMsg(''), 4000)
-      }
-    }, 8000) // slower movement
-    return () => clearInterval(i)
-  }, [])
-
-  return (
-    <div className="fixed z-50 pointer-events-none select-none transition-all duration-[4000ms] ease-in-out hidden sm:block"
-      style={{ left: `${pos.x}%`, top: `${pos.y}%` }}>
-      <div className="relative">
-        <img src="/assets/robot-mascot.jpg" alt="G1TC# mascot" style={{
-          width: '80px', height: '80px', objectFit: 'cover', objectPosition: 'top left',
-          borderRadius: '50%',
-          filter: 'drop-shadow(0 0 8px var(--lime))',
-          animation: 'glitch1 3s infinite',
-          border: '2px solid var(--lime)',
-        }} />
-        {msg && <div className="mascot-bubble">{msg}</div>}
-      </div>
-    </div>
-  )
-}
+/* ── FLOATING MASCOT (removed — replaced by StickyNote lobster) ── */
 
 /* ── VALUE PROPS (interactive clickable chaos) ──────────── */
 function ValuePropsSection() {
@@ -748,7 +710,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative">
-      <Mascot />
+      {/* Mascot removed — replaced by StickyNote lobster */}
       <WinampPlayer />
       <RetroPopups />
       <BSOD />
