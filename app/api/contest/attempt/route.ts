@@ -178,6 +178,7 @@ export async function POST(req: NextRequest) {
 
     const powResult = verifyProofOfWork(pow_challenge, pow_nonce, pow_signature, pow_expires)
     if (!powResult.valid) {
+      console.error(`PoW verification failed: ${powResult.error} | challenge_age=${Date.now() - (pow_expires - 5 * 60 * 1000)}ms | expired=${Date.now() > pow_expires}`)
       return NextResponse.json({
         result: 'error',
         title: '⛔ SECURITY CHECK FAILED',
