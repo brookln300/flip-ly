@@ -23,6 +23,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 
+    // Reject users without a proper bcrypt hash (contest captures, OAuth-only)
+    if (!user.password_hash || !user.password_hash.startsWith('$2')) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    }
+
     // Verify password
     const valid = await bcrypt.compare(password, user.password_hash)
     if (!valid) {

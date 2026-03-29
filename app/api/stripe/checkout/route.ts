@@ -42,16 +42,40 @@ export async function POST(req: NextRequest) {
     let customerId = user.stripe_customer_id
 
     if (!customerId) {
-      const customer = await stripe.customers.create({
+      // Check for existing Stripe customer by email (prevents duplicates from double-click)
+      const existingCustomers = await stripe.customers.list({
         email: user.email,
-        metadata: { fliply_user_id: user.id },
+        limit: 1,
       })
-      customerId = customer.id
 
-      await supabase
+      if (existingCustomers.data.length > 0) {
+        customerId = existingCustomers.data[0].id
+      } else {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          metadata: { fliply_user_id: user.id },
+        })
+        customerId = customer.id
+      }
+
+      // Save customer ID — use conditional update to prevent race condition
+      const { error: updateError } = await supabase
         .from('fliply_users')
         .update({ stripe_customer_id: customerId })
         .eq('id', user.id)
+        .is('stripe_customer_id', null)
+
+      if (updateError) {
+        // Another request already set it — re-fetch
+        const { data: refreshed } = await supabase
+          .from('fliply_users')
+          .select('stripe_customer_id')
+          .eq('id', user.id)
+          .single()
+        if (refreshed?.stripe_customer_id) {
+          customerId = refreshed.stripe_customer_id
+        }
+      }
     }
 
     const checkoutSession = await stripe.checkout.sessions.create({
@@ -74,6 +98,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: checkoutSession.url })
   } catch (err: any) {
     console.error('Stripe checkout error:', err)
-    return NextResponse.json({ error: err.message || 'Checkout failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Checkout failed' }, { status: 500 })
   }
 }

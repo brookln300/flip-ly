@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomBytes } from 'crypto'
 import { supabase } from '../../../lib/supabase'
 import { trackEvent } from '../../../lib/analytics'
 
@@ -16,7 +17,8 @@ export async function POST(req: NextRequest) {
   try {
     const { email, agent_name, result_type, decoy_tier } = await req.json()
 
-    if (!email || !email.includes('@')) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
       return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
     }
 
@@ -80,7 +82,7 @@ export async function POST(req: NextRequest) {
       .from('fliply_users')
       .insert({
         email: normalizedEmail,
-        password_hash: '',  // No password — contest capture only
+        password_hash: randomBytes(32).toString('hex'),  // Random hash — no login via password
         acquisition_source: acquisitionSource,
         contest_agent_name: agent_name || null,
         contest_highest_tier: decoy_tier || null,
