@@ -4,6 +4,13 @@ import { trackEvent } from '../../../lib/analytics'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { getClientIp } from '../../../lib/get-ip'
 import { createHash } from 'crypto'
+import { verifyProofOfWork } from '../../../lib/proof-of-work'
+import {
+  isHoneypotTriggered,
+  getProgressiveDelay,
+  isLikelyBot,
+  hashFingerprint,
+} from '../../../lib/contest-security'
 
 /**
  * LOBSTER HUNT — Password Verification Engine
@@ -117,9 +124,19 @@ const DECOYS: DecoyEntry[] = [
   },
 ]
 
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { agent_name, passphrase } = await req.json()
+    const body = await req.json()
+    const {
+      agent_name, passphrase,
+      pow_challenge, pow_nonce, pow_signature, pow_expires,
+      website_url,    // Honeypot - should be empty
+      fingerprint,
+    } = body
 
     if (!agent_name || !passphrase) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 400 })
@@ -129,19 +146,76 @@ export async function POST(req: NextRequest) {
     const ua = req.headers.get('user-agent') || 'unknown'
     const normalizedPass = passphrase.toLowerCase().trim()
 
-    // Rate limit: max 20 attempts per IP per hour
+    // LAYER 1: BOT DETECTION
+    if (isLikelyBot(ua)) {
+      await sleep(5000)
+      return NextResponse.json({
+        result: 'denied',
+        title: '⛔ ACCESS DENIED',
+        message: 'The Lobster Council does not recognize this phrase. Try harder.',
+      })
+    }
+
+    // LAYER 2: HONEYPOT CHECK
+    if (isHoneypotTriggered(website_url)) {
+      trackEvent('contest_honeypot_caught', { ip, ua })
+      await sleep(3000)
+      return NextResponse.json({
+        result: 'denied',
+        title: '⛔ ACCESS DENIED',
+        message: 'The Lobster Council does not recognize this phrase. Try harder.',
+      })
+    }
+
+    // LAYER 3: PROOF OF WORK
+    if (!pow_challenge || !pow_nonce || !pow_signature || !pow_expires) {
+      return NextResponse.json({
+        error: 'Proof of work required. Get a challenge from /api/contest/challenge first.',
+      }, { status: 400 })
+    }
+
+    const powResult = verifyProofOfWork(pow_challenge, pow_nonce, pow_signature, pow_expires)
+    if (!powResult.valid) {
+      return NextResponse.json({
+        result: 'error',
+        title: '⛔ SECURITY CHECK FAILED',
+        message: powResult.error || 'Proof of work verification failed.',
+      }, { status: 400 })
+    }
+
+    // LAYER 4: RATE LIMITING (IP + Fingerprint)
+    const deviceHash = fingerprint ? hashFingerprint(fingerprint) : null
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-    const { count: recentAttempts } = await supabase
+
+    const { count: ipAttempts } = await supabase
       .from('fliply_contest_attempts')
       .select('*', { count: 'exact', head: true })
       .eq('ip_address', ip)
       .gte('attempted_at', oneHourAgo)
 
-    if ((recentAttempts || 0) >= 20) {
+    let fpAttempts = 0
+    if (deviceHash) {
+      const { count } = await supabase
+        .from('fliply_contest_attempts')
+        .select('*', { count: 'exact', head: true })
+        .eq('device_hash', deviceHash)
+        .gte('attempted_at', oneHourAgo)
+      fpAttempts = count || 0
+    }
+
+    const effectiveAttempts = Math.max(ipAttempts || 0, fpAttempts)
+
+    if (effectiveAttempts >= 20) {
       return NextResponse.json({
         result: 'rate_limited',
-        message: 'The Lobster Council has noticed excessive attempts from your location. Try again in an hour. Or upgrade your hacking skills.',
+        message: 'The Lobster Council has noticed excessive attempts from your location. Try again in an hour.',
       }, { status: 429 })
+    }
+
+    // LAYER 5: PROGRESSIVE DELAY
+    const delay = getProgressiveDelay(effectiveAttempts)
+    if (delay > 0) {
+      await sleep(delay)
     }
 
     // Check: is it the REAL password?
@@ -157,12 +231,14 @@ export async function POST(req: NextRequest) {
         decoy_tier: null,
         ip_address: ip,
         user_agent: ua,
+        device_hash: deviceHash,
       })
 
       await supabase.from('fliply_contest_winners').insert({
         agent_name,
         ip_address: ip,
         user_agent: ua,
+        device_hash: deviceHash,
       })
 
       // Telegram ALERT — someone won!
@@ -203,6 +279,7 @@ export async function POST(req: NextRequest) {
         decoy_tier: decoy.tier,
         ip_address: ip,
         user_agent: ua,
+        device_hash: deviceHash,
       })
 
       trackEvent('contest_decoy', {
