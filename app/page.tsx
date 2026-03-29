@@ -1598,7 +1598,7 @@ export default function Home() {
           🦞 Made by AetherCoreAI
         </p>
         <div className="flex justify-center gap-4 mb-3">
-          <a href="https://x.com/fliply_dot_net" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime)', textDecoration: 'none', fontSize: '14px' }} title="X (Twitter)">𝕏</a>
+          <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime)', textDecoration: 'none', fontSize: '14px' }} title="X (Twitter)">𝕏</a>
           <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--hotpink)', textDecoration: 'none', fontSize: '14px' }} title="TikTok">♪</a>
           <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#E1306C', textDecoration: 'none', fontSize: '14px' }} title="Instagram">📸</a>
         </div>
@@ -1642,7 +1642,7 @@ export default function Home() {
           <div
             onClick={(e) => { e.stopPropagation(); setShowAdmin(true) }}
             style={{
-              width: '8px', height: '8px',
+              width: '16px', height: '16px',
               background: 'transparent',
               cursor: 'default',
               position: 'absolute',
@@ -1652,7 +1652,7 @@ export default function Home() {
             }}
           >
             <div style={{
-              width: '1px', height: '1px',
+              width: '5px', height: '5px', borderRadius: '50%',
               background: '#0a0a0a',
               position: 'absolute',
               top: '50%', left: '50%',
