@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { requireAdmin } from '../../../lib/auth'
 
 /**
  * One-time migration: Update existing source configs for new scraper format.
@@ -11,6 +12,9 @@ import { supabase } from '../../../lib/supabase'
  * DELETE THIS ENDPOINT after running once.
  */
 export async function GET(req: NextRequest) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const results: string[] = []
 
   // Update all Craigslist sources: add area_id based on hostname

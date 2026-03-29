@@ -2,12 +2,15 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { requireAdmin } from '../../../lib/auth'
 
 /**
  * Add new AI-powered scraping sources for DFW market.
  * One-time setup endpoint. DELETE after running.
  */
 export async function GET(req: NextRequest) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const results: string[] = []
 
   // Find DFW market ID

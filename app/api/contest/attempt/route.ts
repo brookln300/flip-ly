@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
 import { trackEvent } from '../../../lib/analytics'
 import { sendTelegramAlert } from '../../../lib/telegram'
+import { getClientIp } from '../../../lib/get-ip'
 import { createHash } from 'crypto'
 
 /**
@@ -124,7 +125,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 400 })
     }
 
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    const ip = getClientIp(req)
     const ua = req.headers.get('user-agent') || 'unknown'
     const normalizedPass = passphrase.toLowerCase().trim()
 

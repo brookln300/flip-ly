@@ -2,11 +2,14 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { requireAdmin } from '../../../lib/auth'
 
 /**
  * Create drip engine tables. Safe to run multiple times (IF NOT EXISTS).
  */
 export async function GET(req: NextRequest) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const results: string[] = []
 
   // Table 1: drip_sequences — defines each campaign

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../lib/supabase'
 import { trackEvent } from '../../lib/analytics'
 import { getSession } from '../../lib/auth'
+import { getClientIp } from '../../lib/get-ip'
 
 const FREE_SEARCH_LIMIT = 10  // per day
 const FREE_RESULTS_CAP = 10   // max results per query for free users
@@ -52,7 +53,7 @@ export async function GET(req: NextRequest) {
       searchesUsed = count || 0
     } else {
       // Anonymous — rate limit by IP
-      const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+      const ip = getClientIp(req)
       const { count } = await supabase
         .from('fliply_search_log')
         .select('*', { count: 'exact', head: true })
@@ -93,7 +94,7 @@ export async function GET(req: NextRequest) {
     if (userId) {
       await supabase.from('fliply_search_log').insert({ user_id: userId, query })
     } else {
-      const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+      const ip = getClientIp(req)
       await supabase.from('fliply_search_log').insert({ anon_ip: ip, query })
     }
 

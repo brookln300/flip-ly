@@ -2,11 +2,14 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { requireAdmin } from '../../../lib/auth'
 
 /**
  * Fix source URLs to correct paths. One-time fix.
  */
 export async function GET(req: NextRequest) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const results: string[] = []
 
   // Fix EstateSales.net URL

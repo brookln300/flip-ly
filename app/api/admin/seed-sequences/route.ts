@@ -2,12 +2,15 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { requireAdmin } from '../../../lib/auth'
 
 /**
  * Seed the 7-email welcome-to-convert drip sequence.
  * Safe to re-run — uses upsert on unique name.
  */
 export async function GET(req: NextRequest) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const results: string[] = []
 
   // Create the welcome sequence

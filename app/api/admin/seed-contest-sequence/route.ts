@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
+import { requireAdmin } from '../../../lib/auth'
 
 /**
  * Seed the contest-acquired user drip sequence.
@@ -10,6 +11,8 @@ import { supabase } from '../../../lib/supabase'
  * Safe to re-run — uses upsert.
  */
 export async function GET(req: NextRequest) {
+  const admin = await requireAdmin(req)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const results: string[] = []
 
   const { data: seq, error: seqErr } = await supabase
