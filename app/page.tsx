@@ -1522,7 +1522,14 @@ export default function Home() {
         </p>
         <p className="text-xs mb-2" style={{ color: '#555' }}>
           <a href="/why" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Why does this exist?</a>
-          {' | '}Privacy Policy | Terms of Service (we don&apos;t have lawyers, be nice)
+          {' | '}
+          <a href="/about" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>About</a>
+          {' | '}
+          <a href="/privacy" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Privacy</a>
+          {' | '}
+          <a href="/terms" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Terms</a>
+          {' | '}
+          <a href="/contest-rules" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Contest Rules</a>
         </p>
         <p className="text-xs" style={{ color: '#333' }}>
           &copy; 1997&ndash;2026 FLIP-LY.NET | Best viewed in Netscape Navigator 4.0
