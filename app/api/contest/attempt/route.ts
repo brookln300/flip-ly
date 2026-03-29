@@ -10,6 +10,7 @@ import {
   getProgressiveDelay,
   isLikelyBot,
   hashFingerprint,
+  sanitizeAgentName,
 } from '../../../lib/contest-security'
 
 /**
@@ -142,6 +143,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing credentials' }, { status: 400 })
     }
 
+    const cleanName = sanitizeAgentName(agent_name)
     const ip = getClientIp(req)
     const ua = req.headers.get('user-agent') || 'unknown'
     const normalizedPass = passphrase.toLowerCase().trim()
@@ -225,7 +227,7 @@ export async function POST(req: NextRequest) {
     if (inputHash === winnerHash) {
       // 🦞 WE HAVE A WINNER 🦞
       await supabase.from('fliply_contest_attempts').insert({
-        agent_name,
+        agent_name: cleanName,
         passphrase: '[REDACTED-WINNER]',  // Don't store the winning password
         result: 'winner',
         decoy_tier: null,
@@ -235,7 +237,7 @@ export async function POST(req: NextRequest) {
       })
 
       await supabase.from('fliply_contest_winners').insert({
-        agent_name,
+        agent_name: cleanName,
         ip_address: ip,
         user_agent: ua,
         device_hash: deviceHash,
@@ -245,7 +247,7 @@ export async function POST(req: NextRequest) {
       await sendTelegramAlert([
         '🦞🦞🦞 <b>LOBSTER HUNT WINNER!</b> 🦞🦞🦞',
         '',
-        `<b>Agent:</b> ${agent_name}`,
+        `<b>Agent:</b> ${cleanName}`,
         `<b>Time:</b> ${new Date().toISOString()}`,
         `<b>IP:</b> ${ip}`,
         '',
@@ -255,7 +257,7 @@ export async function POST(req: NextRequest) {
       ].join('\n'))
 
       trackEvent('contest_winner', {
-        agent_name,
+        agent_name: cleanName,
       })
 
       return NextResponse.json({
@@ -273,7 +275,7 @@ export async function POST(req: NextRequest) {
 
     if (decoy) {
       await supabase.from('fliply_contest_attempts').insert({
-        agent_name,
+        agent_name: cleanName,
         passphrase: normalizedPass,
         result: 'decoy',
         decoy_tier: decoy.tier,
@@ -283,7 +285,7 @@ export async function POST(req: NextRequest) {
       })
 
       trackEvent('contest_decoy', {
-        agent_name,
+        agent_name: cleanName,
         tier: decoy.tier,
         passphrase: normalizedPass,
       })
@@ -292,7 +294,7 @@ export async function POST(req: NextRequest) {
       if (decoy.tier >= 6) {
         sendTelegramAlert([
           `🦞 <b>High-Tier Decoy Found!</b>`,
-          `Agent: ${agent_name}`,
+          `Agent: ${cleanName}`,
           `Tier: ${decoy.tier}/7 — ${decoy.title}`,
           `IP: ${ip}`,
           `Someone's getting close to the real one...`,
@@ -307,15 +309,16 @@ export async function POST(req: NextRequest) {
 
     // Not a recognized password at all
     await supabase.from('fliply_contest_attempts').insert({
-      agent_name,
+      agent_name: cleanName,
       passphrase: normalizedPass.substring(0, 100), // truncate for safety
       result: 'denied',
       ip_address: ip,
       user_agent: ua,
+      device_hash: deviceHash,
     })
 
     trackEvent('contest_denied', {
-      agent_name,
+      agent_name: cleanName,
     })
 
     return NextResponse.json({

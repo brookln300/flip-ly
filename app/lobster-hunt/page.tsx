@@ -25,6 +25,7 @@ function HallContent() {
 
   const stats = data?.stats || {}
   const leaderboard = data?.leaderboard || []
+  const wallOfShame = data?.wall_of_shame || []
 
   return (
     <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
@@ -113,13 +114,13 @@ function HallContent() {
           </div>
         </div>
 
-        {/* Leaderboard */}
+        {/* Leaderboard — Decoy Hunters */}
         <h2 style={{
           fontFamily: '"Comic Sans MS", cursive',
           fontSize: '20px', color: 'var(--neon-orange)',
           marginBottom: '16px',
         }}>
-          RECENT ATTEMPTS
+          DECOY HUNTERS
         </h2>
 
         {leaderboard.length === 0 ? (
@@ -131,7 +132,10 @@ function HallContent() {
               No decoys found yet. The clues are waiting.
             </p>
             <p style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '12px', color: '#333', marginTop: '8px' }}>
-              (someone has to be first)
+              7 decoy passwords hide in the source code.
+            </p>
+            <p style={{ fontFamily: 'monospace', fontSize: '10px', color: '#222', marginTop: '12px' }}>
+              Hint: inspect the HTML. Decode the hex. Read the morse. The lobster is watching.
             </p>
           </div>
         ) : (
@@ -164,13 +168,59 @@ function HallContent() {
           </div>
         )}
 
+        {/* Wall of Shame — denied attempts */}
+        {wallOfShame.length > 0 && (
+          <>
+            <h2 style={{
+              fontFamily: '"Comic Sans MS", cursive',
+              fontSize: '20px', color: 'var(--hotpink)',
+              marginBottom: '8px', marginTop: '32px',
+            }}>
+              WALL OF SHAME
+            </h2>
+            <p style={{
+              fontFamily: 'monospace', fontSize: '11px',
+              color: '#444', marginBottom: '16px',
+            }}>
+              Agents who guessed wrong. Their passphrases have been partially redacted to preserve what little dignity remains.
+            </p>
+            <div className="space-y-1">
+              {wallOfShame.map((entry: any, i: number) => (
+                <div key={i} style={{
+                  background: i % 2 === 0 ? '#0a0a0a' : '#111',
+                  borderLeft: '3px solid #2a0a0a',
+                  padding: '8px 12px',
+                  fontFamily: 'monospace',
+                }}>
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <span style={{ color: '#666', fontSize: '12px' }}>
+                        {entry.agent}
+                      </span>
+                      <span style={{ color: '#333', fontSize: '11px', marginLeft: '8px' }}>
+                        tried &quot;{entry.guess}&quot;
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#333' }}>
+                      {new Date(entry.when).toLocaleString()}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#553333', marginTop: '2px', fontStyle: 'italic' }}>
+                    {entry.reaction}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
         {/* Back link */}
-        <div className="text-center mt-8">
+        <div className="text-center mt-8 mb-8">
           <a href="/" style={{
             color: 'var(--lime)', fontFamily: '"Comic Sans MS", cursive',
             textDecoration: 'underline', fontSize: '14px',
           }}>
-            ← back to the chaos (and the clues)
+            &larr; back to the chaos (and the clues)
           </a>
         </div>
       </div>
