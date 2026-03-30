@@ -124,23 +124,49 @@ async function _discover(marketId: string) {
     .update({ sources_discovered_at: new Date().toISOString() })
     .eq('id', market.id)
 
-  // ── 5. Telegram alert ──
-  const pendingCount = research.sources.filter(s => s.confidence >= 0.5).length
+  // ── 5. Fetch pending sources for numbered list ──
+  const { data: pendingSources } = await supabase
+    .from('fliply_sources')
+    .select('id, name, ai_confidence, config')
+    .eq('market_id', market.id)
+    .eq('trust_level', 'pending')
+    .order('created_at', { ascending: true })
+
+  const pendingCount = pendingSources?.length || 0
+
+  // ── 6. Telegram alert with numbered pending sources ──
   const alertLines = [
     `<b>New Market Activated</b> 🗺️`,
     `Market: ${marketName}, ${market.state}`,
     `CL: ${market.cl_subdomain}.craigslist.org`,
     ``,
-    `<b>Sources Added:</b>`,
-    ...discoveredSources.map(s => `- ${s}`),
+    `<b>Auto-Approved:</b>`,
+    ...discoveredSources.filter(s => !s.includes('pending')).map(s => `✅ ${s}`),
   ]
+
+  if (pendingSources && pendingSources.length > 0) {
+    alertLines.push(``, `<b>Pending Approval:</b>`)
+    pendingSources.forEach((s, i) => {
+      const url = (s.config as any)?.url || ''
+      alertLines.push(`  ${i + 1}. ${s.name} (score: ${s.ai_confidence}/10)`)
+      if (url) alertLines.push(`     ${url}`)
+    })
+    alertLines.push(``, `Reply: <code>Approve 1,3,5</code> or <code>Reject 2,4</code>`)
+    alertLines.push(`Reply: <code>Approve all</code> or <code>Reject all</code>`)
+  }
 
   if (research.notes) {
     alertLines.push(``, `Notes: ${research.notes}`)
   }
 
-  if (pendingCount > 0) {
-    alertLines.push(``, `⚠️ ${pendingCount} source(s) pending your approval`)
+  // Store pending source IDs in order so webhook can map numbers → IDs
+  if (pendingSources && pendingSources.length > 0) {
+    await supabase
+      .from('fliply_markets')
+      .update({
+        pending_source_ids: pendingSources.map(s => s.id),
+      })
+      .eq('id', market.id)
   }
 
   await sendTelegramAlert(alertLines.join('\n'))
