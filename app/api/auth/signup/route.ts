@@ -171,22 +171,13 @@ export async function POST(req: NextRequest) {
     // Activate market + bump user count (fire-and-forget)
     supabase.rpc('increment_market_user_count', { p_market_id: market.id })
       .then(null, () => {
-        // Fallback if RPC doesn't exist — activate and count from users table
+        // Fallback if RPC doesn't exist — just activate the market
         supabase
           .from('fliply_markets')
-          .update({
-            is_active: true,
-            user_count: supabase.rpc ? undefined : 1, // can't increment without RPC
-          })
+          .update({ is_active: true })
           .eq('id', market.id)
           .then(null, (err: any) => console.error('[SIGNUP] Market update failed:', err))
       })
-    // Also ensure is_active = true (idempotent)
-    supabase
-      .from('fliply_markets')
-      .update({ is_active: true })
-      .eq('id', market.id)
-      .then(null, () => {})
 
     // GA4: signup_complete
     trackEvent('signup_complete', {
