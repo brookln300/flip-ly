@@ -39,6 +39,11 @@ export async function POST(req: NextRequest) {
       return await handlePending()
     }
 
+    // ── "Sources" — list ALL sources (approved + pending) ──
+    if (lower === 'sources') {
+      return await handleSources()
+    }
+
     // ── "Approve all" / "Reject all" ──
     if (lower === 'approve all' || lower === 'reject all') {
       const action = lower.startsWith('approve') ? 'approved' : 'rejected'
@@ -246,8 +251,57 @@ async function handlePending() {
       currentMarket = marketLabel
       lines.push(`<b>${marketLabel}:</b>`)
     }
-    lines.push(`  ${i + 1}. ${s.name} (score: ${s.ai_confidence}/10)`)
+    lines.push(`  ${i + 1}. ${s.name} (score: ${s.ai_confidence ?? 'auto'}/10)`)
   })
+
+  await sendTelegramAlert(lines.join('\n'))
+  return NextResponse.json({ ok: true })
+}
+
+/**
+ * Handle "Sources" — list ALL sources grouped by market (approved + pending + rejected)
+ */
+async function handleSources() {
+  const { data: sources } = await supabase
+    .from('fliply_sources')
+    .select('id, name, ai_confidence, trust_level, discovery_method, market_id, fliply_markets(display_name, state)')
+    .order('created_at', { ascending: true })
+    .limit(50)
+
+  if (!sources || sources.length === 0) {
+    await sendTelegramAlert('No sources found across any market.')
+    return NextResponse.json({ ok: true })
+  }
+
+  const statusIcon: Record<string, string> = {
+    approved: '✅',
+    pending: '⏳',
+    rejected: '❌',
+  }
+
+  const lines = [`<b>All Sources</b> (${sources.length} total)`, ``]
+
+  let currentMarket = ''
+  sources.forEach((s: any) => {
+    const market = s.fliply_markets
+    const marketLabel = market ? `${market.display_name || 'Unknown'}, ${market.state}` : 'Unknown'
+    if (marketLabel !== currentMarket) {
+      currentMarket = marketLabel
+      lines.push(`<b>${marketLabel}:</b>`)
+    }
+    const icon = statusIcon[s.trust_level] || '❓'
+    const method = s.discovery_method === 'auto_craigslist' ? 'CL'
+      : s.discovery_method === 'auto_eventbrite' ? 'EB'
+      : s.discovery_method === 'auto_claude' ? 'AI'
+      : s.discovery_method || '?'
+    lines.push(`  ${icon} ${s.name} [${method}]`)
+  })
+
+  const approved = sources.filter((s: any) => s.trust_level === 'approved').length
+  const pending = sources.filter((s: any) => s.trust_level === 'pending').length
+  const rejected = sources.filter((s: any) => s.trust_level === 'rejected').length
+
+  lines.push(``, `✅ ${approved} approved | ⏳ ${pending} pending | ❌ ${rejected} rejected`)
 
   await sendTelegramAlert(lines.join('\n'))
   return NextResponse.json({ ok: true })
