@@ -12,7 +12,7 @@ export async function GET() {
 
   const { data: user } = await supabase
     .from('fliply_users')
-    .select('id, email, city, state, zip_code, is_premium, created_at')
+    .select('id, email, city, state, market_id, is_premium, created_at')
     .eq('id', session.userId)
     .single()
 

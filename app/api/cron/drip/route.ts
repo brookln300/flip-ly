@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
         // Get user email + check unsubscribe
         const { data: users } = await supabase
           .from('fliply_users')
-          .select('id, email, city, state, zip_code, unsubscribed')
+          .select('id, email, city, state, market_id, unsubscribed')
           .eq('id', enrollment.user_id)
           .limit(1)
 

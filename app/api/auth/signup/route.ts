@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs'
 import { supabase } from '../../../lib/supabase'
 import { createToken } from '../../../lib/auth'
 import { trackEvent } from '../../../lib/analytics'
-import { discoverSourcesForZip } from '../../../lib/discovery/source-discovery'
+import { discoverSourcesForMarket } from '../../../lib/discovery/source-discovery'
 import { sendEmail } from '../../../lib/email/send'
 import { sendTelegramAlert } from '../../../lib/telegram'
 
@@ -18,9 +18,9 @@ const SUBJECTS = [
 ]
 
 // Random chaotic welcome email bodies
-function getWelcomeEmail(email: string, city: string | null) {
+function getWelcomeEmail(email: string, marketName: string | null) {
   const username = email.split('@')[0]
-  const location = city || 'somewhere in the universe'
+  const location = marketName || 'somewhere in the universe'
 
   const TEMPLATES = [
     // Template 1: Classic chaos
@@ -31,7 +31,7 @@ function getWelcomeEmail(email: string, city: string | null) {
         <p style="color:#ccc;font-size:14px;line-height:1.8;">You actually signed up. For a website that uses Comic Sans. On purpose. We respect that energy.</p>
         <p style="color:#FFB81C;font-size:14px;line-height:1.8;">Here's what happens next:</p>
         <ul style="color:#ccc;font-size:13px;line-height:2;">
-          <li>Every Monday at 8 AM CDT, you get a weekly email</li>
+          <li>Every week, you get a curated email digest</li>
           <li>It'll have garage sales near <strong style="color:#0FFF50">${location}</strong></li>
           <li>The deals are real. The website design is not.</li>
           <li>Unsubscribe anytime. We won't cry. (We will.)</li>
@@ -55,7 +55,7 @@ function getWelcomeEmail(email: string, city: string | null) {
       <div style="padding:20px;">
         <p style="color:#ccc;font-size:14px;line-height:1.8;">Dear ${username},</p>
         <p style="color:#ccc;font-size:14px;line-height:1.8;">This email confirms that you have been <strong style="color:#0FFF50">officially registered</strong> as a flip-ly.net chaos agent in the <strong style="color:#FFB81C">${location}</strong> district.</p>
-        <p style="color:#ccc;font-size:14px;line-height:1.8;">Your weekly briefing of questionable garage sale intelligence will arrive every Monday at 0800 hours CDT.</p>
+        <p style="color:#ccc;font-size:14px;line-height:1.8;">Your weekly briefing of questionable garage sale intelligence will arrive soon.</p>
         <p style="color:#FF10F0;font-size:14px;line-height:1.8;">This message will self-destruct in... actually it won't. Gmail keeps everything forever.</p>
         <div style="border-top:2px solid #333;margin-top:20px;padding-top:16px;">
           <p style="color:#888;font-size:11px;">Agent ID: #${Math.floor(Math.random() * 90000 + 10000)}</p>
@@ -78,7 +78,7 @@ function getWelcomeEmail(email: string, city: string | null) {
         <p style="margin:0 0 12px;"><strong>⚠️ ATTENTION: ${username}</strong></p>
         <p style="margin:0 0 12px;line-height:1.7;">Your account has been successfully created on flip-ly.net. Our technicians have verified your modem connection at 56,000 bps.</p>
         <p style="margin:0 0 12px;line-height:1.7;"><strong>Location registered:</strong> ${location}</p>
-        <p style="margin:0 0 12px;line-height:1.7;"><strong>Weekly digest:</strong> Monday 8:00 AM CDT</p>
+        <p style="margin:0 0 12px;line-height:1.7;"><strong>Weekly digest:</strong> Coming soon</p>
         <p style="margin:0 0 12px;line-height:1.7;"><strong>Chaos level:</strong> Unlimited</p>
         <hr style="border:1px solid #ddd;margin:16px 0;" />
         <p style="margin:0 0 8px;color:#666;font-size:11px;">If you did not create this account, someone else is now receiving garage sale deals in your area. Lucky them.</p>
@@ -95,10 +95,14 @@ function getWelcomeEmail(email: string, city: string | null) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, city, state, zip_code, include_events, utm_source, utm_medium, utm_campaign } = await req.json()
+    const { email, password, market_id, include_events, utm_source, utm_medium, utm_campaign } = await req.json()
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
+    }
+
+    if (!market_id) {
+      return NextResponse.json({ error: 'Please select your area' }, { status: 400 })
     }
 
     // Validate email format
@@ -109,6 +113,17 @@ export async function POST(req: NextRequest) {
 
     if (password.length < 6) {
       return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
+    }
+
+    // Validate market exists
+    const { data: market } = await supabase
+      .from('fliply_markets')
+      .select('id, name, display_name, state, cl_subdomain')
+      .eq('id', market_id)
+      .single()
+
+    if (!market) {
+      return NextResponse.json({ error: 'Invalid market selected' }, { status: 400 })
     }
 
     // Check if user exists
@@ -130,16 +145,18 @@ export async function POST(req: NextRequest) {
       ? String(utm_source).substring(0, 50).replace(/[^a-zA-Z0-9_-]/g, '')
       : 'signup'
 
-    // Insert user
+    const marketDisplayName = market.display_name || market.name
+
+    // Insert user — store city/state from market for email personalization
     const { data: user, error } = await supabase
       .from('fliply_users')
       .insert({
         email: email.toLowerCase(),
         password_hash,
-        city: city || null,
-        state: state || null,
-        zip_code: zip_code || null,
-        include_events: include_events !== false, // default true
+        market_id: market.id,
+        city: marketDisplayName,
+        state: market.state,
+        include_events: include_events !== false,
         user_status: 'trial',
         acquisition_source: acquisitionSource,
       })
@@ -151,19 +168,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Signup failed' }, { status: 500 })
     }
 
+    // Activate market + bump user count (fire-and-forget)
+    supabase.rpc('increment_market_user_count', { p_market_id: market.id })
+      .then(null, () => {
+        // Fallback if RPC doesn't exist — activate and count from users table
+        supabase
+          .from('fliply_markets')
+          .update({
+            is_active: true,
+            user_count: supabase.rpc ? undefined : 1, // can't increment without RPC
+          })
+          .eq('id', market.id)
+          .then(null, (err: any) => console.error('[SIGNUP] Market update failed:', err))
+      })
+    // Also ensure is_active = true (idempotent)
+    supabase
+      .from('fliply_markets')
+      .update({ is_active: true })
+      .eq('id', market.id)
+      .then(null, () => {})
+
     // GA4: signup_complete
     trackEvent('signup_complete', {
       signup_source: acquisitionSource,
-      city: city || 'unknown',
-      zip_code: zip_code || 'unknown',
+      market: market.cl_subdomain,
+      market_name: marketDisplayName,
+      state: market.state,
       utm_medium: utm_medium || '',
       utm_campaign: utm_campaign || '',
     }, user.id)
 
-    // Send chaotic welcome email via centralized sender
+    // Send chaotic welcome email
     try {
       const subject = SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)]
-      const html = getWelcomeEmail(email, city)
+      const html = getWelcomeEmail(email, marketDisplayName)
 
       await sendEmail({
         to: email,
@@ -178,7 +216,8 @@ export async function POST(req: NextRequest) {
       sendTelegramAlert([
         `<b>New Signup</b> 🎉`,
         `Email: ${email}`,
-        `Location: ${city || '?'}, ${state || '?'} ${zip_code || ''}`,
+        `Market: ${marketDisplayName}, ${market.state}`,
+        `CL Region: ${market.cl_subdomain}`,
         `Source: ${acquisitionSource}${utm_medium ? ` / ${utm_medium}` : ''}${utm_campaign ? ` / ${utm_campaign}` : ''}`,
       ].join('\n'))
     } catch (emailErr) {
@@ -188,7 +227,6 @@ export async function POST(req: NextRequest) {
     // Create JWT
     const token = await createToken(user.id, user.email)
 
-    // Set httpOnly cookie
     const response = NextResponse.json({
       success: true,
       user: { id: user.id, email: user.email },
@@ -198,16 +236,14 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 7 * 24 * 60 * 60,
       path: '/',
     })
 
-    console.log(`[SIGNUP] New user: ${email} from ${city || 'unknown'} (${zip_code || 'no zip'})`)
+    console.log(`[SIGNUP] New user: ${email} → market: ${marketDisplayName} (${market.cl_subdomain})`)
 
-    // Auto-discover sources for this user's area (fire-and-forget)
-    if (zip_code) {
-      discoverSourcesForZip(zip_code, include_events !== false)
-    }
+    // Discover sources for this market if it's newly activated (fire-and-forget)
+    discoverSourcesForMarket(market.id)
 
     // Enroll in welcome drip sequence (fire-and-forget)
     enrollInWelcomeSequence(user.id).catch(err =>
@@ -226,7 +262,6 @@ export async function POST(req: NextRequest) {
  * Randomly assigns A/B variant for subject line testing.
  */
 async function enrollInWelcomeSequence(userId: string) {
-  // Find the active welcome sequence
   const { data: seqs } = await supabase
     .from('drip_sequences')
     .select('id')

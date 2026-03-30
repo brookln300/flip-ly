@@ -46,10 +46,10 @@ export async function GET(req: NextRequest) {
   const tier = searchParams.get('tier') as 'pro' | 'free' | null
 
   try {
-    // Fetch users based on tier
+    // Fetch users based on tier — now includes market_id
     let userQuery = supabase
       .from('fliply_users')
-      .select('id, email, city, state, zip_code, is_premium')
+      .select('id, email, city, state, market_id, is_premium')
       .or('unsubscribed.is.null,unsubscribed.eq.false')  // Skip unsubscribed users
 
     if (tier === 'pro') {
@@ -64,32 +64,42 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: `No ${tier || 'any'} users to send to`, error: userError?.message })
     }
 
-    // Fetch this week's hottest listings
+    // Group users by market_id so we fetch listings once per market
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    const { data: hotListings } = await supabase
-      .from('fliply_listings')
-      .select('*')
-      .gte('scraped_at', weekAgo)
-      .not('enriched_at', 'is', null)
-      .order('deal_score', { ascending: false, nullsFirst: false })
-      .limit(15)
+    const marketIds = [...new Set(users.map(u => u.market_id).filter(Boolean))]
+    const listingsByMarket: Record<string, any[]> = {}
+    const statsByMarket: Record<string, { total_new: number; hot_deals: number; top_score: number }> = {}
 
-    const { count: totalNew } = await supabase
-      .from('fliply_listings')
-      .select('*', { count: 'exact', head: true })
-      .gte('scraped_at', weekAgo)
+    for (const mId of marketIds) {
+      const { data: hotListings } = await supabase
+        .from('fliply_listings')
+        .select('*')
+        .eq('market_id', mId)
+        .gte('scraped_at', weekAgo)
+        .not('enriched_at', 'is', null)
+        .order('deal_score', { ascending: false, nullsFirst: false })
+        .limit(15)
 
-    const { count: hotCount } = await supabase
-      .from('fliply_listings')
-      .select('*', { count: 'exact', head: true })
-      .gte('scraped_at', weekAgo)
-      .eq('is_hot', true)
+      const { count: totalNew } = await supabase
+        .from('fliply_listings')
+        .select('*', { count: 'exact', head: true })
+        .eq('market_id', mId)
+        .gte('scraped_at', weekAgo)
 
-    const listings = hotListings || []
-    const stats = {
-      total_new: totalNew || 0,
-      hot_deals: hotCount || 0,
-      top_score: listings[0]?.deal_score || 0,
+      const { count: hotCount } = await supabase
+        .from('fliply_listings')
+        .select('*', { count: 'exact', head: true })
+        .eq('market_id', mId)
+        .gte('scraped_at', weekAgo)
+        .eq('is_hot', true)
+
+      const listings = hotListings || []
+      listingsByMarket[mId] = listings
+      statsByMarket[mId] = {
+        total_new: totalNew || 0,
+        hot_deals: hotCount || 0,
+        top_score: listings[0]?.deal_score || 0,
+      }
     }
 
     let sent = 0
@@ -97,6 +107,14 @@ export async function GET(req: NextRequest) {
     const results: any[] = []
 
     for (const user of users) {
+      const listings = user.market_id ? (listingsByMarket[user.market_id] || []) : []
+      const stats = user.market_id ? (statsByMarket[user.market_id] || { total_new: 0, hot_deals: 0, top_score: 0 }) : { total_new: 0, hot_deals: 0, top_score: 0 }
+
+      if (listings.length === 0) {
+        results.push({ email: user.email, status: 'skipped', reason: 'no_listings' })
+        continue
+      }
+
       try {
         const isPro = user.is_premium
         const subjectPool = isPro ? SUBJECTS_PRO : SUBJECTS_FREE
@@ -140,20 +158,21 @@ export async function GET(req: NextRequest) {
     }
 
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
+    const totalListings = Object.values(listingsByMarket).reduce((sum, l) => sum + l.length, 0)
+    const skipped = results.filter(r => r.status === 'skipped').length
 
     await sendTelegramAlert([
       `<b>Weekly Digest — ${tier || 'all'} tier</b> (${elapsed}s)`,
-      `Users: ${users.length}`,
-      `Sent: ${sent} | Failed: ${failed}`,
-      `Listings featured: ${listings.length}`,
-      `This week: ${stats.total_new} new, ${stats.hot_deals} hot deals`,
+      `Users: ${users.length} | Markets: ${marketIds.length}`,
+      `Sent: ${sent} | Failed: ${failed} | Skipped (no listings): ${skipped}`,
+      `Total listings across markets: ${totalListings}`,
     ].join('\n'))
 
     trackEvent('digest_sent', {
       users_count: users.length,
       sent_count: sent,
       failed_count: failed,
-      listings_featured: listings.length,
+      markets_count: marketIds.length,
       tier: tier || 'all',
     })
 
@@ -161,10 +180,9 @@ export async function GET(req: NextRequest) {
       success: true,
       elapsed_seconds: parseFloat(elapsed),
       users_processed: users.length,
-      sent, failed,
-      listings_featured: listings.length,
+      sent, failed, skipped,
+      markets_served: marketIds.length,
       tier: tier || 'all',
-      stats,
       results,
     })
   } catch (err: any) {

@@ -12,8 +12,7 @@ const FREE_RESULTS_CAP = 10   // max results per query for free users
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const query = searchParams.get('q') || ''
-  const zip = searchParams.get('zip') || ''
-  const city = searchParams.get('city') || ''
+  const marketSlug = searchParams.get('market') || ''
   const hot = searchParams.get('hot') === 'true'
   const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
   const offset = parseInt(searchParams.get('offset') || '0')
@@ -116,14 +115,16 @@ export async function GET(req: NextRequest) {
     const safeQuery = query.replace(/%/g, '\\%').replace(/_/g, '\\_')
     dbQuery = dbQuery.or(`title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,ai_description.ilike.%${safeQuery}%`)
   }
-  if (zip) {
-    // Validate zip format
-    const safeZip = zip.replace(/[^0-9]/g, '').substring(0, 5)
-    if (safeZip) dbQuery = dbQuery.eq('zip_code', safeZip)
-  }
-  if (city) {
-    const safeCity = city.replace(/%/g, '\\%').replace(/_/g, '\\_')
-    dbQuery = dbQuery.ilike('city', `%${safeCity}%`)
+  if (marketSlug) {
+    // Look up market by slug, then filter listings by market_id
+    const { data: market } = await supabase
+      .from('fliply_markets')
+      .select('id')
+      .eq('slug', marketSlug)
+      .single()
+    if (market) {
+      dbQuery = dbQuery.eq('market_id', market.id)
+    }
   }
   if (hot) {
     dbQuery = dbQuery.eq('is_hot', true)
@@ -187,8 +188,7 @@ export async function GET(req: NextRequest) {
     query: query || 'browse',
     result_count: results.length,
     total_available: count || 0,
-    filter_zip: zip || 'none',
-    filter_city: city || 'none',
+    filter_market: marketSlug || 'all',
     filter_hot: hot,
     user_type: isPremium ? 'pro' : userId ? 'free' : 'anonymous',
   }, userId || undefined)

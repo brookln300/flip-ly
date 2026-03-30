@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
 
         const { data: user } = await supabase
           .from('fliply_users')
-          .select('id, email, password_hash, city, state, zip_code, is_premium')
+          .select('id, email, password_hash, city, state, market_id, is_premium')
           .eq('email', credentials.email.toLowerCase())
           .single()
 
@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
           name: user.email.split('@')[0],
           city: user.city,
           state: user.state,
-          zip_code: user.zip_code,
+          market_id: user.market_id,
           is_premium: user.is_premium,
         }
       },

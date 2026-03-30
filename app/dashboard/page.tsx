@@ -207,8 +207,7 @@ export default function Dashboard() {
           </h3>
           <div className="space-y-2 text-sm" style={{ fontFamily: 'monospace' }}>
             <p><span style={{ color: '#666' }}>email:</span> <span style={{ color: 'var(--lime)' }}>{user.email}</span></p>
-            <p><span style={{ color: '#666' }}>city:</span> <span style={{ color: '#ccc' }}>{user.city || 'not set'}</span></p>
-            <p><span style={{ color: '#666' }}>zip:</span> <span style={{ color: '#ccc' }}>{user.zip_code || 'not set'}</span></p>
+            <p><span style={{ color: '#666' }}>area:</span> <span style={{ color: '#ccc' }}>{user.city || 'not set'}{user.state ? `, ${user.state}` : ''}</span></p>
             <p><span style={{ color: '#666' }}>plan:</span> <span style={{ color: user.is_premium ? 'var(--mustard)' : '#888' }}>{user.is_premium ? 'PREMIUM 👑' : 'free (the good kind)'}</span></p>
             <p><span style={{ color: '#666' }}>joined:</span> <span style={{ color: '#888' }}>{new Date(user.created_at).toLocaleDateString()}</span></p>
           </div>

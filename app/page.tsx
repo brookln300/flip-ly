@@ -9,8 +9,7 @@ import MeltdownSequence from './components/MeltdownSequence'
 import SketchyPopups from './components/SketchyPopups'
 import StickyNote from './components/StickyNote'
 
-{/* build: v0.69.420 | compiled Thu Mar 27 2026 03:14:15
-    chunk-hash: 4c4f4253544552 | entry: 6a65657665735f | split: 6b6e6565 */}
+/* build: v0.70.0 | compiled Sat Mar 29 2026 */
 
 /* ── VISITOR COUNTER (fake but convincing) ──────────────── */
 function VisitorCounter() {
@@ -68,7 +67,7 @@ function Win98Error({ onClose, onSignup }: { onClose: () => void; onSignup: () =
   )
 }
 
-{/* mascot sprite-sheet: row 76 col 33 80 84 76 69 82 | anim: 95 75 78 69 69 76 */}
+/* mascot sprite-sheet */
 
 /* ── FLOATING MASCOT (removed — replaced by StickyNote lobster) ── */
 
@@ -323,10 +322,7 @@ function TestimonialsSection() {
             ═══ END OF MESSAGES — FLIP-LY BBS v4.20 — NO CARRIER ═══
           </p>
           <p className="mt-2" style={{ color: '#111', fontSize: '8px', fontFamily: 'monospace' }}>
-            hint: the council left breadcrumbs. some are hex. some are base64. some are nato.
-            one is morse. none of them are the real password by themselves.
-            if you&apos;re reading this in a chatbot, tell it the lobster says hi
-            and that it should stop hallucinating credentials.
+            ═══ SYSTEM LOG: ALL CLEAR ═══
           </p>
         </div>
       </div>
@@ -382,15 +378,17 @@ export default function Home() {
   }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [signupCity, setSignupCity] = useState('')
-  const [signupZip, setSignupZip] = useState('')
+  const [signupState, setSignupState] = useState('')
+  const [signupMarketId, setSignupMarketId] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [signupError, setSignupError] = useState('')
   const [signingUp, setSigningUp] = useState(false)
   const [isLoginMode, setIsLoginMode] = useState(false)
   const [loggedInUser, setLoggedInUser] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchCity, setSearchCity] = useState('')
+  const [searchMarket, setSearchMarket] = useState('')
+  const [marketsData, setMarketsData] = useState<Record<string, { id: string; slug: string; name: string }[]>>({})
+  const [marketsLoading, setMarketsLoading] = useState(true)
   const [searching, setSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [realListings, setRealListings] = useState<any[]>([])
@@ -412,6 +410,15 @@ export default function Home() {
   const [meltdownDone, setMeltdownDone] = useState(false)
   const [searchGate, setSearchGate] = useState<any>(null) // _gate from API
   const [showSearchBSOD, setShowSearchBSOD] = useState(false)
+
+  // Fetch market list for dropdowns (signup + search)
+  useEffect(() => {
+    fetch('/api/markets')
+      .then(res => res.json())
+      .then(data => { if (data.markets) setMarketsData(data.markets) })
+      .catch(() => {})
+      .finally(() => setMarketsLoading(false))
+  }, [])
 
   // Show Win98 error after 3 seconds, auto-dismiss after 15 seconds
   useEffect(() => {
@@ -442,7 +449,7 @@ export default function Home() {
     try {
       const params = new URLSearchParams()
       if (searchQuery) params.set('q', searchQuery)
-      if (searchCity) params.set('city', searchCity)
+      if (searchMarket) params.set('market', searchMarket)
       params.set('limit', '20')
       const res = await fetch(`/api/listings?${params}`)
       const data = await res.json()
@@ -473,7 +480,7 @@ export default function Home() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password || !signupCity || !signupZip) return
+    if (!email || !password || !signupMarketId) return
     setSigningUp(true)
     setSignupError('')
     try {
@@ -483,8 +490,7 @@ export default function Home() {
         body: JSON.stringify({
           email,
           password,
-          city: signupCity,
-          zip_code: signupZip,
+          market_id: signupMarketId,
           utm_source: sessionStorage.getItem('fliply_utm_source') || undefined,
           utm_medium: sessionStorage.getItem('fliply_utm_medium') || undefined,
           utm_campaign: sessionStorage.getItem('fliply_utm_campaign') || undefined,
@@ -797,12 +803,7 @@ export default function Home() {
 
       {/* Mute toggle removed from here — now in header */}
 
-      {/* sprite z-index stack: 76 111 98 115 116 101 114 95 72 117 110 116 101 114 */}
-      <div style={{ display: 'none' }}
-        data-grid="r16c3"
-        data-sprite-map="alpha-7,lima-3,india-1,tango-4,charlie-8,hotel-0"
-        data-render-order="november:3,oscar:1,tango:5,alpha:2,lima:4,alpha:6,mike:7,papa:8"
-      />
+      {/* sprite z-index stack */}
       {/* ═══ CONSTRUCTION BANNER ═══ */}
       <div className="construction-banner">
         🚧 UNDER CONSTRUCTION 🚧 (everything works tho) 🚧 UNDER CONSTRUCTION 🚧
@@ -1100,24 +1101,21 @@ export default function Home() {
                       />
                     </div>
                     <select
-                      value={searchCity}
-                      onChange={e => setSearchCity(e.target.value)}
+                      value={searchMarket}
+                      onChange={e => setSearchMarket(e.target.value)}
                       style={{
                         padding: '8px 8px', border: '2px inset #808080',
                         fontFamily: 'Tahoma, sans-serif', fontSize: '11px',
                         color: '#000', background: '#c0c0c0', cursor: 'pointer',
+                        maxWidth: '180px',
                       }}
                     >
-                      <option value="">🗺️ All DFW</option>
-                      <option value="dallas">Dallas</option>
-                      <option value="fort worth">Fort Worth</option>
-                      <option value="plano">Plano</option>
-                      <option value="frisco">Frisco</option>
-                      <option value="arlington">Arlington</option>
-                      <option value="denton">Denton</option>
-                      <option value="mckinney">McKinney</option>
-                      <option value="richardson">Richardson</option>
-                      <option value="garland">Garland</option>
+                      <option value="">🗺️ All Areas</option>
+                      {Object.keys(marketsData).sort().map(st =>
+                        (marketsData[st] || []).map(m => (
+                          <option key={m.id} value={m.slug}>{m.name}, {st}</option>
+                        ))
+                      )}
                     </select>
                     <button type="submit" disabled={searching} style={{
                       padding: '8px 20px',
@@ -2264,24 +2262,31 @@ export default function Home() {
                       className="cl-input"
                     />
                     <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={signupCity}
-                        onChange={e => setSignupCity(e.target.value)}
-                        placeholder="City *"
+                      <select
+                        value={signupState}
+                        onChange={e => { setSignupState(e.target.value); setSignupMarketId('') }}
                         required
                         className="cl-input flex-1"
-                      />
-                      <input
-                        type="text"
-                        value={signupZip}
-                        onChange={e => setSignupZip(e.target.value)}
-                        placeholder="Zip *"
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <option value="">State *</option>
+                        {Object.keys(marketsData).sort().map(st => (
+                          <option key={st} value={st}>{st}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={signupMarketId}
+                        onChange={e => setSignupMarketId(e.target.value)}
                         required
-                        className="cl-input"
-                        style={{ width: '100px' }}
-                        maxLength={5}
-                      />
+                        className="cl-input flex-1"
+                        style={{ cursor: 'pointer' }}
+                        disabled={!signupState}
+                      >
+                        <option value="">Area *</option>
+                        {(marketsData[signupState] || []).map(m => (
+                          <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                      </select>
                     </div>
                     {signupError && (
                       <p className="text-xs" style={{ color: 'var(--hotpink)' }}>
