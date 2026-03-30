@@ -457,6 +457,11 @@ export default function Home() {
   const [honeypotValue, setHoneypotValue] = useState('')  // Anti-bot honeypot
   const [captureEmail, setCaptureEmail] = useState('')
   const [captureSent, setCaptureSent] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [feedbackMsg, setFeedbackMsg] = useState('')
+  const [feedbackCat, setFeedbackCat] = useState('general')
+  const [feedbackSending, setFeedbackSending] = useState(false)
+  const [feedbackSent, setFeedbackSent] = useState(false)
   const [captureMsg, setCaptureMsg] = useState('')
   const [meltdownActive, setMeltdownActive] = useState(false)
   const [meltdownDone, setMeltdownDone] = useState(false)
@@ -2658,6 +2663,126 @@ export default function Home() {
                 </>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ FEEDBACK WIDGET ═══ */}
+      <button onClick={() => { setShowFeedback(true); setFeedbackSent(false); setFeedbackMsg(''); setFeedbackCat('general') }}
+        className="fixed z-[50]"
+        style={{
+          bottom: '16px', left: '16px',
+          background: cleanMode ? '#1a1a1a' : 'var(--dark)',
+          border: cleanMode ? '1px solid #333' : '2px solid var(--lime)',
+          borderRadius: cleanMode ? '8px' : '0',
+          padding: '8px 14px', cursor: 'pointer',
+          fontFamily: cleanMode ? 'system-ui, sans-serif' : '"Comic Sans MS", cursive',
+          fontSize: '12px', color: cleanMode ? '#888' : 'var(--lime)',
+        }}>
+        💬 Feedback
+      </button>
+
+      {showFeedback && (
+        <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-4"
+          onClick={() => setShowFeedback(false)}
+          style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '100%', maxWidth: '420px',
+            background: cleanMode ? '#111' : 'var(--dark)',
+            border: cleanMode ? '1px solid #333' : '2px solid var(--lime)',
+            borderRadius: cleanMode ? '12px' : '0',
+            padding: '24px',
+          }}>
+            <div className="flex items-center justify-between mb-4">
+              <h4 style={{
+                fontFamily: cleanMode ? 'system-ui, sans-serif' : '"Comic Sans MS", cursive',
+                fontSize: '18px', fontWeight: 700,
+                color: cleanMode ? '#fff' : 'var(--lime)',
+              }}>
+                {feedbackSent ? 'Thanks!' : 'Send Feedback'}
+              </h4>
+              <button onClick={() => setShowFeedback(false)} style={{
+                background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px',
+              }}>✕</button>
+            </div>
+
+            {feedbackSent ? (
+              <div>
+                <p style={{ color: '#ccc', fontSize: '14px', fontFamily: 'system-ui, sans-serif', marginBottom: '8px' }}>
+                  Your feedback has been recorded. We read every submission.
+                </p>
+                <p style={{ color: 'var(--clean-accent)', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
+                  If we implement your idea, you get a free month of Pro.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                if (feedbackMsg.trim().length < 5) return
+                setFeedbackSending(true)
+                try {
+                  const res = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: feedbackMsg, category: feedbackCat }),
+                  })
+                  if (res.ok) setFeedbackSent(true)
+                } catch {}
+                setFeedbackSending(false)
+              }}>
+                <div className="mb-3">
+                  <select value={feedbackCat} onChange={e => setFeedbackCat(e.target.value)} style={{
+                    width: '100%', padding: '8px 12px',
+                    background: cleanMode ? '#1a1a1a' : '#111',
+                    border: cleanMode ? '1px solid #333' : '1px solid #444',
+                    borderRadius: cleanMode ? '6px' : '0',
+                    color: '#ccc', fontSize: '13px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                  }}>
+                    <option value="general">General</option>
+                    <option value="bug">Bug Report</option>
+                    <option value="feature">Feature Request</option>
+                    <option value="ux">Design / UX</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <textarea
+                    value={feedbackMsg}
+                    onChange={e => setFeedbackMsg(e.target.value)}
+                    placeholder="What could be better? We read every message."
+                    rows={4}
+                    maxLength={2000}
+                    required
+                    style={{
+                      width: '100%', padding: '12px',
+                      background: cleanMode ? '#1a1a1a' : '#111',
+                      border: cleanMode ? '1px solid #333' : '1px solid #444',
+                      borderRadius: cleanMode ? '6px' : '0',
+                      color: '#eee', fontSize: '14px', resize: 'vertical',
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      outline: 'none',
+                    }}
+                  />
+                  <div className="flex justify-between mt-1">
+                    <span style={{ fontSize: '11px', color: '#555' }}>{feedbackMsg.length}/2000</span>
+                    <span style={{ fontSize: '11px', color: 'var(--clean-accent)' }}>
+                      Implemented ideas = 1 free month of Pro
+                    </span>
+                  </div>
+                </div>
+                <button type="submit" disabled={feedbackSending || feedbackMsg.trim().length < 5} style={{
+                  width: '100%', padding: '12px',
+                  background: feedbackSending ? '#333' : 'var(--clean-accent)',
+                  color: feedbackSending ? '#888' : '#000',
+                  border: 'none', borderRadius: cleanMode ? '6px' : '0',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  fontWeight: 600, fontSize: '14px',
+                  cursor: feedbackSending ? 'wait' : 'pointer',
+                }}>
+                  {feedbackSending ? 'Sending...' : 'Send Feedback'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}
