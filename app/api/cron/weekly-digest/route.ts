@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
 
     // Group users by market_id so we fetch listings once per market
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    const marketIds = [...new Set(users.map(u => u.market_id).filter(Boolean))]
+    const marketIds = Array.from(new Set(users.map(u => u.market_id).filter(Boolean)))
     const listingsByMarket: Record<string, any[]> = {}
     const statsByMarket: Record<string, { total_new: number; hot_deals: number; top_score: number }> = {}
 
