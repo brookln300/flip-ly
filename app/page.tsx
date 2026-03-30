@@ -72,7 +72,7 @@ function Win98Error({ onClose, onSignup }: { onClose: () => void; onSignup: () =
 /* ── FLOATING MASCOT (removed — replaced by StickyNote lobster) ── */
 
 /* ── VALUE PROPS (interactive clickable chaos) ──────────── */
-function ValuePropsSection() {
+function ValuePropsSection({ cleanMode }: { cleanMode?: boolean }) {
   const [clicked, setClicked] = useState<Record<number, boolean>>({})
   const [emailNum] = useState(() => Math.floor(Math.random() * 9000) + 1000)
 
@@ -112,25 +112,34 @@ function ValuePropsSection() {
   return (
     <section className="px-4 py-16" style={{ background: 'var(--darker)' }}>
       <h3 className="text-center mb-12" style={{
-        fontFamily: 'Papyrus, fantasy', fontSize: '32px', color: 'var(--mustard)',
-        letterSpacing: '6px',
+        fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : 'Papyrus, fantasy',
+        fontSize: cleanMode ? '28px' : '32px',
+        color: cleanMode ? 'var(--lime)' : 'var(--mustard)',
+        letterSpacing: cleanMode ? '1px' : '6px',
+        fontWeight: cleanMode ? 700 : 400,
       }}>
-        REAL SIMPLE:
+        {cleanMode ? 'How It Works' : 'REAL SIMPLE:'}
       </h3>
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {cards.map((card, i) => (
-          <div key={i} className="card-wonky fall-in" onClick={() => setClicked(prev => ({ ...prev, [i]: !prev[i] }))} style={{
-            transform: `rotate(${card.rotate})`,
-            marginTop: card.mt || '0',
-            cursor: 'pointer',
+          <div key={i} className={cleanMode ? 'fall-in' : 'card-wonky fall-in'} onClick={() => !cleanMode && setClicked(prev => ({ ...prev, [i]: !prev[i] }))} style={{
+            transform: cleanMode ? 'none' : `rotate(${card.rotate})`,
+            marginTop: cleanMode ? '0' : (card.mt || '0'),
+            cursor: cleanMode ? 'default' : 'pointer',
+            ...(cleanMode ? { background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', padding: '24px' } : {}),
           }}>
             <div className="text-5xl mb-4">{card.emoji}</div>
             <h4 className="text-xl font-bold mb-3" style={{
-              fontFamily: '"Comic Sans MS", cursive', color: card.color,
+              fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : '"Comic Sans MS", cursive',
+              color: card.color,
             }}>
               {card.title}
             </h4>
-            {clicked[i] ? (
+            {cleanMode ? (
+              <p className="text-sm" style={{ color: '#ccc', lineHeight: 1.6 }}>
+                {card.truthPool[0].replace(/^(OK FINE HERE'S THE TRUTH:|FOR REAL:|ALRIGHT YOU CAUGHT US:|What's ROI\?.*?right\?|ROI = Return On Investment\..*?though\.|jk we just had.*?Venmo\.)\s*/i, '')}
+              </p>
+            ) : clicked[i] ? (
               <div>
                 <p className="text-xs mb-2" style={{ color: 'var(--neon-orange)', fontFamily: 'monospace' }}>
                   ⚠️ THE TRUTH:
@@ -151,7 +160,7 @@ function ValuePropsSection() {
 }
 
 /* ── HOW IT WORKS (chaotic honesty) ────────────────────── */
-function HowItWorksSection() {
+function HowItWorksSection({ cleanMode }: { cleanMode?: boolean }) {
   const [revealed, setRevealed] = useState<Record<number, boolean>>({})
 
   const steps = [
@@ -185,34 +194,41 @@ function HowItWorksSection() {
   return (
     <section className="px-4 py-16" style={{ background: '#000' }}>
       <h3 className="text-center mb-4" style={{
-        fontFamily: '"Comic Sans MS", cursive', fontSize: '28px', color: 'var(--electric)',
+        fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : '"Comic Sans MS", cursive',
+        fontSize: cleanMode ? '24px' : '28px',
+        color: 'var(--electric)',
+        fontWeight: cleanMode ? 700 : 400,
       }}>
-        HOW IT ACTUALLY WORKS
+        {cleanMode ? 'How It Works' : 'HOW IT ACTUALLY WORKS'}
       </h3>
-      <p className="text-center mb-12 text-xs" style={{ color: '#555' }}>
-        (click any step for the embarrassingly honest version)
-      </p>
+      {!cleanMode && (
+        <p className="text-center mb-12 text-xs" style={{ color: '#555' }}>
+          (click any step for the embarrassingly honest version)
+        </p>
+      )}
+      {cleanMode && <div className="mb-12" />}
       <div className="max-w-2xl mx-auto space-y-4">
         {steps.map((step, i) => (
-          <div key={step.n} onClick={() => setRevealed(prev => ({ ...prev, [i]: !prev[i] }))}
-            className="flex items-start gap-4 fall-in cursor-pointer" style={{
-              paddingLeft: `${i * 12}px`,
-              transform: `rotate(${(i % 2 === 0 ? -0.5 : 0.5)}deg)`,
+          <div key={step.n} onClick={() => !cleanMode && setRevealed(prev => ({ ...prev, [i]: !prev[i] }))}
+            className={`flex items-start gap-4 fall-in ${cleanMode ? '' : 'cursor-pointer'}`} style={{
+              paddingLeft: cleanMode ? '0' : `${i * 12}px`,
+              transform: cleanMode ? 'none' : `rotate(${(i % 2 === 0 ? -0.5 : 0.5)}deg)`,
               background: revealed[i] ? 'rgba(255,255,255,0.02)' : 'transparent',
               padding: `8px 8px 8px ${i * 12 + 8}px`,
               borderLeft: revealed[i] ? `3px solid ${step.c}` : '3px solid transparent',
               transition: 'all 0.2s',
             }}>
             <span className="text-2xl font-bold shrink-0" style={{
-              fontFamily: '"Comic Sans MS", cursive', color: step.c,
+              fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : '"Comic Sans MS", cursive',
+              color: step.c,
             }}>
               {step.n}.
             </span>
             <div>
-              <p className="text-sm" style={{ color: revealed[i] ? 'var(--neon-orange)' : '#ddd' }}>
-                {revealed[i] ? step.back : step.front}
+              <p className="text-sm" style={{ color: cleanMode ? '#ccc' : (revealed[i] ? 'var(--neon-orange)' : '#ddd') }}>
+                {cleanMode ? step.back : (revealed[i] ? step.back : step.front)}
               </p>
-              {revealed[i] && (
+              {!cleanMode && revealed[i] && (
                 <p className="text-[10px] mt-1" style={{ color: '#444' }}>(click to go back to the lies)</p>
               )}
             </div>
@@ -224,11 +240,12 @@ function HowItWorksSection() {
 }
 
 /* ── TESTIMONIALS (BBS / ANSI / Telnet LORD style) ─────── */
-function TestimonialsSection() {
+function TestimonialsSection({ cleanMode }: { cleanMode?: boolean }) {
   return (
     <section className="px-4 py-16" style={{ background: '#000' }}>
       <div className="max-w-4xl mx-auto">
         {/* BBS header */}
+        {!cleanMode && (
         <div className="mb-8 text-center" style={{ fontFamily: '"Courier New", monospace' }}>
           <p style={{ color: 'var(--lime)', fontSize: '11px' }}>
             ╔══════════════════════════════════════════════════════════╗
@@ -246,6 +263,15 @@ function TestimonialsSection() {
             ╚══════════════════════════════════════════════════════════╝
           </p>
         </div>
+        )}
+        {cleanMode && (
+          <h3 className="text-center mb-8" style={{
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontSize: '24px', color: 'var(--lime)', fontWeight: 700,
+          }}>
+            What Users Are Saying
+          </h3>
+        )}
 
         <div className="space-y-4">
           {[
@@ -295,12 +321,17 @@ function TestimonialsSection() {
               {/* BBS user header */}
               <div className="flex flex-wrap items-center gap-3 mb-3" style={{ fontSize: '11px' }}>
                 <span style={{ color: t.color, fontWeight: 700 }}>{t.user}</span>
-                <span style={{ color: '#666' }}>|</span>
-                <span style={{ color: '#888' }}>{t.level}</span>
-                <span style={{ color: '#666' }}>|</span>
-                <span style={{ color: 'var(--lime)' }}>HP: {t.hp}</span>
-                <span style={{ color: '#666' }}>|</span>
-                <span style={{ color: 'var(--mustard)' }}>Gold: {t.gold}</span>
+                {!cleanMode && (
+                  <>
+                    <span style={{ color: '#666' }}>|</span>
+                    <span style={{ color: '#888' }}>{t.level}</span>
+                    <span style={{ color: '#666' }}>|</span>
+                    <span style={{ color: 'var(--lime)' }}>HP: {t.hp}</span>
+                    <span style={{ color: '#666' }}>|</span>
+                    <span style={{ color: 'var(--mustard)' }}>Gold: {t.gold}</span>
+                  </>
+                )}
+                {cleanMode && <span style={{ color: '#888' }}>— flip-ly user</span>}
               </div>
               {/* Message */}
               <p style={{ color: '#ccc', fontSize: '12px', lineHeight: 1.8 }}>
@@ -316,6 +347,7 @@ function TestimonialsSection() {
         </div>
 
         {/* BBS footer */}
+        {!cleanMode && (
         <div className="mt-6 text-center" style={{ fontFamily: '"Courier New", monospace', fontSize: '10px', color: '#444' }}>
           <p>[Press ENTER to continue, Q to quit, or just sign up already]</p>
           <p className="mt-1" style={{ color: '#333' }}>
@@ -325,6 +357,7 @@ function TestimonialsSection() {
             ═══ SYSTEM LOG: ALL CLEAR ═══
           </p>
         </div>
+        )}
       </div>
     </section>
   )
@@ -346,6 +379,7 @@ export default function Home() {
   const [showError, setShowError] = useState(false)
   const [showSignup, setShowSignup] = useState(false)
   const [muted, setMuted] = useState(true) // default muted
+  const [cleanMode, setCleanMode] = useState(false)
   const [utmSource, setUtmSource] = useState<string | null>(null)
 
   // Capture UTM source on page load (persists in sessionStorage for signup)
@@ -360,6 +394,24 @@ export default function Home() {
     } else {
       const saved = sessionStorage.getItem('fliply_utm_source')
       if (saved) setUtmSource(saved)
+    }
+  }, [])
+
+  // Clean mode: persist in localStorage + auto-detect from UTM/referrer
+  useEffect(() => {
+    const saved = localStorage.getItem('fliply-clean-mode')
+    if (saved !== null) {
+      setCleanMode(saved === 'true')
+      return
+    }
+    // Auto-detect: clean mode for high-intent traffic
+    const params = new URLSearchParams(window.location.search)
+    const utm = params.get('utm_source')?.toLowerCase() || ''
+    const ref = document.referrer.toLowerCase()
+    const cleanSources = ['google', 'bing', 'facebook', 'nextdoor', 'email']
+    const cleanRefs = ['google.com', 'facebook.com', 'nextdoor.com', 'bing.com']
+    if (cleanSources.some(s => utm.includes(s)) || cleanRefs.some(r => ref.includes(r))) {
+      setCleanMode(true)
     }
   }, [])
 
@@ -422,10 +474,11 @@ export default function Home() {
 
   // Show Win98 error after 3 seconds, auto-dismiss after 15 seconds
   useEffect(() => {
+    if (cleanMode) return
     const show = setTimeout(() => setShowError(true), 3000)
     const autoDismiss = setTimeout(() => setShowError(false), 18000)
     return () => { clearTimeout(show); clearTimeout(autoDismiss) }
-  }, [])
+  }, [cleanMode])
 
   const BUTLER_QUIPS = [
     'Very good, sir. I have located the following sales in your vicinity.',
@@ -717,13 +770,17 @@ export default function Home() {
   return (
     <div className="min-h-screen relative">
       {/* Mascot removed — replaced by StickyNote lobster */}
-      <WinampPlayer />
-      <RetroPopups />
-      <BSOD />
-      <MeltdownSequence active={meltdownActive} onComplete={() => setMeltdownDone(true)} />
-      <SketchyPopups />
-      <StickyNote />
-      {showError && <Win98Error onClose={() => setShowError(false)} onSignup={() => { setShowError(false); setShowSignup(true) }} />}
+      {!cleanMode && (
+        <>
+          <WinampPlayer />
+          <RetroPopups />
+          <BSOD />
+          <MeltdownSequence active={meltdownActive} onComplete={() => setMeltdownDone(true)} />
+          <SketchyPopups />
+          <StickyNote />
+        </>
+      )}
+      {!cleanMode && showError && <Win98Error onClose={() => setShowError(false)} onSignup={() => { setShowError(false); setShowSignup(true) }} />}
 
       {/* ═══ SEARCH RATE LIMIT BSOD ═══ */}
       {showSearchBSOD && (
@@ -805,11 +862,12 @@ export default function Home() {
 
       {/* sprite z-index stack */}
       {/* ═══ CONSTRUCTION BANNER ═══ */}
-      <div className="construction-banner">
+      {!cleanMode && <div className="construction-banner">
         🚧 UNDER CONSTRUCTION 🚧 (everything works tho) 🚧 UNDER CONSTRUCTION 🚧
-      </div>
+      </div>}
 
       {/* ═══ NETSCAPE + KAZAA BANNER ═══ */}
+      {!cleanMode && (
       <div className="netscape-banner flex flex-wrap items-center justify-center gap-2">
         <span className="hidden sm:inline">🌐 Best viewed in Netscape 4.0 at 800x600 🌐</span>
         <span style={{ color: 'var(--mustard)' }}>Visitor #<VisitorCounter /> since 1996</span>
@@ -817,6 +875,7 @@ export default function Home() {
           | 📂 Kazaa: 4,269 deals shared
         </span>
       </div>
+      )}
 
       {/* ═══ HEADER ═══ */}
       <header className="px-4 py-3 flex items-center justify-between" style={{
@@ -824,7 +883,7 @@ export default function Home() {
       }}>
         <div className="flex items-center gap-3">
           <span className="text-2xl jitter">🦞</span>
-          <h1 className="glitch" data-text="FLIP-LY.NET" style={{
+          <h1 className={cleanMode ? '' : 'glitch'} data-text="FLIP-LY.NET" style={{
             fontFamily: '"Comic Sans MS", cursive', fontSize: '24px', color: 'var(--lime)',
           }}>
             FLIP-LY<span style={{ color: 'var(--hotpink)' }}>.NET</span>
@@ -839,7 +898,15 @@ export default function Home() {
           }}>
             {muted ? '🔇 Muted' : '🔊 Chaos ON'}
           </button>
-          <span className="text-xs blink hidden sm:inline" style={{ color: 'var(--mustard)' }}>● LIVE</span>
+          <button onClick={() => { const next = !cleanMode; setCleanMode(next); localStorage.setItem('fliply-clean-mode', String(next)) }} className="px-2 py-1 text-[10px] font-bold" style={{
+            background: cleanMode ? '#0FFF50' : '#1a1a1a',
+            border: `1px solid ${cleanMode ? '#0FFF50' : '#333'}`,
+            color: cleanMode ? '#000' : '#888',
+            fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
+          }}>
+            {cleanMode ? '🧼 Clean' : '🎪 Chaos'}
+          </button>
+          {!cleanMode && <span className="text-xs blink hidden sm:inline" style={{ color: 'var(--mustard)' }}>● LIVE</span>}
           {loggedInUser ? (
             <div className="flex items-center gap-2">
               {loggedInUser.is_premium && (
@@ -882,10 +949,12 @@ export default function Home() {
       </header>
 
       {/* ═══ Y2K COUNTDOWN ═══ */}
-      {!meltdownDone && (
+      {!cleanMode && !meltdownDone && (
         <Y2KCountdown onMeltdown={() => setMeltdownActive(true)} />
       )}
 
+      {!cleanMode && (
+      <>
       {/* ═══ CRAIGSLIST NAV BAR ═══ */}
       <div className="px-2 py-1 flex flex-wrap items-center gap-1 justify-center" style={{
         background: 'var(--hotpink)',
@@ -910,8 +979,10 @@ export default function Home() {
           📮 POST
         </span>
       </div>
+      </>
+      )}
 
-      <div className="rainbow-divider" />
+      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ HERO — WIN98 ERROR STYLE ═══ */}
       <section className="px-4 py-12 md:py-20 relative">
@@ -935,31 +1006,56 @@ export default function Home() {
               </div>
             </div>
             <div className="py-8 px-6" style={{ background: 'var(--darker)' }}>
-              <h2 className="mb-4 glitch" data-text="FIND HIDDEN GEMS." style={{
-                fontFamily: '"Comic Sans MS", cursive',
-                fontSize: 'clamp(28px, 7vw, 64px)',
-                color: 'var(--hotpink)',
-                lineHeight: 1.1,
-              }}>
-                FIND HIDDEN GEMS.
-              </h2>
-              <h2 className="mb-6" style={{
-                fontFamily: '"Comic Sans MS", cursive',
-                fontSize: 'clamp(28px, 7vw, 64px)',
-                color: 'var(--lime)',
-                lineHeight: 1.1,
-              }}>
-                SKIP THE BS.
-              </h2>
-              <p className="text-sm md:text-base mb-2" style={{
-                fontFamily: 'Papyrus, fantasy', color: 'var(--mustard)',
-                letterSpacing: '2px',
-              }}>
-                We aggregated all the garage sales your city is having.
-              </p>
-              <p className="text-xs" style={{ color: '#666', fontStyle: 'italic' }}>
-                Yeah, we scraped Craigslist. Yeah, that&apos;s legal. Yeah, we made it weird on purpose.
-              </p>
+              {cleanMode ? (
+                <>
+                  <h2 className="mb-4" style={{
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontSize: 'clamp(28px, 7vw, 56px)',
+                    color: 'var(--lime)',
+                    lineHeight: 1.1,
+                    fontWeight: 700,
+                  }}>
+                    Garage sales near you.<br />Every Thursday. Free.
+                  </h2>
+                  <p className="text-base md:text-lg mb-2" style={{
+                    color: '#ccc', lineHeight: 1.6,
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                  }}>
+                    We scan Craigslist, EstateSales.net, Eventbrite &amp; 20+ local sources so you don&apos;t have to. Get a curated weekly digest every Thursday at noon.
+                  </p>
+                  <p className="text-sm" style={{ color: '#888' }}>
+                    Pro users get deals 6 hours early + AI deal scores. Starting at $5/mo.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className={`mb-4 glitch`} data-text="FIND HIDDEN GEMS." style={{
+                    fontFamily: '"Comic Sans MS", cursive',
+                    fontSize: 'clamp(28px, 7vw, 64px)',
+                    color: 'var(--hotpink)',
+                    lineHeight: 1.1,
+                  }}>
+                    FIND HIDDEN GEMS.
+                  </h2>
+                  <h2 className="mb-6" style={{
+                    fontFamily: '"Comic Sans MS", cursive',
+                    fontSize: 'clamp(28px, 7vw, 64px)',
+                    color: 'var(--lime)',
+                    lineHeight: 1.1,
+                  }}>
+                    SKIP THE BS.
+                  </h2>
+                  <p className="text-sm md:text-base mb-2" style={{
+                    fontFamily: 'Papyrus, fantasy', color: 'var(--mustard)',
+                    letterSpacing: '2px',
+                  }}>
+                    We aggregated all the garage sales your city is having.
+                  </p>
+                  <p className="text-xs" style={{ color: '#666', fontStyle: 'italic' }}>
+                    Yeah, we scraped Craigslist. Yeah, that&apos;s legal. Yeah, we made it weird on purpose.
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
@@ -976,7 +1072,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="rainbow-divider" />
+      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ ASK FLIP-LY — The AskJeeves Search Engine ═══ */}
       <section className={`px-4 py-12 ${searching ? 'crash-shake' : ''}`} style={{
@@ -999,6 +1095,7 @@ export default function Home() {
         }} />
 
         {/* Marquee banner */}
+        {!cleanMode && (
         <div style={{
           background: '#000080', color: '#ffff00', padding: '3px 0',
           fontFamily: '"Comic Sans MS", cursive', fontSize: '11px',
@@ -1009,19 +1106,20 @@ export default function Home() {
             🏆 AWARD-WINNING SEARCH ENGINE 🏆 AS SEEN ON GEOCITIES 🏆 VOTED #1 BY MY MOM 🏆 NETSCAPE NAVIGATOR APPROVED 🏆 NOW WITH 200% MORE BUTLER 🏆 Y2K COMPLIANT (probably) 🏆 POWERED BY HAMSTERS ON WHEELS 🏆
           </div>
         </div>
+        )}
 
         <div className="max-w-3xl mx-auto relative">
           {/* AskJeeves header — CHAOTIC */}
           <div className="mb-6 text-center">
             {/* Spinning hat */}
-            <div className="jitter" style={{ fontSize: '64px', marginBottom: '4px', display: 'inline-block' }}>🎩</div>
+            <div className={cleanMode ? '' : 'jitter'} style={{ fontSize: cleanMode ? '48px' : '64px', marginBottom: '4px', display: 'inline-block' }}>{cleanMode ? '🔍' : '🎩'}</div>
             <h3 style={{
               fontFamily: '"Comic Sans MS", cursive',
               fontSize: '38px', fontWeight: 'bold',
               color: '#333', letterSpacing: '-0.5px',
               textShadow: '2px 2px 0 #FFD700, -1px -1px 0 #CC3300',
             }}>
-              Ask <span className="glitch" data-text="flip-ly" style={{
+              {cleanMode ? 'Search ' : 'Ask '}<span className={cleanMode ? '' : 'glitch'} data-text="flip-ly" style={{
                 color: '#CC3300',
                 textShadow: '0 0 10px rgba(204,51,0,0.5), 3px 3px 0 #FFD700',
               }}>flip-ly</span>
@@ -1050,9 +1148,11 @@ export default function Home() {
             </div>
 
             {/* Under construction GIF reference */}
+            {!cleanMode && (
             <div className="mt-2" style={{ fontSize: '10px', color: '#999', fontFamily: 'Tahoma, sans-serif' }}>
               🚧 Search Engine v0.69 beta 🚧 Sponsored by LimeWire 🚧
             </div>
+            )}
           </div>
 
           {/* Search form — AskJeeves x Geocities x Win98 */}
@@ -1066,6 +1166,7 @@ export default function Home() {
               </div>
               <div style={{ padding: '8px', background: '#c0c0c0', border: '2px inset #fff' }}>
                 {/* Address bar */}
+                {!cleanMode && (
                 <div className="flex items-center gap-2 mb-2" style={{ fontSize: '11px', fontFamily: 'Tahoma, sans-serif' }}>
                   <span style={{ color: '#000', fontWeight: 'bold' }}>Address:</span>
                   <div style={{
@@ -1077,6 +1178,7 @@ export default function Home() {
                   </div>
                   <span className="blink" style={{ color: '#0a0', fontSize: '10px' }}>🔒 Secure</span>
                 </div>
+                )}
 
                 {/* Actual search input */}
                 <div style={{
@@ -1163,7 +1265,9 @@ export default function Home() {
               fontSize: '9px', color: '#999', fontFamily: 'Tahoma, sans-serif',
               fontStyle: 'italic',
             }}>
-              ⚠️ Results may contain: actual deals, haunted furniture, and items your spouse will not approve of
+              {cleanMode
+                ? 'Real-time results from Craigslist, EstateSales.net, and local sources across your market.'
+                : '⚠️ Results may contain: actual deals, haunted furniture, and items your spouse will not approve of'}
             </p>
           </form>
 
@@ -1430,22 +1534,22 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="rainbow-divider" />
+      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ VALUE PROPS (interactive chaos cards) ═══ */}
-      <ValuePropsSection />
+      <ValuePropsSection cleanMode={cleanMode} />
 
-      <div className="rainbow-divider" />
+      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ HOW IT WORKS (chaotic truth) ═══ */}
-      <HowItWorksSection />
+      <HowItWorksSection cleanMode={cleanMode} />
 
-      <div className="rainbow-divider" />
+      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ TESTIMONIALS (BBS / ANSI / LORD style) ═══ */}
-      <TestimonialsSection />
+      <TestimonialsSection cleanMode={cleanMode} />
 
-      <div className="rainbow-divider" />
+      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ CHAOTIC DONATION (real Stripe) ═══ */}
       <section className="px-4 py-12" style={{ background: '#0a0a0a' }}>
@@ -1524,7 +1628,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="rainbow-divider" />
+      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ FINAL CTA ═══ */}
       <section className="px-4 py-20 text-center" style={{ background: '#000' }}>
@@ -1541,7 +1645,7 @@ export default function Home() {
         </button>
       </section>
 
-      <div className="rainbow-divider" />
+      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ MARQUEE (illegal in 2026) ═══ */}
       <div className="marquee-container py-3" style={{ background: '#000', borderTop: '2px solid var(--lime)', borderBottom: '2px solid var(--hotpink)' }}>
@@ -2140,6 +2244,48 @@ export default function Home() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ═══ TRUST SIGNALS (clean mode only) ═══ */}
+      {cleanMode && (
+        <section className="px-4 py-12" style={{ background: '#0a0a0a', borderTop: '1px solid #222' }}>
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="flex flex-wrap justify-center gap-8 mb-8">
+              <div>
+                <div className="text-3xl font-bold" style={{ color: 'var(--lime)', fontFamily: 'system-ui, sans-serif' }}>413</div>
+                <div className="text-xs" style={{ color: '#888' }}>US Markets Available</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold" style={{ color: 'var(--mustard)', fontFamily: 'system-ui, sans-serif' }}>20+</div>
+                <div className="text-xs" style={{ color: '#888' }}>Sources Per Market</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold" style={{ color: 'var(--hotpink)', fontFamily: 'system-ui, sans-serif' }}>Thu 12PM</div>
+                <div className="text-xs" style={{ color: '#888' }}>Weekly Digest Delivery</div>
+              </div>
+            </div>
+            <p className="text-sm mb-6" style={{ color: '#666' }}>
+              Powered by Supabase &amp; Stripe. We never sell your data. Unsubscribe anytime.
+            </p>
+            <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
+              background: 'var(--lime)', color: '#000',
+              border: 'none', borderRadius: '6px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              cursor: 'pointer',
+              boxShadow: '0 0 20px rgba(15, 255, 80, 0.2)',
+            }}>
+              Get Started — It&apos;s Free 🦞
+            </button>
+            <p className="text-xs mt-8" style={{ color: '#333' }}>
+              <button onClick={() => setShowAdmin(true)} style={{
+                background: 'none', border: 'none', color: '#333',
+                cursor: 'pointer', fontSize: '11px', fontFamily: 'monospace',
+              }}>
+                🔍 Something hidden lives here...
+              </button>
+            </p>
+          </div>
+        </section>
       )}
 
       {/* ═══ SIGNUP MODAL (this part is actually clean) ═══ */}
