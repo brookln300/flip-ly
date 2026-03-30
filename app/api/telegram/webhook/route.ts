@@ -76,11 +76,26 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/**
+ * Parse flexible number input: "1,3,5" or "1-6" or "1-6, 9, 14-20"
+ */
 function parseNumbers(str: string): number[] {
-  return str
-    .split(/[\s,]+/)
-    .map(s => parseInt(s.trim(), 10))
-    .filter(n => !isNaN(n) && n > 0)
+  const results: number[] = []
+  const parts = str.split(/[\s,]+/)
+  for (const part of parts) {
+    const rangeMatch = part.match(/^(\d+)\s*-\s*(\d+)$/)
+    if (rangeMatch) {
+      const start = parseInt(rangeMatch[1], 10)
+      const end = parseInt(rangeMatch[2], 10)
+      if (!isNaN(start) && !isNaN(end) && start > 0 && end >= start && end - start < 100) {
+        for (let i = start; i <= end; i++) results.push(i)
+      }
+    } else {
+      const n = parseInt(part.trim(), 10)
+      if (!isNaN(n) && n > 0) results.push(n)
+    }
+  }
+  return Array.from(new Set(results)).sort((a, b) => a - b)
 }
 
 /**
