@@ -404,4 +404,35 @@ body::after {
 /* ── RESPONSIVE ─────────────────────────────────────────── */
 @media (max-width: 768px) {
   .win98-window { margin: 0 8px; }
+
+  /* Kill chaos animations on mobile — unusable on small screens */
+  .jitter { animation: none !important; }
+  .glitch::before, .glitch::after { display: none !important; }
+  .crash-shake { animation: none !important; }
+  .card-wonky { transform: none !important; box-shadow: 4px 4px 0 var(--hotpink) !important; }
+  .card-wonky:hover { transform: none !important; }
+  .blink { animation: none !important; opacity: 1 !important; }
+  .btn-chaos:hover { transform: none !important; font-size: 22px !important; }
+  .btn-chaos:active { transform: scale(0.97) !important; }
+
+  /* Larger tap targets */
+  .btn-chaos { padding: 16px 32px; font-size: 20px; width: 100%; }
+  button, a { min-height: 44px; }
+
+  /* Full-width search */
+  .cl-input { font-size: 16px; } /* prevents iOS zoom on focus */
+
+  /* Footer not tilted on mobile */
+  footer { transform: none !important; }
+
+  /* Lobster cursor off on mobile (touch devices don't have cursors) */
+  body { cursor: auto; }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .jitter, .blink, .crash-shake, .glitch::before, .glitch::after,
+  .marquee-content, .rainbow-divider, .fall-in { animation: none !important; }
+  .fall-in { opacity: 1 !important; transform: none !important; }
+  .card-wonky, .card-wonky:hover { transform: none !important; }
 }

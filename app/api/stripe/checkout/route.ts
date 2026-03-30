@@ -86,6 +86,7 @@ export async function POST(req: NextRequest) {
       success_url: `${req.nextUrl.origin}/pro?status=success`,
       cancel_url: `${req.nextUrl.origin}/pro?status=cancelled`,
       metadata: { fliply_user_id: user.id },
+      phone_number_collection: { enabled: false },
       subscription_data: {
         metadata: { fliply_user_id: user.id },
       },

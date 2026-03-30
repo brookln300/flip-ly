@@ -462,6 +462,17 @@ export default function Home() {
   const [meltdownDone, setMeltdownDone] = useState(false)
   const [searchGate, setSearchGate] = useState<any>(null) // _gate from API
   const [showSearchBSOD, setShowSearchBSOD] = useState(false)
+  const [featuredDeals, setFeaturedDeals] = useState<any[]>([])
+  const [featuredLoading, setFeaturedLoading] = useState(true)
+
+  // Fetch featured/hot deals on load (doesn't count as a search — no ?q param)
+  useEffect(() => {
+    fetch('/api/listings?hot=true&limit=8')
+      .then(res => res.json())
+      .then(data => { if (data.results?.length) setFeaturedDeals(data.results) })
+      .catch(() => {})
+      .finally(() => setFeaturedLoading(false))
+  }, [])
 
   // Fetch market list for dropdowns (signup + search)
   useEffect(() => {
@@ -1074,6 +1085,101 @@ export default function Home() {
 
       {!cleanMode && <div className="rainbow-divider" />}
 
+      {/* ═══ FEATURED DEALS (clean mode — real DB data) ═══ */}
+      {cleanMode && featuredDeals.length > 0 && (
+        <section className="px-4 py-12" style={{ background: '#0a0a0a', borderTop: '1px solid #222' }}>
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center justify-between mb-6 gap-2">
+              <h3 style={{
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                fontSize: '22px', fontWeight: 700, color: '#fff',
+              }}>
+                This Week&apos;s Hot Deals
+              </h3>
+              <span className="hidden sm:inline" style={{
+                fontSize: '12px', color: '#888',
+                fontFamily: 'system-ui, sans-serif',
+                flexShrink: 0,
+              }}>
+                Real data &middot; Updated weekly
+              </span>
+            </div>
+            <div className="space-y-2">
+              {featuredDeals.map((deal, i) => (
+                <div key={deal.id || i} className="flex items-center gap-4 px-4 py-3" style={{
+                  background: i % 2 === 0 ? '#111' : '#0d0d0d',
+                  borderRadius: '6px',
+                  border: deal.hot ? '1px solid rgba(255,102,0,0.3)' : '1px solid transparent',
+                }}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {deal.hot && <span style={{
+                        background: '#ff6600', color: '#fff', padding: '1px 6px',
+                        borderRadius: '3px', fontSize: '10px', fontWeight: 600,
+                        fontFamily: 'system-ui, sans-serif',
+                      }}>HOT</span>}
+                      <span className="truncate" style={{
+                        color: '#eee', fontSize: '14px', fontWeight: 500,
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
+                      }}>
+                        {deal.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3" style={{ fontSize: '12px', color: '#888' }}>
+                      {deal.city && <span>📍 {deal.city}</span>}
+                      <span style={{
+                        textTransform: 'uppercase', fontSize: '10px',
+                        color: '#666', border: '1px solid #333',
+                        padding: '0 4px', borderRadius: '2px',
+                      }}>{deal.source}</span>
+                      {deal.description && (
+                        <span className="truncate hidden sm:inline" style={{ color: '#666', maxWidth: '200px' }}>
+                          {deal.description}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div style={{
+                      fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                      fontSize: deal.price === 'FREE' ? '15px' : '14px',
+                      color: deal.price === 'FREE' ? '#0FFF50' : '#ff6600',
+                    }}>
+                      {deal.price === 'FREE' ? 'FREE' : deal.price || 'Ask'}
+                    </div>
+                    {deal.deal_score && deal.deal_score !== 'gated' ? (
+                      <div style={{ fontSize: '10px', color: '#0FFF50', fontFamily: 'monospace' }}>
+                        Score: {deal.deal_score}/10
+                      </div>
+                    ) : deal.deal_score === 'gated' ? (
+                      <div style={{ fontSize: '10px', color: '#555', fontFamily: 'monospace' }}>
+                        Score: 🔒 Pro
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 text-center">
+              <p style={{ fontSize: '12px', color: '#666', fontFamily: 'system-ui, sans-serif' }}>
+                {featuredDeals.length < 8
+                  ? 'All top deals this week.'
+                  : 'Showing top 8 deals. Search below for more, or sign up for the weekly digest.'}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+      {cleanMode && featuredLoading && (
+        <section className="px-4 py-8" style={{ background: '#0a0a0a', borderTop: '1px solid #222' }}>
+          <div className="max-w-3xl mx-auto text-center">
+            <p style={{ color: '#555', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
+              Loading deals...
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* ═══ ASK FLIP-LY — The AskJeeves Search Engine ═══ */}
       <section className={`px-4 py-12 ${searching ? 'crash-shake' : ''}`} style={{
         background: 'linear-gradient(180deg, #FFFEF0 0%, #E8E0B0 30%, #FFF8DC 60%, #FFFEF0 100%)',
@@ -1187,7 +1293,7 @@ export default function Home() {
                   padding: '4px',
                   boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
                 }}>
-                  <div className="flex gap-1">
+                  <div className="flex flex-col sm:flex-row gap-1">
                     <div className="flex-1 flex items-center gap-2 px-3">
                       <span className="jitter" style={{ fontSize: '22px' }}>🔍</span>
                       <input
@@ -1202,42 +1308,46 @@ export default function Home() {
                         }}
                       />
                     </div>
-                    <select
-                      value={searchMarket}
-                      onChange={e => setSearchMarket(e.target.value)}
-                      style={{
-                        padding: '8px 8px', border: '2px inset #808080',
-                        fontFamily: 'Tahoma, sans-serif', fontSize: '11px',
-                        color: '#000', background: '#c0c0c0', cursor: 'pointer',
-                        maxWidth: '180px',
-                      }}
-                    >
-                      <option value="">🗺️ All Areas</option>
-                      {Object.keys(marketsData).sort().map(st =>
-                        (marketsData[st] || []).map(m => (
-                          <option key={m.id} value={m.slug}>{m.name}, {st}</option>
-                        ))
-                      )}
-                    </select>
-                    <button type="submit" disabled={searching} style={{
-                      padding: '8px 20px',
-                      background: searching ? '#808080' : 'linear-gradient(180deg, #ff6633, #cc3300)',
-                      color: '#fff',
-                      border: '3px outset #ff9966',
-                      fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold',
-                      fontSize: '14px', cursor: searching ? 'wait' : 'pointer',
-                      textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
-                      letterSpacing: '1px',
-                    }}>
-                      {searching ? '⏳ ASKING...' : '🎩 ASK'}
-                    </button>
+                    <div className="flex gap-1">
+                      <select
+                        value={searchMarket}
+                        onChange={e => setSearchMarket(e.target.value)}
+                        className="flex-1 sm:flex-none"
+                        style={{
+                          padding: '8px 8px', border: '2px inset #808080',
+                          fontFamily: 'Tahoma, sans-serif', fontSize: '11px',
+                          color: '#000', background: '#c0c0c0', cursor: 'pointer',
+                          maxWidth: '100%',
+                        }}
+                      >
+                        <option value="">🗺️ All Areas</option>
+                        {Object.keys(marketsData).sort().map(st =>
+                          (marketsData[st] || []).map(m => (
+                            <option key={m.id} value={m.slug}>{m.name}, {st}</option>
+                          ))
+                        )}
+                      </select>
+                      <button type="submit" disabled={searching} style={{
+                        padding: '8px 20px',
+                        background: searching ? '#808080' : 'linear-gradient(180deg, #ff6633, #cc3300)',
+                        color: '#fff',
+                        border: '3px outset #ff9966',
+                        fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold',
+                        fontSize: '14px', cursor: searching ? 'wait' : 'pointer',
+                        textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
+                        letterSpacing: '1px',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {searching ? '⏳ ASKING...' : '🎩 ASK'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick search tags — pill buttons with chaos */}
-            <div className="mt-3 flex flex-wrap gap-2 justify-center">
+            {/* Quick search tags — pill buttons, horizontal scroll on mobile */}
+            <div className="mt-3 flex gap-2 justify-center overflow-x-auto sm:flex-wrap sm:overflow-visible pb-2 sm:pb-0" style={{ WebkitOverflowScrolling: 'touch' }}>
               {[
                 { tag: 'tools', emoji: '🔧' },
                 { tag: 'vintage', emoji: '📻' },
@@ -1249,11 +1359,12 @@ export default function Home() {
                 { tag: 'collectibles', emoji: '💎' },
               ].map(({ tag, emoji }) => (
                 <button key={tag} type="button" onClick={() => { setSearchQuery(tag); }} style={{
-                  padding: '3px 12px',
+                  padding: '6px 14px',
                   border: '2px outset #c0c0c0',
-                  fontFamily: '"Comic Sans MS", cursive', fontSize: '11px', color: '#333',
+                  fontFamily: '"Comic Sans MS", cursive', fontSize: '12px', color: '#333',
                   background: 'linear-gradient(180deg, #fff, #e0e0e0)',
                   cursor: 'pointer',
+                  flexShrink: 0,
                 }}>
                   {emoji} {tag}
                 </button>
