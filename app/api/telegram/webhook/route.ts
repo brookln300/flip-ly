@@ -99,37 +99,38 @@ function parseNumbers(str: string): number[] {
 }
 
 /**
- * Handle "Approve 1,3,5" or "Reject 2,4" — uses pending_source_ids from most recent market
+ * Handle "Approve 1,3,5" or "Reject 2,4"
+ * Numbers match the GLOBAL pending list (same order as "Pending" command)
  */
 async function handleByNumbers(numbers: number[], action: 'approved' | 'rejected') {
-  // Find the most recent market with pending_source_ids
-  const { data: market } = await supabase
-    .from('fliply_markets')
-    .select('id, name, display_name, state, pending_source_ids')
-    .not('pending_source_ids', 'eq', '{}')
-    .order('sources_discovered_at', { ascending: false })
-    .limit(1)
-    .single()
+  // Fetch the same global pending list that "Pending" command shows
+  const { data: allPending } = await supabase
+    .from('fliply_sources')
+    .select('id, name, market_id, fliply_markets(display_name, state)')
+    .eq('trust_level', 'pending')
+    .order('created_at', { ascending: true })
+    .limit(50)
 
-  if (!market || !market.pending_source_ids?.length) {
+  if (!allPending || allPending.length === 0) {
     await sendTelegramAlert('No pending sources found.')
     return NextResponse.json({ ok: true })
   }
 
-  const ids = market.pending_source_ids as string[]
   const targetIds: string[] = []
+  const targetNames: string[] = []
   const outOfRange: number[] = []
 
   for (const n of numbers) {
-    if (n <= ids.length) {
-      targetIds.push(ids[n - 1])
+    if (n >= 1 && n <= allPending.length) {
+      targetIds.push(allPending[n - 1].id)
+      targetNames.push(allPending[n - 1].name)
     } else {
       outOfRange.push(n)
     }
   }
 
   if (targetIds.length === 0) {
-    await sendTelegramAlert(`Numbers out of range. Market has ${ids.length} pending sources.`)
+    await sendTelegramAlert(`Numbers out of range. There are ${allPending.length} pending sources total.`)
     return NextResponse.json({ ok: true })
   }
 
@@ -151,37 +152,37 @@ async function handleByNumbers(numbers: number[], action: 'approved' | 'rejected
     return NextResponse.json({ ok: true })
   }
 
-  // Fetch names for confirmation
-  const { data: updated } = await supabase
-    .from('fliply_sources')
-    .select('name')
-    .in('id', targetIds)
+  // Clean up pending_source_ids on affected markets
+  const affectedMarketIds = Array.from(new Set(
+    allPending.filter(s => targetIds.includes(s.id)).map(s => s.market_id)
+  ))
+  for (const mId of affectedMarketIds) {
+    const remainingForMarket = allPending
+      .filter(s => s.market_id === mId && !targetIds.includes(s.id))
+      .map(s => s.id)
+    await supabase
+      .from('fliply_markets')
+      .update({ pending_source_ids: remainingForMarket })
+      .eq('id', mId)
+  }
 
-  const names = updated?.map(s => s.name) || []
   const emoji = isApproved ? '✅' : '❌'
-  const marketName = market.display_name || market.name
-
-  // Remove approved/rejected from pending list
-  const remaining = ids.filter(id => !targetIds.includes(id))
-  await supabase
-    .from('fliply_markets')
-    .update({ pending_source_ids: remaining })
-    .eq('id', market.id)
+  const remainingTotal = allPending.length - targetIds.length
 
   const lines = [
-    `${emoji} <b>${action.toUpperCase()}</b> (${marketName}, ${market.state})`,
+    `${emoji} <b>${action.toUpperCase()}</b> (${targetIds.length} sources)`,
     ``,
-    ...names.map(n => `${emoji} ${n}`),
+    ...targetNames.map(n => `${emoji} ${n}`),
   ]
 
   if (outOfRange.length > 0) {
     lines.push(``, `⚠️ Skipped #${outOfRange.join(', #')} (out of range)`)
   }
 
-  if (remaining.length > 0) {
-    lines.push(``, `${remaining.length} source(s) still pending`)
+  if (remainingTotal > 0) {
+    lines.push(``, `${remainingTotal} source(s) still pending`)
   } else {
-    lines.push(``, `All sources reviewed for ${marketName} 🎉`)
+    lines.push(``, `All sources reviewed 🎉`)
   }
 
   await sendTelegramAlert(lines.join('\n'))
@@ -189,23 +190,20 @@ async function handleByNumbers(numbers: number[], action: 'approved' | 'rejected
 }
 
 /**
- * Handle "Approve all" / "Reject all" for most recent market
+ * Handle "Approve all" / "Reject all" — ALL pending sources across ALL markets
  */
 async function handleBulkAll(action: 'approved' | 'rejected') {
-  const { data: market } = await supabase
-    .from('fliply_markets')
-    .select('id, name, display_name, state, pending_source_ids')
-    .not('pending_source_ids', 'eq', '{}')
-    .order('sources_discovered_at', { ascending: false })
-    .limit(1)
-    .single()
+  const { data: allPending } = await supabase
+    .from('fliply_sources')
+    .select('id, market_id')
+    .eq('trust_level', 'pending')
 
-  if (!market || !market.pending_source_ids?.length) {
+  if (!allPending || allPending.length === 0) {
     await sendTelegramAlert('No pending sources found.')
     return NextResponse.json({ ok: true })
   }
 
-  const ids = market.pending_source_ids as string[]
+  const ids = allPending.map(s => s.id)
   const isApproved = action === 'approved'
 
   const { error } = await supabase
@@ -224,17 +222,19 @@ async function handleBulkAll(action: 'approved' | 'rejected') {
     return NextResponse.json({ ok: true })
   }
 
-  // Clear pending list
-  await supabase
-    .from('fliply_markets')
-    .update({ pending_source_ids: [] })
-    .eq('id', market.id)
+  // Clear pending_source_ids on all affected markets
+  const marketIds = Array.from(new Set(allPending.map(s => s.market_id)))
+  for (const mId of marketIds) {
+    await supabase
+      .from('fliply_markets')
+      .update({ pending_source_ids: [] })
+      .eq('id', mId)
+  }
 
-  const marketName = market.display_name || market.name
   const emoji = isApproved ? '✅' : '❌'
 
   await sendTelegramAlert(
-    `${emoji} <b>${action.toUpperCase()} ALL</b> — ${ids.length} sources for ${marketName}, ${market.state}`
+    `${emoji} <b>${action.toUpperCase()} ALL</b> — ${ids.length} sources across ${marketIds.length} market(s)`
   )
 
   return NextResponse.json({ ok: true })
