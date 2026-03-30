@@ -90,8 +90,6 @@ function DigestPreview({ city }: { city?: string }) {
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [digestResult, setDigestResult] = useState('')
-  const [digestLoading, setDigestLoading] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -250,44 +248,14 @@ export default function Dashboard() {
             <span className="text-sm" style={{ color: '#ccc', fontFamily: 'monospace' }}>Active — scanning for sales near {user.city || 'your area'}</span>
           </div>
           <p className="text-xs mb-1" style={{ color: '#666' }}>
-            Next email: Monday 8:00 AM CDT
+            Next email: Thursday 12:00 PM CDT
           </p>
           <p className="text-xs" style={{ color: '#555', fontStyle: 'italic' }}>
-            Your weekly digest of questionable garage sale finds will arrive every Monday at 8 AM CDT. (It will be just as cursed as this website.)
+            Your weekly digest of questionable garage sale finds will arrive every Thursday at 12 PM CDT. (It will be just as cursed as this website.)
           </p>
-          <p className="text-xs mt-1 mb-4" style={{ color: '#555' }}>
+          <p className="text-xs mt-1" style={{ color: '#555' }}>
             We scrape Craigslist, EstateSales.net, and Facebook Marketplace so you don&apos;t have to.
           </p>
-          <button
-            onClick={async () => {
-              setDigestLoading(true)
-              setDigestResult('')
-              try {
-                const res = await fetch('/api/test-digest', { method: 'POST' })
-                const data = await res.json()
-                setDigestResult(data.message || 'Test digest triggered!')
-              } catch {
-                setDigestResult('Failed to trigger test digest')
-              }
-              setDigestLoading(false)
-            }}
-            disabled={digestLoading}
-            className="px-4 py-2 text-xs font-bold"
-            style={{
-              background: digestLoading ? '#333' : 'var(--lime, #0FFF50)',
-              color: '#000',
-              border: '2px dashed #333',
-              fontFamily: '"Comic Sans MS", cursive',
-              cursor: digestLoading ? 'wait' : 'pointer',
-            }}
-          >
-            {digestLoading ? 'Dialing 56k...' : '🧪 Trigger Test Digest'}
-          </button>
-          {digestResult && (
-            <p className="text-xs mt-2" style={{ color: 'var(--mustard, #FFB81C)', fontFamily: 'monospace' }}>
-              {digestResult}
-            </p>
-          )}
         </div>
 
         {/* Weekly Digest Preview (fake) */}
