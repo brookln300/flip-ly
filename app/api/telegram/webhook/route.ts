@@ -656,11 +656,17 @@ async function handleMoveUser(emailQuery: string, marketQuery: string) {
 
   await supabase.from('fliply_users').update({ market_id: m.id }).eq('id', u.id)
 
-  // Update user count on old and new market
+  // Update user count on old and new market (direct update, no rpc needed)
   if (u.market_id) {
-    await supabase.rpc('decrement_market_users', { market_uuid: u.market_id }).catch(() => {})
+    const { data: oldMarket } = await supabase.from('fliply_markets').select('user_count').eq('id', u.market_id).single()
+    if (oldMarket) {
+      await supabase.from('fliply_markets').update({ user_count: Math.max(0, (oldMarket.user_count || 1) - 1) }).eq('id', u.market_id)
+    }
   }
-  await supabase.rpc('increment_market_users', { market_uuid: m.id }).catch(() => {})
+  const { data: newMarket } = await supabase.from('fliply_markets').select('user_count').eq('id', m.id).single()
+  if (newMarket) {
+    await supabase.from('fliply_markets').update({ user_count: (newMarket.user_count || 0) + 1 }).eq('id', m.id)
+  }
 
   return reply([
     `📦 <b>User Moved</b>`,
