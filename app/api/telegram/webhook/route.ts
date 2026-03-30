@@ -932,7 +932,7 @@ async function handleDupes() {
   const lines = [`<b>🔍 Duplicate Check</b>`, ``]
   let found = 0
 
-  for (const [, group] of seen) {
+  for (const [, group] of Array.from(seen.entries())) {
     if (group.length > 1) {
       const market = (group[0] as any).fliply_markets
       const mName = market ? `${market.display_name}, ${market.state}` : 'Unknown'
