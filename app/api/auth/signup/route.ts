@@ -7,91 +7,54 @@ import { discoverSourcesForMarket } from '../../../lib/discovery/source-discover
 import { sendEmail } from '../../../lib/email/send'
 import { sendTelegramAlert } from '../../../lib/telegram'
 
-// Random chaotic welcome subjects
-const SUBJECTS = [
-  "🦞 Welcome to the chaos — you're one of us now",
-  "⚠️ flip-ly.net has infected your inbox (you asked for this)",
-  "💾 Your garage sale subscription has been activated at 56k",
-  "🎉 Congrats! You signed up for a website with Comic Sans",
-  "📡 Connected at 56,000 bps — deals incoming",
-  "🔥 HOT GARAGE SALES IN YOUR AREA (for real this time)",
-]
+// Welcome email — informative with a touch of personality
+const WELCOME_SUBJECT = "Welcome to flip-ly — here's how it works"
 
-// Random chaotic welcome email bodies
 function getWelcomeEmail(email: string, marketName: string | null) {
   const username = email.split('@')[0]
-  const location = marketName || 'somewhere in the universe'
+  const location = marketName || 'your area'
 
-  const TEMPLATES = [
-    // Template 1: Classic chaos
-    `<div style="background:#0D0D0D;color:#fff;padding:32px;font-family:'Courier New',monospace;max-width:500px;margin:0 auto;">
-      <div style="border:3px dashed #0FFF50;padding:24px;margin-bottom:20px;">
-        <h1 style="font-family:'Comic Sans MS',cursive;color:#0FFF50;font-size:28px;margin:0 0 16px;">🦞 Welcome to flip-ly.net</h1>
-        <p style="color:#ccc;font-size:14px;line-height:1.8;">Hey ${username},</p>
-        <p style="color:#ccc;font-size:14px;line-height:1.8;">You actually signed up. For a website that uses Comic Sans. On purpose. We respect that energy.</p>
-        <p style="color:#FFB81C;font-size:14px;line-height:1.8;">Here's what happens next:</p>
-        <ul style="color:#ccc;font-size:13px;line-height:2;">
-          <li>Every week, you get a curated email digest</li>
-          <li>It'll have garage sales near <strong style="color:#0FFF50">${location}</strong></li>
-          <li>The deals are real. The website design is not.</li>
-          <li>Unsubscribe anytime. We won't cry. (We will.)</li>
-        </ul>
+  return `<div style="background:#ffffff;max-width:520px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+    <div style="background:#0a0a0a;padding:24px 32px;">
+      <h1 style="color:#22C55E;font-size:22px;margin:0;font-weight:700;">🦞 flip-ly.net</h1>
+    </div>
+    <div style="padding:32px;color:#333;line-height:1.7;">
+      <p style="font-size:16px;margin:0 0 20px;">Hey ${username},</p>
+      <p style="font-size:15px;margin:0 0 20px;">Welcome to flip-ly. You're signed up for <strong>${location}</strong> — here's what to expect.</p>
+
+      <div style="background:#f8f8f8;border-radius:8px;padding:20px;margin:0 0 24px;">
+        <p style="font-size:14px;font-weight:600;color:#000;margin:0 0 12px;">What you get:</p>
+        <table style="width:100%;font-size:14px;color:#555;">
+          <tr><td style="padding:6px 0;">📬</td><td style="padding:6px 8px;">Weekly email digest every <strong style="color:#000;">Thursday at noon</strong></td></tr>
+          <tr><td style="padding:6px 0;">📍</td><td style="padding:6px 8px;">Garage sales, estate sales &amp; deals near <strong style="color:#000;">${location}</strong></td></tr>
+          <tr><td style="padding:6px 0;">🔍</td><td style="padding:6px 8px;">Search across Craigslist, EstateSales.net &amp; 20+ local sources</td></tr>
+          <tr><td style="padding:6px 0;">🆓</td><td style="padding:6px 8px;">Free tier: 10 searches/day, weekly digest, no credit card</td></tr>
+        </table>
       </div>
-      <div style="border:3px dashed #FF10F0;padding:16px;text-align:center;">
-        <p style="font-family:'Comic Sans MS',cursive;color:#FF10F0;font-size:16px;margin:0 0 8px;">YOUR CHAOS LEVEL</p>
-        <p style="font-family:'Comic Sans MS',cursive;color:#FFB81C;font-size:32px;margin:0;">MAXIMUM 🔥</p>
+
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:0 0 24px;">
+        <p style="font-size:14px;font-weight:600;color:#166534;margin:0 0 8px;">🚀 Want more?</p>
+        <p style="font-size:13px;color:#555;margin:0;">Pro members ($5/mo) get unlimited searches, AI deal scores, and deals 6 hours before everyone else. <a href="https://flip-ly.net/pro" style="color:#22C55E;font-weight:600;">Learn more →</a></p>
       </div>
-      <p style="color:#555;font-size:11px;text-align:center;margin-top:20px;">
-        flip-ly.net — We scrape nothing. We make everything up. You're welcome.<br/>
-        <a href="https://flip-ly.net" style="color:#9D4EDD;">Visit the chaos</a>
+
+      <p style="font-size:15px;margin:0 0 24px;">Your first digest arrives this Thursday. In the meantime, <a href="https://flip-ly.net" style="color:#22C55E;font-weight:600;">search for deals now</a>.</p>
+
+      <p style="font-size:14px;color:#888;margin:0;">Yes, the website looks like that on purpose. The deals are real though.</p>
+    </div>
+    <div style="background:#f8f8f8;padding:20px 32px;border-top:1px solid #eee;">
+      <p style="font-size:12px;color:#999;margin:0 0 4px;">flip-ly.net — Garage sale intelligence, delivered weekly.</p>
+      <p style="font-size:11px;color:#bbb;margin:0;">
+        <a href="https://flip-ly.net" style="color:#999;">Visit</a> · <a href="https://flip-ly.net/why" style="color:#999;">Why this exists</a> · <a href="https://flip-ly.net/privacy" style="color:#999;">Privacy</a>
       </p>
-    </div>`,
-
-    // Template 2: FBI style
-    `<div style="background:#0D0D0D;color:#fff;padding:32px;font-family:'Courier New',monospace;max-width:500px;margin:0 auto;">
-      <div style="background:#000080;padding:16px;text-align:center;margin-bottom:20px;">
-        <p style="color:#fff;font-size:18px;font-weight:700;margin:0;">🚔 OFFICIAL NOTIFICATION 🚔</p>
-      </div>
-      <div style="padding:20px;">
-        <p style="color:#ccc;font-size:14px;line-height:1.8;">Dear ${username},</p>
-        <p style="color:#ccc;font-size:14px;line-height:1.8;">This email confirms that you have been <strong style="color:#0FFF50">officially registered</strong> as a flip-ly.net chaos agent in the <strong style="color:#FFB81C">${location}</strong> district.</p>
-        <p style="color:#ccc;font-size:14px;line-height:1.8;">Your weekly briefing of questionable garage sale intelligence will arrive soon.</p>
-        <p style="color:#FF10F0;font-size:14px;line-height:1.8;">This message will self-destruct in... actually it won't. Gmail keeps everything forever.</p>
-        <div style="border-top:2px solid #333;margin-top:20px;padding-top:16px;">
-          <p style="color:#888;font-size:11px;">Agent ID: #${Math.floor(Math.random() * 90000 + 10000)}</p>
-          <p style="color:#888;font-size:11px;">Clearance Level: COMIC SANS</p>
-          <p style="color:#888;font-size:11px;">Status: ACTIVE (and slightly confused)</p>
-        </div>
-      </div>
-      <p style="color:#555;font-size:11px;text-align:center;margin-top:20px;">
-        <a href="https://flip-ly.net" style="color:#9D4EDD;">Return to HQ</a> |
-        <a href="https://flip-ly.net/why" style="color:#9D4EDD;">Why does this exist?</a>
-      </p>
-    </div>`,
-
-    // Template 3: Tech support
-    `<div style="background:#0D0D0D;color:#fff;padding:32px;font-family:'Courier New',monospace;max-width:500px;margin:0 auto;">
-      <div style="background:#C0C0C0;color:#000;padding:4px 8px;font-family:Tahoma,sans-serif;font-size:12px;margin-bottom:2px;">
-        <strong>flip-ly.net — Confirmation Receipt</strong>
-      </div>
-      <div style="background:#FFFFF0;color:#000;padding:20px;font-family:Tahoma,sans-serif;font-size:13px;border:2px inset #999;">
-        <p style="margin:0 0 12px;"><strong>⚠️ ATTENTION: ${username}</strong></p>
-        <p style="margin:0 0 12px;line-height:1.7;">Your account has been successfully created on flip-ly.net. Our technicians have verified your modem connection at 56,000 bps.</p>
-        <p style="margin:0 0 12px;line-height:1.7;"><strong>Location registered:</strong> ${location}</p>
-        <p style="margin:0 0 12px;line-height:1.7;"><strong>Weekly digest:</strong> Coming soon</p>
-        <p style="margin:0 0 12px;line-height:1.7;"><strong>Chaos level:</strong> Unlimited</p>
-        <hr style="border:1px solid #ddd;margin:16px 0;" />
-        <p style="margin:0 0 8px;color:#666;font-size:11px;">If you did not create this account, someone else is now receiving garage sale deals in your area. Lucky them.</p>
-        <p style="margin:0;color:#666;font-size:11px;">Do not reply to this email. Our inbox is also made of Comic Sans.</p>
-      </div>
-      <p style="color:#555;font-size:11px;text-align:center;margin-top:16px;font-family:Tahoma,sans-serif;">
-        © 1997-2026 flip-ly.net | <a href="https://flip-ly.net" style="color:#9D4EDD;">The chaos awaits</a>
-      </p>
-    </div>`,
-  ]
-
-  return TEMPLATES[Math.floor(Math.random() * TEMPLATES.length)]
+    </div>
+  </div>`
 }
+
+/* ── ARCHIVED CHAOS TEMPLATES (kept for future A/B testing) ──
+ * Original templates: Classic Chaos, FBI Style, Tech Support
+ * These can be re-enabled for chaos-mode signups or drip sequences.
+ * See git history: commit before this change for full templates.
+ */
 
 export async function POST(req: NextRequest) {
   try {
@@ -189,9 +152,9 @@ export async function POST(req: NextRequest) {
       utm_campaign: utm_campaign || '',
     }, user.id)
 
-    // Send chaotic welcome email
+    // Send welcome email
     try {
-      const subject = SUBJECTS[Math.floor(Math.random() * SUBJECTS.length)]
+      const subject = WELCOME_SUBJECT
       const html = getWelcomeEmail(email, marketDisplayName)
 
       await sendEmail({
@@ -236,10 +199,11 @@ export async function POST(req: NextRequest) {
     // Discover sources for this market if it's newly activated (fire-and-forget)
     discoverSourcesForMarket(market.id)
 
-    // Enroll in welcome drip sequence (fire-and-forget)
-    enrollInWelcomeSequence(user.id).catch(err =>
-      console.error('[SIGNUP] Drip enrollment failed:', err.message)
-    )
+    // Drip sequence disabled — only welcome email is live.
+    // Re-enable after brainstorm on content/cadence.
+    // enrollInWelcomeSequence(user.id).catch(err =>
+    //   console.error('[SIGNUP] Drip enrollment failed:', err.message)
+    // )
 
     return response
   } catch (err) {
