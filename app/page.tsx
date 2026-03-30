@@ -1181,24 +1181,32 @@ export default function Home() {
       )}
 
       {/* ═══ ASK FLIP-LY — The AskJeeves Search Engine ═══ */}
-      <section className={`px-4 py-12 ${searching ? 'crash-shake' : ''}`} style={{
-        background: 'linear-gradient(180deg, #FFFEF0 0%, #E8E0B0 30%, #FFF8DC 60%, #FFFEF0 100%)',
-        borderTop: '8px ridge #996633',
-        borderBottom: '8px ridge #996633',
+      <section className={`px-4 py-12 ${!cleanMode && searching ? 'crash-shake' : ''}`} style={{
+        ...(cleanMode ? {
+          background: '#0a0a0a',
+          borderTop: '1px solid #222',
+          borderBottom: '1px solid #222',
+        } : {
+          background: 'linear-gradient(180deg, #FFFEF0 0%, #E8E0B0 30%, #FFF8DC 60%, #FFFEF0 100%)',
+          borderTop: '8px ridge #996633',
+          borderBottom: '8px ridge #996633',
+        }),
         position: 'relative',
         overflow: 'hidden',
-        // Progressive degradation: tilt as searches run out
-        transform: searchGate && !searchGate.is_premium && searchGate.searches_remaining !== undefined
+        // Progressive degradation: tilt as searches run out (chaos only)
+        transform: !cleanMode && searchGate && !searchGate.is_premium && searchGate.searches_remaining !== undefined
           ? searchGate.searches_remaining <= 1 ? 'rotate(1.5deg)' : searchGate.searches_remaining <= 3 ? 'rotate(0.5deg)' : 'none'
           : 'none',
         transition: 'transform 0.5s ease',
       }}>
-        {/* Animated star background */}
+        {/* Animated star background (chaos only) */}
+        {!cleanMode && (
         <div style={{
           position: 'absolute', inset: 0, opacity: 0.06,
           backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\'%3E%3Ctext x=\'10\' y=\'30\' font-size=\'20\'%3E%E2%9C%A8%3C/text%3E%3Ctext x=\'40\' y=\'55\' font-size=\'14\'%3E%E2%AD%90%3C/text%3E%3C/svg%3E")',
           animation: 'scroll-bg 20s linear infinite',
         }} />
+        )}
 
         {/* Marquee banner */}
         {!cleanMode && (
@@ -1215,138 +1223,211 @@ export default function Home() {
         )}
 
         <div className="max-w-3xl mx-auto relative">
-          {/* AskJeeves header — CHAOTIC */}
+          {/* Search header */}
           <div className="mb-6 text-center">
-            {/* Spinning hat */}
-            <div className={cleanMode ? '' : 'jitter'} style={{ fontSize: cleanMode ? '48px' : '64px', marginBottom: '4px', display: 'inline-block' }}>{cleanMode ? '🔍' : '🎩'}</div>
-            <h3 style={{
-              fontFamily: '"Comic Sans MS", cursive',
-              fontSize: '38px', fontWeight: 'bold',
-              color: '#333', letterSpacing: '-0.5px',
-              textShadow: '2px 2px 0 #FFD700, -1px -1px 0 #CC3300',
-            }}>
-              {cleanMode ? 'Search ' : 'Ask '}<span className={cleanMode ? '' : 'glitch'} data-text="flip-ly" style={{
-                color: '#CC3300',
-                textShadow: '0 0 10px rgba(204,51,0,0.5), 3px 3px 0 #FFD700',
-              }}>flip-ly</span>
-            </h3>
-            <p style={{
-              fontFamily: 'Papyrus, fantasy', fontSize: '15px',
-              color: '#666', fontStyle: 'italic', marginTop: '4px',
-              letterSpacing: '1px',
-            }}>
-              Your personal butler for garage sale intelligence
-            </p>
+            {cleanMode ? (
+              <>
+                <h3 style={{
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  fontSize: '24px', fontWeight: 700,
+                  color: '#fff', marginBottom: '4px',
+                }}>
+                  Search Deals
+                </h3>
+                <p style={{
+                  fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '14px',
+                  color: '#888',
+                }}>
+                  Real-time results from Craigslist, EstateSales.net &amp; local sources
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="jitter" style={{ fontSize: '64px', marginBottom: '4px', display: 'inline-block' }}>🎩</div>
+                <h3 style={{
+                  fontFamily: '"Comic Sans MS", cursive',
+                  fontSize: '38px', fontWeight: 'bold',
+                  color: '#333', letterSpacing: '-0.5px',
+                  textShadow: '2px 2px 0 #FFD700, -1px -1px 0 #CC3300',
+                }}>
+                  Ask <span className="glitch" data-text="flip-ly" style={{
+                    color: '#CC3300',
+                    textShadow: '0 0 10px rgba(204,51,0,0.5), 3px 3px 0 #FFD700',
+                  }}>flip-ly</span>
+                </h3>
+                <p style={{
+                  fontFamily: 'Papyrus, fantasy', fontSize: '15px',
+                  color: '#666', fontStyle: 'italic', marginTop: '4px',
+                  letterSpacing: '1px',
+                }}>
+                  Your personal butler for garage sale intelligence
+                </p>
 
-            {/* Stats bar — web counter style */}
-            <div className="mt-3 inline-flex items-center gap-1 px-3 py-1" style={{
-              background: '#000', border: '2px inset #808080', borderRadius: '0',
-              fontFamily: 'monospace', fontSize: '11px',
-            }}>
-              <span style={{ color: '#0f0' }}>●</span>
-              <span style={{ color: '#0f0' }}>ONLINE</span>
-              <span style={{ color: '#555' }}>|</span>
-              <span style={{ color: '#ff0' }}>{totalResults || 260}+ deals indexed</span>
-              <span style={{ color: '#555' }}>|</span>
-              <span style={{ color: '#0ff' }}>AI: ACTIVE</span>
-              <span style={{ color: '#555' }}>|</span>
-              <span className="blink" style={{ color: '#f0f' }}>LIVE DATA</span>
-            </div>
+                {/* Stats bar — web counter style */}
+                <div className="mt-3 inline-flex items-center gap-1 px-3 py-1" style={{
+                  background: '#000', border: '2px inset #808080', borderRadius: '0',
+                  fontFamily: 'monospace', fontSize: '11px',
+                }}>
+                  <span style={{ color: '#0f0' }}>●</span>
+                  <span style={{ color: '#0f0' }}>ONLINE</span>
+                  <span style={{ color: '#555' }}>|</span>
+                  <span style={{ color: '#ff0' }}>{totalResults || 260}+ deals indexed</span>
+                  <span style={{ color: '#555' }}>|</span>
+                  <span style={{ color: '#0ff' }}>AI: ACTIVE</span>
+                  <span style={{ color: '#555' }}>|</span>
+                  <span className="blink" style={{ color: '#f0f' }}>LIVE DATA</span>
+                </div>
 
-            {/* Under construction GIF reference */}
-            {!cleanMode && (
-            <div className="mt-2" style={{ fontSize: '10px', color: '#999', fontFamily: 'Tahoma, sans-serif' }}>
-              🚧 Search Engine v0.69 beta 🚧 Sponsored by LimeWire 🚧
-            </div>
+                <div className="mt-2" style={{ fontSize: '10px', color: '#999', fontFamily: 'Tahoma, sans-serif' }}>
+                  🚧 Search Engine v0.69 beta 🚧 Sponsored by LimeWire 🚧
+                </div>
+              </>
             )}
           </div>
 
-          {/* Search form — AskJeeves x Geocities x Win98 */}
+          {/* Search form */}
           <form onSubmit={handleSearch}>
-            {/* Win98 window frame around search */}
-            <div className="win98-window" style={{ marginBottom: '8px' }}>
-              <div className="win98-titlebar" style={{ background: 'linear-gradient(90deg, #000080, #1084d0)' }}>
-                <span className="win98-titlebar-text" style={{ fontSize: '11px' }}>
-                  🔍 Ask flip-ly Search Engine — [Internet Explorer 4.0]
-                </span>
-              </div>
-              <div style={{ padding: '8px', background: '#c0c0c0', border: '2px inset #fff' }}>
-                {/* Address bar */}
-                {!cleanMode && (
-                <div className="flex items-center gap-2 mb-2" style={{ fontSize: '11px', fontFamily: 'Tahoma, sans-serif' }}>
-                  <span style={{ color: '#000', fontWeight: 'bold' }}>Address:</span>
+            {cleanMode ? (
+              /* ── CLEAN MODE SEARCH ── */
+              <div style={{ marginBottom: '8px' }}>
+                <div className="flex flex-col gap-3">
                   <div style={{
-                    flex: 1, background: '#fff', border: '2px inset #808080',
-                    padding: '2px 6px', fontSize: '11px', color: '#000080',
-                    fontFamily: 'monospace',
+                    background: '#111', border: '1px solid #333', borderRadius: '8px',
+                    padding: '4px',
                   }}>
-                    http://www.ask-flip-ly.com/search?powered_by=chaos&ai=haiku
-                  </div>
-                  <span className="blink" style={{ color: '#0a0', fontSize: '10px' }}>🔒 Secure</span>
-                </div>
-                )}
-
-                {/* Actual search input */}
-                <div style={{
-                  background: '#fff',
-                  border: '3px ridge #996633',
-                  padding: '4px',
-                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
-                }}>
-                  <div className="flex flex-col sm:flex-row gap-1">
-                    <div className="flex-1 flex items-center gap-2 px-3">
-                      <span className="jitter" style={{ fontSize: '22px' }}>🔍</span>
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        placeholder="Ask the butler... tools, vintage, furniture, free stuff..."
-                        style={{
-                          width: '100%', padding: '12px 4px', border: 'none', outline: 'none',
-                          fontFamily: '"Comic Sans MS", cursive', fontSize: '16px', color: '#333',
-                          background: 'transparent',
-                        }}
-                      />
-                    </div>
-                    <div className="flex gap-1">
-                      <select
-                        value={searchMarket}
-                        onChange={e => setSearchMarket(e.target.value)}
-                        className="flex-1 sm:flex-none"
-                        style={{
-                          padding: '8px 8px', border: '2px inset #808080',
-                          fontFamily: 'Tahoma, sans-serif', fontSize: '11px',
-                          color: '#000', background: '#c0c0c0', cursor: 'pointer',
-                          maxWidth: '100%',
-                        }}
-                      >
-                        <option value="">🗺️ All Areas</option>
-                        {Object.keys(marketsData).sort().map(st =>
-                          (marketsData[st] || []).map(m => (
-                            <option key={m.id} value={m.slug}>{m.name}, {st}</option>
-                          ))
-                        )}
-                      </select>
-                      <button type="submit" disabled={searching} style={{
-                        padding: '8px 20px',
-                        background: searching ? '#808080' : 'linear-gradient(180deg, #ff6633, #cc3300)',
-                        color: '#fff',
-                        border: '3px outset #ff9966',
-                        fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold',
-                        fontSize: '14px', cursor: searching ? 'wait' : 'pointer',
-                        textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
-                        letterSpacing: '1px',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {searching ? '⏳ ASKING...' : '🎩 ASK'}
-                      </button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex-1 flex items-center gap-2 px-3">
+                        <span style={{ fontSize: '18px', opacity: 0.5 }}>🔍</span>
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          placeholder="Search tools, vintage, furniture, free stuff..."
+                          style={{
+                            width: '100%', padding: '12px 4px', border: 'none', outline: 'none',
+                            fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '16px',
+                            color: '#eee', background: 'transparent',
+                          }}
+                        />
+                      </div>
+                      <div className="flex gap-2 px-2 pb-2 sm:pb-0 sm:px-0 sm:pr-2">
+                        <select
+                          value={searchMarket}
+                          onChange={e => setSearchMarket(e.target.value)}
+                          className="flex-1 sm:flex-none"
+                          style={{
+                            padding: '10px 12px', border: '1px solid #333', borderRadius: '6px',
+                            fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '13px',
+                            color: '#ccc', background: '#1a1a1a', cursor: 'pointer',
+                          }}
+                        >
+                          <option value="">All Areas</option>
+                          {Object.keys(marketsData).sort().map(st =>
+                            (marketsData[st] || []).map(m => (
+                              <option key={m.id} value={m.slug}>{m.name}, {st}</option>
+                            ))
+                          )}
+                        </select>
+                        <button type="submit" disabled={searching} style={{
+                          padding: '10px 24px',
+                          background: searching ? '#333' : 'var(--clean-accent)',
+                          color: searching ? '#888' : '#000',
+                          border: 'none', borderRadius: '6px',
+                          fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 600,
+                          fontSize: '14px', cursor: searching ? 'wait' : 'pointer',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {searching ? 'Searching...' : 'Search'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              /* ── CHAOS MODE SEARCH (Win98 / AskJeeves) ── */
+              <div className="win98-window" style={{ marginBottom: '8px' }}>
+                <div className="win98-titlebar" style={{ background: 'linear-gradient(90deg, #000080, #1084d0)' }}>
+                  <span className="win98-titlebar-text" style={{ fontSize: '11px' }}>
+                    🔍 Ask flip-ly Search Engine — [Internet Explorer 4.0]
+                  </span>
+                </div>
+                <div style={{ padding: '8px', background: '#c0c0c0', border: '2px inset #fff' }}>
+                  {/* Address bar */}
+                  <div className="flex items-center gap-2 mb-2" style={{ fontSize: '11px', fontFamily: 'Tahoma, sans-serif' }}>
+                    <span style={{ color: '#000', fontWeight: 'bold' }}>Address:</span>
+                    <div style={{
+                      flex: 1, background: '#fff', border: '2px inset #808080',
+                      padding: '2px 6px', fontSize: '11px', color: '#000080',
+                      fontFamily: 'monospace',
+                    }}>
+                      http://www.ask-flip-ly.com/search?powered_by=chaos&ai=haiku
+                    </div>
+                    <span className="blink" style={{ color: '#0a0', fontSize: '10px' }}>🔒 Secure</span>
+                  </div>
 
-            {/* Quick search tags — pill buttons, horizontal scroll on mobile */}
+                  {/* Actual search input */}
+                  <div style={{
+                    background: '#fff',
+                    border: '3px ridge #996633',
+                    padding: '4px',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+                  }}>
+                    <div className="flex flex-col sm:flex-row gap-1">
+                      <div className="flex-1 flex items-center gap-2 px-3">
+                        <span className="jitter" style={{ fontSize: '22px' }}>🔍</span>
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          placeholder="Ask the butler... tools, vintage, furniture, free stuff..."
+                          style={{
+                            width: '100%', padding: '12px 4px', border: 'none', outline: 'none',
+                            fontFamily: '"Comic Sans MS", cursive', fontSize: '16px', color: '#333',
+                            background: 'transparent',
+                          }}
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        <select
+                          value={searchMarket}
+                          onChange={e => setSearchMarket(e.target.value)}
+                          className="flex-1 sm:flex-none"
+                          style={{
+                            padding: '8px 8px', border: '2px inset #808080',
+                            fontFamily: 'Tahoma, sans-serif', fontSize: '11px',
+                            color: '#000', background: '#c0c0c0', cursor: 'pointer',
+                            maxWidth: '100%',
+                          }}
+                        >
+                          <option value="">🗺️ All Areas</option>
+                          {Object.keys(marketsData).sort().map(st =>
+                            (marketsData[st] || []).map(m => (
+                              <option key={m.id} value={m.slug}>{m.name}, {st}</option>
+                            ))
+                          )}
+                        </select>
+                        <button type="submit" disabled={searching} style={{
+                          padding: '8px 20px',
+                          background: searching ? '#808080' : 'linear-gradient(180deg, #ff6633, #cc3300)',
+                          color: '#fff',
+                          border: '3px outset #ff9966',
+                          fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold',
+                          fontSize: '14px', cursor: searching ? 'wait' : 'pointer',
+                          textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
+                          letterSpacing: '1px',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {searching ? '⏳ ASKING...' : '🎩 ASK'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Quick search tags — pill buttons */}
             <div className="mt-3 flex gap-2 justify-center overflow-x-auto sm:flex-wrap sm:overflow-visible pb-2 sm:pb-0" style={{ WebkitOverflowScrolling: 'touch' }}>
               {[
                 { tag: 'tools', emoji: '🔧' },
@@ -1360,9 +1441,15 @@ export default function Home() {
               ].map(({ tag, emoji }) => (
                 <button key={tag} type="button" onClick={() => { setSearchQuery(tag); }} style={{
                   padding: '6px 14px',
-                  border: '2px outset #c0c0c0',
-                  fontFamily: '"Comic Sans MS", cursive', fontSize: '12px', color: '#333',
-                  background: 'linear-gradient(180deg, #fff, #e0e0e0)',
+                  ...(cleanMode ? {
+                    border: '1px solid #333', borderRadius: '16px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '13px',
+                    color: '#ccc', background: '#1a1a1a',
+                  } : {
+                    border: '2px outset #c0c0c0',
+                    fontFamily: '"Comic Sans MS", cursive', fontSize: '12px',
+                    color: '#333', background: 'linear-gradient(180deg, #fff, #e0e0e0)',
+                  }),
                   cursor: 'pointer',
                   flexShrink: 0,
                 }}>
@@ -1371,9 +1458,10 @@ export default function Home() {
               ))}
             </div>
 
-            {/* Sketchy disclaimer */}
+            {/* Disclaimer */}
             <p className="text-center mt-2" style={{
-              fontSize: '9px', color: '#999', fontFamily: 'Tahoma, sans-serif',
+              fontSize: '9px', color: cleanMode ? '#555' : '#999',
+              fontFamily: cleanMode ? 'system-ui, sans-serif' : 'Tahoma, sans-serif',
               fontStyle: 'italic',
             }}>
               {cleanMode
