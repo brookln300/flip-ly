@@ -19,6 +19,7 @@
   --win98-blue: #000080;
   --win98-title: #0A246A;
   --craigslist-purple: #800080;
+  --clean-accent: #22C55E;  /* softer green for clean mode — readable on mobile */
 }
 
 * { box-sizing: border-box; }

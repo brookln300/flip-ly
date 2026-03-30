@@ -114,7 +114,7 @@ function ValuePropsSection({ cleanMode }: { cleanMode?: boolean }) {
       <h3 className="text-center mb-12" style={{
         fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : 'Papyrus, fantasy',
         fontSize: cleanMode ? '28px' : '32px',
-        color: cleanMode ? 'var(--lime)' : 'var(--mustard)',
+        color: cleanMode ? 'var(--clean-accent)' : 'var(--mustard)',
         letterSpacing: cleanMode ? '1px' : '6px',
         fontWeight: cleanMode ? 700 : 400,
       }}>
@@ -853,7 +853,7 @@ export default function Home() {
           boxShadow: searchGate.searches_remaining <= 2 ? '0 0 12px rgba(255,16,240,0.3)' : 'none',
           transition: 'all 0.3s',
         }}>
-          <span style={{ color: searchGate.searches_remaining <= 2 ? 'var(--hotpink)' : 'var(--lime)' }}>
+          <span style={{ color: searchGate.searches_remaining <= 2 ? 'var(--hotpink)' : (cleanMode ? 'var(--clean-accent)' : 'var(--lime)') }}>
             {searchGate.searches_remaining <= 0
               ? '💀 SEARCHES EXHAUSTED'
               : `🔍 ${searchGate.searches_remaining}/${searchGate.searches_max} searches left`}
@@ -902,16 +902,16 @@ export default function Home() {
         </div>
         <div className="flex gap-2 items-center">
           <button onClick={() => { const next = !muted; setMuted(next); localStorage.setItem('fliply-muted', String(next)) }} className="px-2 py-1 text-[10px] font-bold" style={{
-            background: muted ? '#1a1a1a' : '#0FFF50',
-            border: `1px solid ${muted ? '#333' : '#0FFF50'}`,
+            background: muted ? '#1a1a1a' : '#22C55E',
+            border: `1px solid ${muted ? '#333' : '#22C55E'}`,
             color: muted ? '#888' : '#000',
             fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
           }}>
             {muted ? '🔇 Muted' : '🔊 Chaos ON'}
           </button>
           <button onClick={() => { const next = !cleanMode; setCleanMode(next); localStorage.setItem('fliply-clean-mode', String(next)) }} className="px-2 py-1 text-[10px] font-bold" style={{
-            background: cleanMode ? '#0FFF50' : '#1a1a1a',
-            border: `1px solid ${cleanMode ? '#0FFF50' : '#333'}`,
+            background: cleanMode ? 'var(--clean-accent)' : '#1a1a1a',
+            border: `1px solid ${cleanMode ? '#22C55E' : '#333'}`,
             color: cleanMode ? '#000' : '#888',
             fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
           }}>
@@ -1022,7 +1022,7 @@ export default function Home() {
                   <h2 className="mb-4" style={{
                     fontFamily: 'system-ui, -apple-system, sans-serif',
                     fontSize: 'clamp(28px, 7vw, 56px)',
-                    color: 'var(--lime)',
+                    color: 'var(--clean-accent)',
                     lineHeight: 1.1,
                     fontWeight: 700,
                   }}>
@@ -1143,12 +1143,12 @@ export default function Home() {
                     <div style={{
                       fontFamily: 'system-ui, sans-serif', fontWeight: 700,
                       fontSize: deal.price === 'FREE' ? '15px' : '13px',
-                      color: deal.price === 'FREE' ? '#0FFF50' : deal.price === 'Not listed' ? '#666' : '#ff6600',
+                      color: deal.price === 'FREE' ? '#22C55E' : deal.price === 'Not listed' ? '#666' : '#ff6600',
                     }}>
                       {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? 'Garage Sale' : deal.price || 'Ask'}
                     </div>
                     {deal.deal_score && deal.deal_score !== 'gated' ? (
-                      <div style={{ fontSize: '10px', color: '#0FFF50', fontFamily: 'monospace' }}>
+                      <div style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'monospace' }}>
                         Score: {deal.deal_score}/10
                       </div>
                     ) : deal.deal_score === 'gated' ? (
@@ -2363,7 +2363,7 @@ export default function Home() {
           <div className="max-w-3xl mx-auto text-center">
             <div className="flex flex-wrap justify-center gap-8 mb-8">
               <div>
-                <div className="text-3xl font-bold" style={{ color: 'var(--lime)', fontFamily: 'system-ui, sans-serif' }}>413</div>
+                <div className="text-3xl font-bold" style={{ color: 'var(--clean-accent)', fontFamily: 'system-ui, sans-serif' }}>413</div>
                 <div className="text-xs" style={{ color: '#888' }}>US Markets Available</div>
               </div>
               <div>
@@ -2379,7 +2379,7 @@ export default function Home() {
               Powered by Supabase &amp; Stripe. We never sell your data. Unsubscribe anytime.
             </p>
             <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
-              background: 'var(--lime)', color: '#000',
+              background: 'var(--clean-accent)', color: '#000',
               border: 'none', borderRadius: '6px',
               fontFamily: 'system-ui, -apple-system, sans-serif',
               cursor: 'pointer',
