@@ -53,7 +53,7 @@ function DigestPreview({ city }: { city?: string }) {
         </span>
       </div>
       <p className="text-xs mb-4" style={{ color: '#666', fontStyle: 'italic' }}>
-        Here&apos;s a taste of what your Monday 8 AM email looks like. These are fake. Like everything else here.
+        Here&apos;s a taste of what your Thursday 12 PM email looks like. These are fake. Like everything else here.
       </p>
       <div className="space-y-2">
         {items.map((item, i) => (
@@ -170,7 +170,7 @@ export default function Dashboard() {
             Your weekly dose of questionable deals drops soon. We&apos;re already scanning {user.city || 'your area'} for treasures disguised as garbage.
           </p>
           <p className="text-sm mb-6" style={{ color: '#888' }}>
-            Every Monday at 8 AM CDT, you&apos;ll get an email so weird it might end up in spam. Check there too.
+            Every Thursday at 12 PM CDT, you&apos;ll get an email so weird it might end up in spam. Check there too.
           </p>
 
           {/* Share this cursed website */}
@@ -272,7 +272,7 @@ export default function Dashboard() {
           <ul className="space-y-3 text-sm" style={{ fontFamily: 'monospace', color: '#ccc' }}>
             <li className="flex items-start gap-2">
               <span style={{ color: 'var(--lime)' }}>→</span>
-              <span>Every Monday: email with 5-10 garage/estate sales near your zip code</span>
+              <span>Every Thursday: email with 5-10 garage/estate sales near your market</span>
             </li>
             <li className="flex items-start gap-2">
               <span style={{ color: 'var(--hotpink)' }}>→</span>
