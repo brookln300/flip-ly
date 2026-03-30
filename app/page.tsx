@@ -1142,10 +1142,10 @@ export default function Home() {
                   <div className="text-right flex-shrink-0">
                     <div style={{
                       fontFamily: 'system-ui, sans-serif', fontWeight: 700,
-                      fontSize: deal.price === 'FREE' ? '15px' : '14px',
-                      color: deal.price === 'FREE' ? '#0FFF50' : '#ff6600',
+                      fontSize: deal.price === 'FREE' ? '15px' : '13px',
+                      color: deal.price === 'FREE' ? '#0FFF50' : deal.price === 'Not listed' ? '#666' : '#ff6600',
                     }}>
-                      {deal.price === 'FREE' ? 'FREE' : deal.price || 'Ask'}
+                      {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? 'Garage Sale' : deal.price || 'Ask'}
                     </div>
                     {deal.deal_score && deal.deal_score !== 'gated' ? (
                       <div style={{ fontSize: '10px', color: '#0FFF50', fontFamily: 'monospace' }}>
@@ -1532,7 +1532,7 @@ export default function Home() {
                           color: listing.price === 'FREE' ? '#009900' : '#CC3300',
                           textShadow: listing.price === 'FREE' ? '0 0 6px rgba(0,153,0,0.3)' : 'none',
                         }}>
-                          {listing.price === 'FREE' ? '🆓 FREE' : listing.price || '💰 Ask'}
+                          {listing.price === 'FREE' ? '🆓 FREE' : listing.price === 'Not listed' ? '🏷️ Sale' : listing.price || '💰 Ask'}
                         </div>
                         <div style={{
                           fontSize: '10px', color: '#666',
