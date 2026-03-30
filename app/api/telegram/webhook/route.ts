@@ -34,6 +34,11 @@ export async function POST(req: NextRequest) {
     const text = message.text.trim()
     const lower = text.toLowerCase()
 
+    // ── "/help" or "help" — show command reference ──
+    if (lower === 'help' || lower === '/help') {
+      return await handleHelp()
+    }
+
     // ── "Pending" — list all pending sources ──
     if (lower === 'pending') {
       return await handlePending()
@@ -317,6 +322,41 @@ async function handleSources() {
   const rejected = sources.filter((s: any) => s.trust_level === 'rejected').length
 
   lines.push(``, `✅ ${approved} approved | ⏳ ${pending} pending | ❌ ${rejected} rejected`)
+
+  await sendTelegramAlert(lines.join('\n'))
+  return NextResponse.json({ ok: true })
+}
+
+/**
+ * Handle "/help" or "help" — show all available commands
+ */
+async function handleHelp() {
+  const lines = [
+    `<b>🦞 flip-ly Bot Commands</b>`,
+    ``,
+    `<b>── View ──</b>`,
+    `<code>Pending</code> — List all pending sources (numbered)`,
+    `<code>Sources</code> — All sources: ✅ approved ⏳ pending ❌ rejected`,
+    ``,
+    `<b>── Approve / Reject ──</b>`,
+    `<code>Approve 3</code> — Approve source #3`,
+    `<code>Approve 1-6, 9</code> — Approve a range + individual`,
+    `<code>Reject 4, 7-8</code> — Reject specific sources`,
+    `<code>Approve all</code> — Approve everything pending`,
+    `<code>Reject all</code> — Reject everything pending`,
+    ``,
+    `<i>Numbers match the Pending list. Run Pending first to see current numbers.</i>`,
+    ``,
+    `<b>── Coming Soon ──</b>`,
+    `<code>Scan [market]</code> — Re-discover sources for a market`,
+    `<code>Markets</code> — Show active markets + source counts`,
+    `<code>Add [market] [url]</code> — Manually add a source`,
+    ``,
+    `<b>── Help ──</b>`,
+    `<code>/help</code> or <code>help</code> — This message`,
+    ``,
+    `<i>All commands are case-insensitive. Ranges (1-6) and mixed (1-3, 7, 9-12) work.</i>`,
+  ]
 
   await sendTelegramAlert(lines.join('\n'))
   return NextResponse.json({ ok: true })
