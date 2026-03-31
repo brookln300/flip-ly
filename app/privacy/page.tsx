@@ -199,6 +199,7 @@ export default function Privacy() {
 
       <div className="mt-12 pt-6 flex gap-4 text-xs" style={{ borderTop: '2px dashed var(--hotpink)' }}>
         <Link href="/terms" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Terms of Service</Link>
+        <Link href="/data-deletion" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Data Deletion</Link>
         <Link href="/contest-rules" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Contest Rules</Link>
         <Link href="/about" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>About</Link>
       </div>

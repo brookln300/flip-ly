@@ -1869,6 +1869,7 @@ export default function Home() {
         </p>
         <div className="flex justify-center gap-4 mb-3">
           <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime)', textDecoration: 'none', fontSize: '14px' }} title="X (Twitter)">𝕏</a>
+          <a href="https://www.youtube.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#FF0000', textDecoration: 'none', fontSize: '14px' }} title="YouTube">▶</a>
           <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--hotpink)', textDecoration: 'none', fontSize: '14px' }} title="TikTok">♪</a>
           <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#E1306C', textDecoration: 'none', fontSize: '14px' }} title="Instagram">📸</a>
         </div>

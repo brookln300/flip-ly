@@ -135,6 +135,7 @@ export default function Terms() {
 
       <div className="mt-12 pt-6 flex gap-4 text-xs" style={{ borderTop: '2px dashed var(--lime)' }}>
         <Link href="/privacy" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Privacy Policy</Link>
+        <Link href="/data-deletion" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Data Deletion</Link>
         <Link href="/contest-rules" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Contest Rules</Link>
         <Link href="/about" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>About</Link>
       </div>
