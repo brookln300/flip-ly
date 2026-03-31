@@ -259,8 +259,8 @@ export async function GET(req: NextRequest) {
     total_available: count || 0,
     filter_market: marketSlug || 'all',
     filter_hot: hot,
-    filter_price_min: priceMin,
-    filter_price_max: priceMax,
+    filter_price_min: priceMin ?? 0,
+    filter_price_max: priceMax ?? 0,
     user_type: isPremium ? 'pro' : userId ? 'free' : 'anonymous',
     search_method: query ? 'fts' : 'browse',
   }, userId || undefined)
