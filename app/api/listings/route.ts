@@ -17,6 +17,10 @@ export async function GET(req: NextRequest) {
   const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
   const offset = parseInt(searchParams.get('offset') || '0')
 
+  // ── Price range filters (Pro feature, cents) ──
+  const priceMin = searchParams.get('price_min') ? parseInt(searchParams.get('price_min')!) * 100 : null
+  const priceMax = searchParams.get('price_max') ? parseInt(searchParams.get('price_max')!) * 100 : null
+
   // ── Auth + Premium check ──
   const session = await getSession()
   let isPremium = false
@@ -42,23 +46,19 @@ export async function GET(req: NextRequest) {
     todayStart.setHours(0, 0, 0, 0)
 
     if (userId) {
-      // Logged in free user — rate limit by user ID
       const { count } = await supabase
         .from('fliply_search_log')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .gte('searched_at', todayStart.toISOString())
-
       searchesUsed = count || 0
     } else {
-      // Anonymous — rate limit by IP
       const ip = getClientIp(req)
       const { count } = await supabase
         .from('fliply_search_log')
         .select('*', { count: 'exact', head: true })
         .eq('anon_ip', ip)
         .gte('searched_at', todayStart.toISOString())
-
       searchesUsed = count || 0
     }
 
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
   // ── Query listings ──
   const effectiveLimit = isPremium ? limit : Math.min(limit, FREE_RESULTS_CAP)
 
-  // Resolve market filter first (needed for both search paths)
+  // Resolve market filter
   let marketId: string | null = null
   if (marketSlug) {
     const { data: market } = await supabase
@@ -115,44 +115,100 @@ export async function GET(req: NextRequest) {
     if (market) marketId = market.id
   }
 
-  // ── Build query ──
-  // ILIKE is now backed by GIN trigram indexes (pg_trgm) for performance.
-  // Search title, ai_description, description, and ai_tags for broad matching.
-  // Order: hot deals first, then by deal_score, then recency.
-  let dbQuery = supabase
-    .from('fliply_listings')
-    .select('*', { count: 'exact' })
-    .range(offset, offset + effectiveLimit - 1)
+  let listings: any[] | null = null
+  let count: number | null = null
+  let error: any = null
 
   if (query) {
-    const safeQuery = query.replace(/%/g, '\\%').replace(/_/g, '\\_')
-    // Search across text fields + tags. GIN trgm indexes accelerate these ILIKEs.
-    dbQuery = dbQuery.or(
-      `title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,ai_description.ilike.%${safeQuery}%,ai_tags.cs.{${safeQuery.toLowerCase()}}`
-    )
-  }
-  if (marketId) {
-    dbQuery = dbQuery.eq('market_id', marketId)
-  }
-  if (hot) {
-    dbQuery = dbQuery.eq('is_hot', true)
-  }
+    // ── Full-text search via Postgres tsvector RPC ──
+    // Uses weighted search_vector (title=A, ai_desc+tags=B, desc=C)
+    // with ts_rank_cd for relevance scoring. Falls back to ILIKE if RPC fails.
+    const { data: rpcData, error: rpcError } = await supabase.rpc('search_listings', {
+      search_query: query,
+      market_filter: marketId,
+      hot_only: hot,
+      result_limit: effectiveLimit,
+      result_offset: offset,
+    })
 
-  // Sort: hot deals first, then by score, then recency
-  dbQuery = dbQuery
-    .order('is_hot', { ascending: false, nullsFirst: false })
-    .order('deal_score', { ascending: false, nullsFirst: false })
-    .order('scraped_at', { ascending: false })
+    if (!rpcError && rpcData && rpcData.length > 0) {
+      // RPC success — use ranked results
+      count = rpcData[0]?.total_count ? parseInt(rpcData[0].total_count) : rpcData.length
+      listings = rpcData
+    } else {
+      // Fallback: ILIKE search (backed by pg_trgm GIN indexes)
+      if (rpcError) console.warn('FTS RPC failed, falling back to ILIKE:', rpcError.message)
 
-  const { data: listings, count, error } = await dbQuery
+      let dbQuery = supabase
+        .from('fliply_listings')
+        .select('*', { count: 'exact' })
+        .range(offset, offset + effectiveLimit - 1)
+
+      const safeQuery = query.replace(/%/g, '\\%').replace(/_/g, '\\_')
+      dbQuery = dbQuery.or(
+        `title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,ai_description.ilike.%${safeQuery}%,ai_tags.cs.{${safeQuery.toLowerCase()}}`
+      )
+      if (marketId) dbQuery = dbQuery.eq('market_id', marketId)
+      if (hot) dbQuery = dbQuery.eq('is_hot', true)
+
+      dbQuery = dbQuery
+        .order('is_hot', { ascending: false, nullsFirst: false })
+        .order('deal_score', { ascending: false, nullsFirst: false })
+        .order('scraped_at', { ascending: false })
+
+      const result = await dbQuery
+      listings = result.data
+      count = result.count
+      error = result.error
+    }
+  } else {
+    // ── Browse mode (no query) ──
+    let dbQuery = supabase
+      .from('fliply_listings')
+      .select('*', { count: 'exact' })
+      .range(offset, offset + effectiveLimit - 1)
+
+    if (marketId) dbQuery = dbQuery.eq('market_id', marketId)
+    if (hot) dbQuery = dbQuery.eq('is_hot', true)
+
+    dbQuery = dbQuery
+      .order('is_hot', { ascending: false, nullsFirst: false })
+      .order('deal_score', { ascending: false, nullsFirst: false })
+      .order('scraped_at', { ascending: false })
+
+    const result = await dbQuery
+    listings = result.data
+    count = result.count
+    error = result.error
+  }
 
   if (error) {
     console.error('Listings query error:', error.message)
     return NextResponse.json({ error: 'Search failed. Try again.' }, { status: 500 })
   }
 
+  // ── Apply price range filter (post-query for RPC, could be optimized later) ──
+  let filtered = listings || []
+  if (priceMin !== null || priceMax !== null) {
+    filtered = filtered.filter(l => {
+      const price = l.price_low_cents
+      if (price === null || price === undefined) return false
+      if (priceMin !== null && price < priceMin) return false
+      if (priceMax !== null && price > priceMax) return false
+      return true
+    })
+  }
+
+  // ── Freshness metadata ──
+  const newestListing = filtered.length > 0
+    ? new Date(Math.max(...filtered.map((l: any) => new Date(l.scraped_at).getTime())))
+    : null
+  const oldestListing = filtered.length > 0
+    ? new Date(Math.min(...filtered.map((l: any) => new Date(l.scraped_at).getTime())))
+    : null
+
   // ── Format results — gate fields for free users ──
-  const results = (listings || []).map(l => {
+  const results = filtered.map(l => {
     const base = {
       id: l.id,
       title: l.title,
@@ -168,7 +224,6 @@ export async function GET(req: NextRequest) {
     }
 
     if (isPremium) {
-      // Pro users get EVERYTHING
       return {
         ...base,
         description: l.ai_description || l.description || null,
@@ -180,19 +235,19 @@ export async function GET(req: NextRequest) {
         address: l.address,
         lat: l.latitude,
         lng: l.longitude,
+        price_cents: l.price_low_cents || null,
       }
     }
 
-    // Free users: redacted pro fields
     return {
       ...base,
       description: l.ai_description ? l.ai_description.substring(0, 60) + '...' : null,
-      deal_score: l.deal_score ? 'gated' : null,  // frontend shows [██/10]
-      deal_reason: null,  // hidden
-      tags: (l.ai_tags || l.tags || []).slice(0, 2),  // only 2 tags
-      source_url: null,  // hidden — pro only
-      image_url: l.image_url,  // images are fine
-      address: null,  // hidden
+      deal_score: l.deal_score ? 'gated' : null,
+      deal_reason: null,
+      tags: (l.ai_tags || l.tags || []).slice(0, 2),
+      source_url: null,
+      image_url: l.image_url,
+      address: null,
       lat: null,
       lng: null,
     }
@@ -204,7 +259,10 @@ export async function GET(req: NextRequest) {
     total_available: count || 0,
     filter_market: marketSlug || 'all',
     filter_hot: hot,
+    filter_price_min: priceMin,
+    filter_price_max: priceMax,
     user_type: isPremium ? 'pro' : userId ? 'free' : 'anonymous',
+    search_method: query ? 'fts' : 'browse',
   }, userId || undefined)
 
   return NextResponse.json({
@@ -223,6 +281,11 @@ export async function GET(req: NextRequest) {
     _meta: {
       real_data: true,
       scraped_sources: ['craigslist', 'eventbrite'],
+      freshness: {
+        newest: newestListing?.toISOString() || null,
+        oldest: oldestListing?.toISOString() || null,
+        age_hours: newestListing ? Math.round((Date.now() - newestListing.getTime()) / (1000 * 60 * 60)) : null,
+      },
     },
   })
 }
