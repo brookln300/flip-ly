@@ -82,6 +82,8 @@ const jsonLd = {
       logo: 'https://flip-ly.net/og-image.png',
       sameAs: [
         'https://x.com/ctrl_alt_flip',
+        'https://www.facebook.com/61574265411500',
+        'https://www.youtube.com/@ctrl_alt_flip',
         'https://www.instagram.com/ctrl_alt_flip/',
         'https://www.tiktok.com/@ctrl_alt_flip',
       ],
