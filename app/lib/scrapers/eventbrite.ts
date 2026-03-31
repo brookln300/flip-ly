@@ -121,10 +121,13 @@ export async function scrapeEventbrite(
 }
 
 /**
- * Build Eventbrite city slug from lat/lng config.
- * Falls back to "united-states" if we can't determine the city.
+ * Build Eventbrite city slug from config.
+ * Format: "state--city-name" (e.g., "tx--dallas", "fl--miami", "ut--salt-lake-city")
+ * Falls back to "united-states" if we can't determine the location.
  */
 function buildCitySlug(config: EventbriteConfig): string {
-  // Default for DFW
-  return 'tx--dallas'
+  // city_slug should be set by source-discovery.ts — use it if available
+  if (config.city_slug) return config.city_slug
+  // Fallback: can't determine location without city_slug
+  return 'united-states'
 }

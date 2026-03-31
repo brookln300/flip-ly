@@ -80,11 +80,11 @@ export async function scrapeCraigslist(
           longitude = parseFloat(parts[2]) || null
         }
 
-        // Parse price
+        // Parse price — SAPI returns price in whole dollars, convert to cents for DB
         let priceCents: number | null = null
         let priceText = 'Not listed'
         if (typeof rawPrice === 'number' && rawPrice >= 0) {
-          priceCents = rawPrice
+          priceCents = rawPrice * 100
           priceText = rawPrice === 0 ? 'FREE' : `$${rawPrice}`
         }
 

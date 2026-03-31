@@ -49,19 +49,19 @@ export async function GET(req: NextRequest) {
 
     results.push(`Denied contest attempts: ${deniedCount || 0} old rows deleted`)
 
-    // Expire stale listings (older than 10 days — sales are over)
-    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+    // Expire stale listings (older than 14 days — gives buffer between weekly scrapes)
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
     const { count: expiredCount } = await supabase
       .from('fliply_listings')
       .select('*', { count: 'exact', head: true })
-      .lt('scraped_at', tenDaysAgo)
+      .lt('scraped_at', fourteenDaysAgo)
 
     await supabase
       .from('fliply_listings')
       .delete()
-      .lt('scraped_at', tenDaysAgo)
+      .lt('scraped_at', fourteenDaysAgo)
 
-    results.push(`Expired listings: ${expiredCount || 0} stale rows deleted (>10 days)`)
+    results.push(`Expired listings: ${expiredCount || 0} stale rows deleted (>14 days)`)
 
     await sendTelegramAlert([
       `🧹 <b>Weekly Cleanup</b>`,

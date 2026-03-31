@@ -81,11 +81,13 @@ Source: ${l.source_type || 'unknown'}`
  * Process all unenriched listings in batches of 5.
  */
 export async function enrichAllPending(): Promise<{ enriched: number; batches: number }> {
+  // Fetch ALL unenriched listings, oldest first, so none get orphaned
   const { data: pending } = await supabase
     .from('fliply_listings')
     .select('id, title, description, price_text, city, state, event_date, source_type')
     .is('enriched_at', null)
-    .limit(50)
+    .order('scraped_at', { ascending: true })
+    .limit(200)
 
   if (!pending || pending.length === 0) return { enriched: 0, batches: 0 }
 

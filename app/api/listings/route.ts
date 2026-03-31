@@ -104,31 +104,45 @@ export async function GET(req: NextRequest) {
   // ── Query listings ──
   const effectiveLimit = isPremium ? limit : Math.min(limit, FREE_RESULTS_CAP)
 
-  let dbQuery = supabase
-    .from('fliply_listings')
-    .select('*', { count: 'exact' })
-    .order('scraped_at', { ascending: false })
-    .range(offset, offset + effectiveLimit - 1)
-
-  if (query) {
-    // Escape SQL wildcards in user input
-    const safeQuery = query.replace(/%/g, '\\%').replace(/_/g, '\\_')
-    dbQuery = dbQuery.or(`title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,ai_description.ilike.%${safeQuery}%`)
-  }
+  // Resolve market filter first (needed for both search paths)
+  let marketId: string | null = null
   if (marketSlug) {
-    // Look up market by slug, then filter listings by market_id
     const { data: market } = await supabase
       .from('fliply_markets')
       .select('id')
       .eq('slug', marketSlug)
       .single()
-    if (market) {
-      dbQuery = dbQuery.eq('market_id', market.id)
-    }
+    if (market) marketId = market.id
+  }
+
+  // ── Build query ──
+  // ILIKE is now backed by GIN trigram indexes (pg_trgm) for performance.
+  // Search title, ai_description, description, and ai_tags for broad matching.
+  // Order: hot deals first, then by deal_score, then recency.
+  let dbQuery = supabase
+    .from('fliply_listings')
+    .select('*', { count: 'exact' })
+    .range(offset, offset + effectiveLimit - 1)
+
+  if (query) {
+    const safeQuery = query.replace(/%/g, '\\%').replace(/_/g, '\\_')
+    // Search across text fields + tags. GIN trgm indexes accelerate these ILIKEs.
+    dbQuery = dbQuery.or(
+      `title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,ai_description.ilike.%${safeQuery}%,ai_tags.cs.{${safeQuery.toLowerCase()}}`
+    )
+  }
+  if (marketId) {
+    dbQuery = dbQuery.eq('market_id', marketId)
   }
   if (hot) {
     dbQuery = dbQuery.eq('is_hot', true)
   }
+
+  // Sort: hot deals first, then by score, then recency
+  dbQuery = dbQuery
+    .order('is_hot', { ascending: false, nullsFirst: false })
+    .order('deal_score', { ascending: false, nullsFirst: false })
+    .order('scraped_at', { ascending: false })
 
   const { data: listings, count, error } = await dbQuery
 
