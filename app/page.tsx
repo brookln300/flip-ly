@@ -358,6 +358,10 @@ export default function Home() {
     if (params.get('signup') === 'pro') {
       setShowSignup(true)
     }
+    // Auto-open lobster hunt terminal if redirected from /lobster-hunt
+    if (params.get('lobster') === 'true') {
+      setShowAdmin(true)
+    }
   }, [])
 
   // Clean mode: persist in localStorage + auto-detect from UTM/referrer

@@ -323,7 +323,7 @@ function HallContent() {
             The webmaster is learning JavaScript. Please be patient.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <a href="/" style={{
+            <a href="/?lobster=true" style={{
               fontFamily: '"Courier New", monospace',
               fontSize: '11px',
               color: '#000',
