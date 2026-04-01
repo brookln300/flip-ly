@@ -19,12 +19,16 @@ export default function StickyNote({ onOpenHunt }: { onOpenHunt?: () => void } =
   const noteRef = useRef<HTMLDivElement>(null)
 
   const mascotMessages = [
-    "It looks like you're trying to find a password. Would you like help?",
-    "Have you tried 'admin'? ...just kidding. Or am I?",
-    "The answer is definitely not in this sticky note.",
-    "I've been stuck to this page since 1997.",
     "Psst... check the source code. I'll wait.",
-    "No really, I have nowhere else to be.",
+    "The clues are in hex. And morse. And base64. Good luck.",
+    "One password is real. Seven are decoys. Choose wisely.",
+    "Have you tried 'admin'? ...just kidding. Or am I?",
+    "Hint: the answer isn't one clue. It's pieces of many.",
+    "Look at the HTML comments. Not all of them lie.",
+    "The footer knows things. So does the <head>.",
+    "No single decoded string is the answer. You must combine.",
+    "I've been stuck to this page since 1997. I've seen things.",
+    "The lobster sees all. The lobster says nothing. Except this.",
   ]
 
   useEffect(() => {
@@ -293,6 +297,24 @@ export default function StickyNote({ onOpenHunt }: { onOpenHunt?: () => void } =
         }}>
           last updated by the webmaster
         </p>
+
+        {/* Hidden clickable pixel — opens hunt terminal */}
+        <div
+          onClick={(e) => { e.stopPropagation(); onOpenHunt?.() }}
+          style={{
+            position: 'absolute',
+            bottom: '6px', right: '10px',
+            width: '12px', height: '12px',
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          title=""
+        >
+          <div style={{
+            width: '4px', height: '4px', borderRadius: '50%',
+            background: '#e8d44d',
+          }} />
+        </div>
 
         {/* NEW! blink */}
         <span style={{
