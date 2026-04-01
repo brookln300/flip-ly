@@ -10,7 +10,7 @@ import { useState, useRef, useEffect } from 'react'
 
 type NoteState = 'visible' | 'dismissed' | 'panicking' | 'gone'
 
-export default function StickyNote() {
+export default function StickyNote({ onOpenHunt }: { onOpenHunt?: () => void } = {}) {
   const [pos, setPos] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
   const [offset, setOffset] = useState({ x: 0, y: 0 })
@@ -277,7 +277,14 @@ export default function StickyNote() {
           fontSize: '11px', color: '#666',
           marginTop: '8px', marginBottom: '0',
         }}>
-          → <a href="/lobster-hunt" style={{ color: '#8B4513', textDecoration: 'underline' }}>/lobster-hunt</a>
+          → <span onClick={(e) => { e.stopPropagation(); onOpenHunt?.() }} style={{ color: '#8B4513', textDecoration: 'underline', cursor: 'pointer' }}>try a password</span>
+        </p>
+        <p style={{
+          fontFamily: '"Comic Sans MS", cursive',
+          fontSize: '9px', color: '#999',
+          marginTop: '4px', marginBottom: '0',
+        }}>
+          → <a href="/lobster-hunt" onClick={e => e.stopPropagation()} style={{ color: '#aaa', textDecoration: 'underline' }}>hall of almost</a>
         </p>
         <p style={{
           fontFamily: '"Courier New", monospace',

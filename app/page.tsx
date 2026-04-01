@@ -737,7 +737,7 @@ export default function Home() {
       {!cleanMode && (
         <>
           <MeltdownSequence active={meltdownActive} onComplete={() => setMeltdownDone(true)} />
-          <StickyNote />
+          <StickyNote onOpenHunt={() => setShowAdmin(true)} />
         </>
       )}
       {/* Win98Error removed — convergence */}
