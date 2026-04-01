@@ -773,16 +773,7 @@ export default function Home() {
     'Last edited: 1 hour ago — "updated price, STOP LOWBALLING"',
   ]
 
-  const fakeListings = [
-    { title: 'Entire garage cleanout — tools, furniture, a cursed lamp', price: 'Multi-family', city: 'McKinney, TX', date: 'Sat 3/29', hot: true },
-    { title: 'Estate sale — antique furniture, possibly haunted mirror', price: '$5–$500', city: 'Plano, TX', date: 'Fri–Sun', hot: true },
-    { title: 'Moving sale — EVERYTHING MUST GO (including the dog, jk)', price: 'Make offer', city: 'Dallas, TX', date: 'Sat 3/29', hot: false },
-    { title: 'Vintage vinyl, turntables, one broken lava lamp', price: '$2–$80', city: 'Denton, TX', date: 'Sat 3/29', hot: true },
-    { title: 'Power tools from a guy who "definitely finished his projects"', price: '$5–$200', city: 'Arlington, TX', date: 'Sat 3/29', hot: true },
-    { title: 'Divorce sale — his stuff. priced to annoy.', price: '$1–$999', city: 'Frisco, TX', date: 'Sat–Sun', hot: false },
-    { title: 'FREE: couch that smells like possibility (and cats)', price: 'FREE', city: 'Fort Worth, TX', date: 'Sun only', hot: true },
-    { title: 'Mannequin — no questions. $15 firm.', price: '$15 FIRM', city: 'Allen, TX', date: 'Sat 3/29', hot: false },
-  ]
+  // fakeListings removed — clean mode now shows real DB data
 
   return (
     <div className="min-h-screen relative">
@@ -1479,11 +1470,16 @@ export default function Home() {
           {/* Butler response + Results */}
           {showResults && (
             <div className="mt-8">
-              {/* Butler speech bubble — CHAOTIC */}
+              {/* Butler speech bubble */}
               {butlerMsg && (
                 <div className="mb-6 flex items-start gap-3">
-                  <div className="jitter" style={{ fontSize: '42px', flexShrink: 0 }}>🎩</div>
-                  <div style={{
+                  {!cleanMode && <div className="jitter" style={{ fontSize: '42px', flexShrink: 0 }}>🎩</div>}
+                  <div style={cleanMode ? {
+                    background: '#111', border: '1px solid #333', borderRadius: '8px',
+                    padding: '12px 16px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '14px', color: '#ccc',
+                    fontStyle: 'italic',
+                  } : {
                     background: 'linear-gradient(135deg, #FFFFF0, #FFF8DC)',
                     border: '3px ridge #996633',
                     padding: '12px 16px', position: 'relative',
@@ -1492,31 +1488,124 @@ export default function Home() {
                     boxShadow: '4px 4px 0 rgba(0,0,0,0.15)',
                   }}>
                     <span style={{ fontSize: '18px' }}>&ldquo;</span>{butlerMsg}<span style={{ fontSize: '18px' }}>&rdquo;</span>
-                    <div style={{ marginTop: '4px', fontSize: '9px', color: '#999', fontStyle: 'normal' }}>
-                      — Jeeves, your AI-powered garage sale butler (class of &apos;98)
+                    <div style={{ marginTop: '4px', fontSize: '9px', color: cleanMode ? '#555' : '#999', fontStyle: 'normal' }}>
+                      {cleanMode ? '— AI-powered search' : '— Jeeves, your AI-powered garage sale butler (class of \'98)'}
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Results header bar */}
-              <div className="flex justify-between items-center px-3 py-2 mb-3" style={{
+              <div className="flex justify-between items-center px-3 py-2 mb-3" style={cleanMode ? {
+                background: '#111', color: '#999', borderRadius: '6px',
+                fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '12px',
+                border: '1px solid #333',
+              } : {
                 background: '#000080', color: '#fff',
                 fontFamily: 'Tahoma, sans-serif', fontSize: '11px',
                 border: '2px outset #c0c0c0',
               }}>
                 <span>
-                  📂 Showing {realListings.length} of {totalResults} results
-                  {searchQuery ? ` for "${searchQuery}"` : ''} — sorted by AI intelligence
+                  {cleanMode ? '' : '📂 '}Showing {realListings.length} of {totalResults} results
+                  {searchQuery ? ` for "${searchQuery}"` : ''}{cleanMode ? '' : ' — sorted by AI intelligence'}
                 </span>
-                <span style={{ color: '#ff0' }}>
-                  🔥 = Deal Score 8+
+                <span style={{ color: cleanMode ? '#ff6600' : '#ff0' }}>
+                  {cleanMode ? 'HOT = Score 8+' : '🔥 = Deal Score 8+'}
                 </span>
               </div>
 
-              {/* Results — real data, Craigslist x Geocities chaos */}
-              <div className="space-y-3">
-                {realListings.map((listing, i) => (
+              {/* Results — real data */}
+              <div className={cleanMode ? 'space-y-2' : 'space-y-3'}>
+                {realListings.map((listing, i) => cleanMode ? (
+                  /* ── CLEAN MODE CARD ── */
+                  <div key={listing.id || i} className="flex items-center gap-4 px-4 py-3" style={{
+                    background: i % 2 === 0 ? '#111' : '#0d0d0d',
+                    borderRadius: '6px',
+                    border: listing.hot ? '1px solid rgba(255,102,0,0.3)' : '1px solid transparent',
+                  }}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        {listing.hot && <span style={{
+                          background: '#ff6600', color: '#fff', padding: '1px 6px',
+                          borderRadius: '3px', fontSize: '10px', fontWeight: 600,
+                          fontFamily: 'system-ui, sans-serif',
+                        }}>HOT</span>}
+                        {listing.deal_score && listing.deal_score !== 'gated' && (
+                          <span style={{
+                            fontSize: '10px', fontFamily: 'monospace',
+                            color: listing.deal_score >= 8 ? '#22C55E' : listing.deal_score >= 6 ? '#ff6600' : '#888',
+                          }}>{listing.deal_score}/10</span>
+                        )}
+                        {listing.deal_score === 'gated' && (
+                          <a href="/pro" style={{
+                            fontSize: '10px', color: '#555', fontFamily: 'monospace',
+                            textDecoration: 'none',
+                          }}>Score: 🔒 Pro</a>
+                        )}
+                        {listing.source_url ? (
+                          <a href={listing.source_url} target="_blank" rel="noopener noreferrer" className="truncate" style={{
+                            color: '#eee', fontSize: '14px', fontWeight: 500,
+                            fontFamily: 'system-ui, -apple-system, sans-serif',
+                            textDecoration: 'none',
+                          }}>
+                            {listing.title}
+                          </a>
+                        ) : (
+                          <span className="truncate" style={{
+                            color: '#eee', fontSize: '14px', fontWeight: 500,
+                            fontFamily: 'system-ui, -apple-system, sans-serif',
+                          }}>
+                            {listing.title}
+                            <a href="/pro" style={{
+                              fontSize: '9px', color: '#555', marginLeft: '6px',
+                              fontFamily: 'monospace', textDecoration: 'none',
+                            }}>🔒 Pro</a>
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3" style={{ fontSize: '12px', color: '#888' }}>
+                        {listing.city && <span>📍 {listing.city}</span>}
+                        <span style={{
+                          textTransform: 'uppercase', fontSize: '10px',
+                          color: '#666', border: '1px solid #333',
+                          padding: '0 4px', borderRadius: '2px',
+                        }}>{listing.source}</span>
+                        {listing.description && (
+                          <span className="truncate hidden sm:inline" style={{ color: '#666', maxWidth: '250px' }}>
+                            {listing.description}
+                          </span>
+                        )}
+                      </div>
+                      {listing.tags?.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {listing.tags.slice(0, 4).map((tag: string) => (
+                            <span key={tag} style={{
+                              padding: '0 6px', borderRadius: '3px',
+                              fontSize: '9px', color: '#666',
+                              fontFamily: 'system-ui, sans-serif',
+                              background: '#1a1a1a', border: '1px solid #333',
+                            }}>#{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div style={{
+                        fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                        fontSize: listing.price === 'FREE' ? '15px' : '13px',
+                        color: listing.price === 'FREE' ? '#22C55E' : listing.price === 'Not listed' ? '#666' : '#ff6600',
+                      }}>
+                        {listing.price === 'FREE' ? 'FREE' : listing.price === 'Not listed' ? 'Garage Sale' : listing.price || 'Ask'}
+                      </div>
+                      {listing.date && (
+                        <div style={{ fontSize: '10px', color: '#555', fontFamily: 'monospace' }}>
+                          {listing.date}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* ── CHAOS MODE CARD ── */
                   <div key={listing.id || i} style={{
                     background: listing.hot
                       ? 'linear-gradient(135deg, #fff5f0, #fff0e8)'
@@ -1645,20 +1734,27 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* More results + CTA — MAXIMUM CHAOS */}
+              {/* More results + CTA */}
               <div className="text-center mt-8 space-y-4">
                 {totalResults > realListings.length && (
-                  <div style={{
+                  <div style={cleanMode ? {
+                    background: '#111', border: '1px solid #333', borderRadius: '6px',
+                    padding: '8px', fontFamily: 'system-ui, sans-serif', fontSize: '13px',
+                  } : {
                     background: '#000', border: '2px solid var(--lime)',
                     padding: '8px', fontFamily: 'monospace', fontSize: '12px',
                   }}>
-                    <span style={{ color: 'var(--lime)' }}>
-                      ▶ {totalResults - realListings.length} more deals in the database
+                    <span style={{ color: cleanMode ? '#ff6600' : 'var(--lime)' }}>
+                      {cleanMode ? '' : '▶ '}{totalResults - realListings.length} more deals in the database
                     </span>
                     <span style={{ color: '#555' }}> — sign up for full access</span>
                   </div>
                 )}
-                <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
+                <button onClick={() => setShowSignup(true)} className={cleanMode ? 'px-8 py-3 text-base font-semibold' : 'px-8 py-3 text-base font-bold'} style={cleanMode ? {
+                  background: '#ff6600', color: '#fff', border: 'none', borderRadius: '8px',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  cursor: 'pointer', letterSpacing: '0.5px',
+                } : {
                   background: 'linear-gradient(180deg, #ff6633, #cc3300)',
                   color: '#fff',
                   border: '4px outset #ff9966',
@@ -1668,10 +1764,10 @@ export default function Home() {
                   boxShadow: '0 0 20px rgba(204,51,0,0.3), 4px 4px 0 rgba(0,0,0,0.2)',
                   letterSpacing: '1px',
                 }}>
-                  🎩 Sign Up — The Butler Commands It (free)
+                  {cleanMode ? 'Sign Up Free — Get Weekly Deals' : '🎩 Sign Up — The Butler Commands It (free)'}
                 </button>
-                <p style={{ fontSize: '9px', color: '#999', fontFamily: 'Tahoma, sans-serif' }}>
-                  No spam. Just weekly deals. The butler has a strict no-spam policy. He&apos;s British.
+                <p style={{ fontSize: cleanMode ? '11px' : '9px', color: '#555', fontFamily: cleanMode ? 'system-ui, sans-serif' : 'Tahoma, sans-serif' }}>
+                  {cleanMode ? 'No spam. Weekly deals delivered to your inbox.' : 'No spam. Just weekly deals. The butler has a strict no-spam policy. He\'s British.'}
                 </p>
               </div>
             </div>

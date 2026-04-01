@@ -413,6 +413,9 @@ body::after {
   .card-wonky { transform: none !important; box-shadow: 4px 4px 0 var(--hotpink) !important; }
   .card-wonky:hover { transform: none !important; }
   .blink { animation: none !important; opacity: 1 !important; }
+  .fall-in { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .marquee-content { animation: none !important; }
+  .rainbow-divider { animation: none !important; }
   .btn-chaos:hover { transform: none !important; font-size: 22px !important; }
   .btn-chaos:active { transform: scale(0.97) !important; }
 
