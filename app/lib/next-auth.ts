@@ -1,5 +1,6 @@
 import type { NextAuthOptions } from 'next-auth'
 import TwitterProvider from 'next-auth/providers/twitter'
+import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { supabase } from './supabase'
@@ -11,6 +12,10 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.TWITTER_CLIENT_ID!,
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
       version: '2.0',
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     CredentialsProvider({
       name: 'Email',
@@ -87,6 +92,41 @@ export const authOptions: NextAuthOptions = {
           trackEvent('login_complete', { auth_provider: 'twitter' }, existing.id)
         }
       }
+
+      // Google OAuth — upsert user
+      if (account?.provider === 'google' && user.email) {
+        const { data: existing } = await supabase
+          .from('fliply_users')
+          .select('id')
+          .eq('email', user.email.toLowerCase())
+          .single()
+
+        if (!existing) {
+          const { data: newUser } = await supabase
+            .from('fliply_users')
+            .insert({
+              email: user.email.toLowerCase(),
+              password_hash: '',
+              google_id: account.providerAccountId,
+              google_name: user.name || null,
+              acquisition_source: 'google',
+            })
+            .select('id')
+            .single()
+          if (newUser) {
+            user.id = newUser.id
+            trackEvent('signup_complete', { signup_source: 'google', google_name: user.name || '' }, newUser.id)
+          }
+        } else {
+          await supabase
+            .from('fliply_users')
+            .update({ google_id: account.providerAccountId, google_name: user.name || null })
+            .eq('id', existing.id)
+          user.id = existing.id
+          trackEvent('login_complete', { auth_provider: 'google' }, existing.id)
+        }
+      }
+
       return true
     },
 
@@ -98,6 +138,9 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === 'twitter') {
         token.xAccessToken = account.access_token
         token.provider = 'twitter'
+      }
+      if (account?.provider === 'google') {
+        token.provider = 'google'
       }
       return token
     },

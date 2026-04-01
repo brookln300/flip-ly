@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { signIn } from 'next-auth/react'
 import WinampPlayer from './components/WinampPlayer'
 import RetroPopups from './components/RetroPopups'
 import BSOD from './components/BSOD'
@@ -193,11 +194,11 @@ function HowItWorksSection({ cleanMode }: { cleanMode?: boolean }) {
   ]
 
   return (
-    <section className="px-4 py-16" style={{ background: '#000' }}>
+    <section id="how-it-works" className="px-4 py-16" style={{ background: '#000' }}>
       <h3 className="text-center mb-4" style={{
         fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : '"Comic Sans MS", cursive',
         fontSize: cleanMode ? '24px' : '28px',
-        color: 'var(--electric)',
+        color: cleanMode ? '#fff' : 'var(--electric)',
         fontWeight: cleanMode ? 700 : 400,
       }}>
         {cleanMode ? 'How It Works' : 'HOW IT ACTUALLY WORKS'}
@@ -887,25 +888,49 @@ export default function Home() {
 
       {/* ═══ HEADER ═══ */}
       <header className="px-4 py-3 flex items-center justify-between" style={{
-        background: '#000', borderBottom: '4px solid var(--lime)',
+        background: '#000', borderBottom: cleanMode ? '1px solid #222' : '4px solid var(--lime)',
+        position: 'sticky', top: 0, zIndex: 80,
       }}>
         <div className="flex items-center gap-3">
-          <span className="text-2xl jitter">🦞</span>
+          {!cleanMode && <span className="text-2xl jitter">🦞</span>}
           <h1 className={cleanMode ? '' : 'glitch'} data-text="FLIP-LY.NET" style={{
-            fontFamily: '"Comic Sans MS", cursive', fontSize: '24px', color: 'var(--lime)',
+            fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : '"Comic Sans MS", cursive',
+            fontSize: cleanMode ? '20px' : '24px',
+            color: cleanMode ? '#fff' : 'var(--lime)',
+            fontWeight: cleanMode ? 700 : 400,
           }}>
-            FLIP-LY<span style={{ color: 'var(--hotpink)' }}>.NET</span>
+            FLIP-LY{cleanMode ? '' : <span style={{ color: 'var(--hotpink)' }}>.NET</span>}
           </h1>
+          {cleanMode && (
+            <nav className="hidden md:flex items-center gap-5 ml-6">
+              {[
+                { label: 'How It Works', href: '#how-it-works' },
+                { label: 'Search', href: '#search' },
+                { label: 'Pricing', href: '#pricing' },
+              ].map(link => (
+                <a key={link.label} href={link.href} style={{
+                  color: '#888', fontSize: '13px', textDecoration: 'none',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  transition: 'color 0.15s',
+                }} onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                   onMouseLeave={e => (e.currentTarget.style.color = '#888')}>
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+          )}
         </div>
         <div className="flex gap-2 items-center">
-          <button onClick={() => { const next = !muted; setMuted(next); localStorage.setItem('fliply-muted', String(next)) }} className="px-2 py-1 text-[10px] font-bold" style={{
-            background: muted ? '#1a1a1a' : '#22C55E',
-            border: `1px solid ${muted ? '#333' : '#22C55E'}`,
-            color: muted ? '#888' : '#000',
-            fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
-          }}>
-            {muted ? '🔇 Muted' : '🔊 Chaos ON'}
-          </button>
+          {!cleanMode && (
+            <button onClick={() => { const next = !muted; setMuted(next); localStorage.setItem('fliply-muted', String(next)) }} className="px-2 py-1 text-[10px] font-bold" style={{
+              background: muted ? '#1a1a1a' : '#22C55E',
+              border: `1px solid ${muted ? '#333' : '#22C55E'}`,
+              color: muted ? '#888' : '#000',
+              fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
+            }}>
+              {muted ? '🔇 Muted' : '🔊 Chaos ON'}
+            </button>
+          )}
           <button onClick={() => { const next = !cleanMode; setCleanMode(next); localStorage.setItem('fliply-clean-mode', String(next)) }} className="px-2 py-1 text-[10px] font-bold" style={{
             background: cleanMode ? 'var(--clean-accent)' : '#1a1a1a',
             border: `1px solid ${cleanMode ? '#22C55E' : '#333'}`,
@@ -919,14 +944,15 @@ export default function Home() {
             <div className="flex items-center gap-2">
               {loggedInUser.is_premium && (
                 <span className="px-2 py-0.5 text-[10px] font-bold hidden sm:inline" style={{
-                  background: 'linear-gradient(90deg, #FFD700, #FF8C00)',
-                  color: '#000', fontFamily: 'Tahoma, sans-serif',
-                  border: '1px solid #FFD700',
+                  background: cleanMode ? '#22C55E' : 'linear-gradient(90deg, #FFD700, #FF8C00)',
+                  color: '#000', fontFamily: cleanMode ? 'system-ui, sans-serif' : 'Tahoma, sans-serif',
+                  border: cleanMode ? 'none' : '1px solid #FFD700',
+                  borderRadius: cleanMode ? '4px' : '0',
                 }}>
-                  🦞 FIRST DIBS
+                  {cleanMode ? 'PRO' : '🦞 FIRST DIBS'}
                 </span>
               )}
-              {!loggedInUser.is_premium && (
+              {!loggedInUser.is_premium && !cleanMode && (
                 <span className="px-2 py-0.5 text-[10px] hidden sm:inline blink" style={{
                   background: '#1a1a1a', color: 'var(--hotpink)',
                   fontFamily: '"Comic Sans MS", cursive',
@@ -935,7 +961,11 @@ export default function Home() {
                   ✨ FREELOADER ✨
                 </span>
               )}
-              <a href="/dashboard" className="px-3 py-1.5 text-xs font-bold" style={{
+              <a href="/dashboard" className="px-3 py-1.5 text-xs font-bold" style={cleanMode ? {
+                background: '#1a1a1a', color: '#ccc', border: '1px solid #333',
+                borderRadius: '6px', fontFamily: 'system-ui, sans-serif',
+                textDecoration: 'none', cursor: 'pointer',
+              } : {
                 border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
                 background: 'var(--win98-gray)', color: '#000',
                 fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
@@ -945,12 +975,15 @@ export default function Home() {
               </a>
             </div>
           ) : (
-            <button onClick={() => setShowSignup(true)} className="px-3 py-1.5 text-xs font-bold" style={{
+            <button onClick={() => setShowSignup(true)} className="px-3 py-1.5 text-xs font-bold" style={cleanMode ? {
+              background: 'var(--clean-accent)', color: '#000', border: 'none',
+              borderRadius: '6px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
+            } : {
               border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
               background: 'var(--win98-gray)', color: '#000',
               fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
             }}>
-              Sign In
+              {cleanMode ? 'Sign Up Free' : 'Sign In'}
             </button>
           )}
         </div>
@@ -1018,21 +1051,42 @@ export default function Home() {
                 <>
                   <h2 className="mb-4" style={{
                     fontFamily: 'system-ui, -apple-system, sans-serif',
-                    fontSize: 'clamp(28px, 7vw, 56px)',
-                    color: 'var(--clean-accent)',
+                    fontSize: 'clamp(28px, 7vw, 48px)',
+                    color: '#fff',
                     lineHeight: 1.1,
                     fontWeight: 700,
                   }}>
-                    Garage sales near you.<br />Every Thursday. Free.
+                    Every garage sale near you.<br />
+                    <span style={{ color: 'var(--clean-accent)' }}>One email. Every Thursday.</span>
                   </h2>
-                  <p className="text-base md:text-lg mb-2" style={{
-                    color: '#ccc', lineHeight: 1.6,
+                  <p className="text-base md:text-lg mb-4" style={{
+                    color: '#aaa', lineHeight: 1.6,
                     fontFamily: 'system-ui, -apple-system, sans-serif',
+                    maxWidth: '520px', margin: '0 auto',
                   }}>
-                    We scan Craigslist, EstateSales.net, Eventbrite &amp; 20+ local sources so you don&apos;t have to. Get a curated weekly digest every Thursday at noon.
+                    We scan Craigslist, EstateSales.net &amp; 20+ sources in your area. You get one curated digest at noon. No app to download. No algorithm to fight.
                   </p>
-                  <p className="text-sm" style={{ color: '#888' }}>
-                    Pro users get deals 6 hours early + AI deal scores. Starting at $5/mo.
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-6">
+                    <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
+                      background: 'var(--clean-accent)', color: '#000',
+                      border: 'none', borderRadius: '8px',
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      cursor: 'pointer', width: '100%', maxWidth: '280px',
+                    }}>
+                      Get Started — Free
+                    </button>
+                    <a href="#search" className="px-8 py-3 text-base font-bold text-center" style={{
+                      background: 'transparent', color: '#888',
+                      border: '1px solid #333', borderRadius: '8px',
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      cursor: 'pointer', textDecoration: 'none',
+                      width: '100%', maxWidth: '280px',
+                    }}>
+                      Try a Search
+                    </a>
+                  </div>
+                  <p className="text-xs mt-4" style={{ color: '#555' }}>
+                    Free forever &middot; No credit card &middot; Unsubscribe anytime
                   </p>
                 </>
               ) : (
@@ -1068,15 +1122,18 @@ export default function Home() {
           </div>
 
           {/* BIG CTA */}
-          <div className="fall-in mb-6">
-            <button onClick={() => setShowSignup(true)} className="btn-chaos" style={{ transform: 'rotate(-2deg)' }}>
-              GET STARTED — IT&apos;S FREE
-            </button>
-          </div>
-
-          <p className="text-xs fall-in" style={{ color: '#555' }}>
-            No credit card. No signup wall. No dignity in our CSS.
-          </p>
+          {!cleanMode && (
+            <>
+              <div className="fall-in mb-6">
+                <button onClick={() => setShowSignup(true)} className="btn-chaos" style={{ transform: 'rotate(-2deg)' }}>
+                  GET STARTED — IT&apos;S FREE
+                </button>
+              </div>
+              <p className="text-xs fall-in" style={{ color: '#555' }}>
+                No credit card. No signup wall. No dignity in our CSS.
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -1178,7 +1235,7 @@ export default function Home() {
       )}
 
       {/* ═══ ASK FLIP-LY — The AskJeeves Search Engine ═══ */}
-      <section className={`px-4 py-12 ${!cleanMode && searching ? 'crash-shake' : ''}`} style={{
+      <section id="search" className={`px-4 py-12 ${!cleanMode && searching ? 'crash-shake' : ''}`} style={{
         ...(cleanMode ? {
           background: '#0a0a0a',
           borderTop: '1px solid #222',
@@ -1852,8 +1909,8 @@ export default function Home() {
 
       {!cleanMode && <div className="rainbow-divider" />}
 
-      {/* ═══ CHAOTIC DONATION (real Stripe) ═══ */}
-      <section className="px-4 py-12" style={{ background: '#0a0a0a' }}>
+      {/* ═══ CHAOTIC DONATION (real Stripe) — chaos only ═══ */}
+      {!cleanMode && <section className="px-4 py-12" style={{ background: '#0a0a0a' }}>
         <div className="max-w-md mx-auto">
           <div className="win98-window" style={{ transform: 'rotate(1.5deg)' }}>
             <div className="win98-titlebar" style={{ background: 'linear-gradient(90deg, #800000, #cc0000)' }}>
@@ -1927,28 +1984,53 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section>}
 
       {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ FINAL CTA ═══ */}
       <section className="px-4 py-20 text-center" style={{ background: '#000' }}>
-        <h3 className="mb-4" style={{
-          fontFamily: '"Comic Sans MS", cursive', fontSize: '38px', color: 'var(--lime)',
-        }}>
-          STILL HERE?
-        </h3>
-        <p className="mb-8 text-base" style={{ color: 'var(--mustard)' }}>
-          That means it&apos;s working. Sign up already.
-        </p>
-        <button onClick={() => setShowSignup(true)} className="btn-chaos">
-          FINE, I&apos;LL SIGN UP 🦞
-        </button>
+        {cleanMode ? (
+          <>
+            <h3 className="mb-3" style={{
+              fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '28px',
+              color: '#fff', fontWeight: 700,
+            }}>
+              Stop missing deals.
+            </h3>
+            <p className="mb-8 text-base" style={{ color: '#888', fontFamily: 'system-ui, sans-serif', maxWidth: '400px', margin: '0 auto 32px' }}>
+              Join thousands of flippers and bargain hunters getting the best garage sales delivered every Thursday.
+            </p>
+            <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
+              background: 'var(--clean-accent)', color: '#000',
+              border: 'none', borderRadius: '8px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              cursor: 'pointer',
+            }}>
+              Get Started — It&apos;s Free
+            </button>
+          </>
+        ) : (
+          <>
+            <h3 className="mb-4" style={{
+              fontFamily: '"Comic Sans MS", cursive', fontSize: '38px', color: 'var(--lime)',
+            }}>
+              STILL HERE?
+            </h3>
+            <p className="mb-8 text-base" style={{ color: 'var(--mustard)' }}>
+              That means it&apos;s working. Sign up already.
+            </p>
+            <button onClick={() => setShowSignup(true)} className="btn-chaos">
+              FINE, I&apos;LL SIGN UP 🦞
+            </button>
+          </>
+        )}
       </section>
 
       {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ MARQUEE (illegal in 2026) ═══ */}
+      {!cleanMode && (
       <div className="marquee-container py-3" style={{ background: '#000', borderTop: '2px solid var(--lime)', borderBottom: '2px solid var(--hotpink)' }}>
         <div className="marquee-content text-xs" style={{ color: 'var(--electric)' }}>
           {[...Array(2)].map((_, i) => (
@@ -1958,9 +2040,66 @@ export default function Home() {
           ))}
         </div>
       </div>
+      )}
 
       {/* ═══ FOOTER (rotated, broken) ═══ */}
-      <footer className="px-4 py-10 text-center" style={{ transform: 'rotate(-0.5deg)', background: 'var(--dark)' }}>
+      <footer className="px-4 py-10" style={{
+        transform: cleanMode ? 'none' : 'rotate(-0.5deg)',
+        background: cleanMode ? '#0a0a0a' : 'var(--dark)',
+        borderTop: cleanMode ? '1px solid #222' : 'none',
+        textAlign: cleanMode ? 'left' : 'center',
+      }}>
+        {cleanMode ? (
+          /* ── CLEAN FOOTER ── */
+          <div className="max-w-3xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8">
+              <div>
+                <h4 style={{ color: '#fff', fontSize: '13px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', marginBottom: '12px' }}>Product</h4>
+                <div className="flex flex-col gap-2">
+                  <a href="#how-it-works" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>How It Works</a>
+                  <a href="#pricing" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Pricing</a>
+                  <a href="#search" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Search</a>
+                  <a href="/pro" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Upgrade to Pro</a>
+                </div>
+              </div>
+              <div>
+                <h4 style={{ color: '#fff', fontSize: '13px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', marginBottom: '12px' }}>Company</h4>
+                <div className="flex flex-col gap-2">
+                  <a href="/about" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>About</a>
+                  <a href="/why" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Why Flip-ly?</a>
+                  <a href="mailto:hello@flip-ly.net" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Contact</a>
+                </div>
+              </div>
+              <div>
+                <h4 style={{ color: '#fff', fontSize: '13px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', marginBottom: '12px' }}>Legal</h4>
+                <div className="flex flex-col gap-2">
+                  <a href="/privacy" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Privacy Policy</a>
+                  <a href="/terms" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Terms of Service</a>
+                  <a href="/data-deletion" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Data Deletion</a>
+                </div>
+              </div>
+              <div>
+                <h4 style={{ color: '#fff', fontSize: '13px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', marginBottom: '12px' }}>Social</h4>
+                <div className="flex flex-col gap-2">
+                  <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>X / Twitter</a>
+                  <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Instagram</a>
+                  <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>TikTok</a>
+                  <a href="https://www.youtube.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>YouTube</a>
+                </div>
+              </div>
+            </div>
+            <div style={{ borderTop: '1px solid #222', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <p style={{ color: '#444', fontSize: '12px', fontFamily: 'system-ui, sans-serif' }}>
+                &copy; 2026 Flip-ly.net &middot; AetherCoreAI
+              </p>
+              <p style={{ color: '#333', fontSize: '11px', fontFamily: 'system-ui, sans-serif' }}>
+                Powered by Supabase &amp; Stripe
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* ── CHAOS FOOTER ── */
+          <>
         <p className="text-sm mb-2" style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--electric)' }}>
           🦞 Made by AetherCoreAI
         </p>
@@ -1985,6 +2124,8 @@ export default function Home() {
         <p className="text-xs" style={{ color: '#333' }}>
           &copy; 1997&ndash;2026 FLIP-LY.NET | Best viewed in Netscape Navigator 4.0
         </p>
+          </>
+        )}
         <p className="text-xs mt-1" style={{ color: '#1a1a1a', fontFamily: 'monospace', letterSpacing: '2px' }}>
           53 65 63 74 6f 72 37 | 46 6c 69 70 54 68 33 4c 30 62 73 74 33 72
         </p>
@@ -2549,6 +2690,72 @@ export default function Home() {
         </div>
       )}
 
+      {/* ═══ PRICING COMPARISON (clean mode only) ═══ */}
+      {cleanMode && (
+        <section id="pricing" className="px-4 py-16" style={{ background: '#000', borderTop: '1px solid #222' }}>
+          <div className="max-w-3xl mx-auto">
+            <h3 className="text-center mb-2" style={{
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              fontSize: '28px', fontWeight: 700, color: '#fff',
+            }}>
+              Simple Pricing
+            </h3>
+            <p className="text-center mb-10" style={{ color: '#666', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
+              Free gets you in the door. Pro gets you there first.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+              {/* Free tier */}
+              <div style={{
+                background: '#111', border: '1px solid #333', borderRadius: '12px',
+                padding: '24px', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '13px', color: '#888', fontFamily: 'system-ui, sans-serif', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Free</div>
+                <div style={{ fontSize: '36px', fontWeight: 700, color: '#fff', fontFamily: 'system-ui, sans-serif', marginBottom: '16px' }}>$0<span style={{ fontSize: '14px', color: '#666' }}>/mo</span></div>
+                <ul style={{ textAlign: 'left', fontSize: '13px', color: '#aaa', fontFamily: 'system-ui, sans-serif', lineHeight: 2 }}>
+                  <li>Weekly digest every Thursday</li>
+                  <li>10 searches per day</li>
+                  <li>Basic listing data</li>
+                  <li>All 413 US markets</li>
+                </ul>
+                <button onClick={() => setShowSignup(true)} className="w-full mt-6 py-2.5 text-sm font-bold" style={{
+                  background: 'transparent', color: '#ccc', border: '1px solid #333',
+                  borderRadius: '8px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
+                }}>
+                  Sign Up Free
+                </button>
+              </div>
+              {/* Pro tier */}
+              <div style={{
+                background: '#111', border: '1px solid var(--clean-accent)', borderRadius: '12px',
+                padding: '24px', textAlign: 'center', position: 'relative',
+              }}>
+                <div style={{
+                  position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)',
+                  background: 'var(--clean-accent)', color: '#000', padding: '2px 12px',
+                  borderRadius: '10px', fontSize: '11px', fontWeight: 700,
+                  fontFamily: 'system-ui, sans-serif',
+                }}>MOST POPULAR</div>
+                <div style={{ fontSize: '13px', color: 'var(--clean-accent)', fontFamily: 'system-ui, sans-serif', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Pro</div>
+                <div style={{ fontSize: '36px', fontWeight: 700, color: '#fff', fontFamily: 'system-ui, sans-serif', marginBottom: '16px' }}>$5<span style={{ fontSize: '14px', color: '#666' }}>/mo</span></div>
+                <ul style={{ textAlign: 'left', fontSize: '13px', color: '#aaa', fontFamily: 'system-ui, sans-serif', lineHeight: 2 }}>
+                  <li style={{ color: 'var(--clean-accent)' }}>Digest 6 hours early</li>
+                  <li style={{ color: 'var(--clean-accent)' }}>Unlimited searches</li>
+                  <li style={{ color: 'var(--clean-accent)' }}>AI deal scores + direct links</li>
+                  <li>SMS hot deal alerts</li>
+                </ul>
+                <a href="/pro" className="block w-full mt-6 py-2.5 text-sm font-bold text-center" style={{
+                  background: 'var(--clean-accent)', color: '#000', border: 'none',
+                  borderRadius: '8px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
+                  textDecoration: 'none',
+                }}>
+                  Upgrade to Pro
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ═══ TRUST SIGNALS (clean mode only) ═══ */}
       {cleanMode && (
         <section className="px-4 py-12" style={{ background: '#0a0a0a', borderTop: '1px solid #222' }}>
@@ -2642,6 +2849,18 @@ export default function Home() {
                   <p className="text-xs mb-6" style={{ color: '#777' }}>
                     The lobster missed you.
                   </p>
+                  <button onClick={() => signIn('google')} type="button" className="w-full py-3 font-bold text-sm flex items-center justify-center gap-3" style={{
+                      background: '#fff', color: '#333', border: '1px solid #ddd',
+                      borderRadius: '4px', fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                      Continue with Google
+                    </button>
+                    <div className="flex items-center gap-3 my-1">
+                      <div style={{ flex: 1, height: '1px', background: '#333' }} />
+                      <span className="text-xs" style={{ color: '#555' }}>or</span>
+                      <div style={{ flex: 1, height: '1px', background: '#333' }} />
+                    </div>
                   <form onSubmit={handleLogin} className="space-y-3">
                     <input
                       type="email"
@@ -2692,6 +2911,18 @@ export default function Home() {
                   <p className="text-xs mb-6" style={{ color: '#777' }}>
                     Free forever. Daily emails. Weird website. Good deals.
                   </p>
+                  <button onClick={() => signIn('google')} type="button" className="w-full py-3 font-bold text-sm flex items-center justify-center gap-3" style={{
+                      background: '#fff', color: '#333', border: '1px solid #ddd',
+                      borderRadius: '4px', fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                      Sign up with Google
+                    </button>
+                    <div className="flex items-center gap-3 my-1">
+                      <div style={{ flex: 1, height: '1px', background: '#333' }} />
+                      <span className="text-xs" style={{ color: '#555' }}>or sign up with email</span>
+                      <div style={{ flex: 1, height: '1px', background: '#333' }} />
+                    </div>
                   <form onSubmit={handleSignup} className="space-y-3">
                     <input
                       type="email"
