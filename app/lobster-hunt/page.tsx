@@ -323,7 +323,7 @@ function HallContent() {
             The webmaster is learning JavaScript. Please be patient.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <a href="/?lobster=true" style={{
+            <a href="/" style={{
               fontFamily: '"Courier New", monospace',
               fontSize: '11px',
               color: '#000',
@@ -333,7 +333,7 @@ function HallContent() {
               textDecoration: 'none',
               cursor: 'pointer',
             }}>
-              [ 🔑 Try a Password ]
+              [ 🔑 Find the Entry Point ]
             </a>
             <a href="/lobster-hunt" style={{
               fontFamily: '"Courier New", monospace',
