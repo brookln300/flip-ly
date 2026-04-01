@@ -18,7 +18,7 @@ function VisitorCounter() {
     const i = setInterval(() => setCount(c => c + Math.floor(Math.random() * 3)), 4000)
     return () => clearInterval(i)
   }, [])
-  return <span className="visitor-counter">{count.toLocaleString()}</span>
+  return <span className="visitor-counter" suppressHydrationWarning>{count.toLocaleString()}</span>
 }
 
 /* ── WINDOWS 98 ERROR DIALOG (with real asset) ──────────── */
@@ -74,7 +74,8 @@ function Win98Error({ onClose, onSignup }: { onClose: () => void; onSignup: () =
 /* ── VALUE PROPS (interactive clickable chaos) ──────────── */
 function ValuePropsSection({ cleanMode }: { cleanMode?: boolean }) {
   const [clicked, setClicked] = useState<Record<number, boolean>>({})
-  const [emailNum] = useState(() => Math.floor(Math.random() * 9000) + 1000)
+  const [emailNum, setEmailNum] = useState(4269)
+  useEffect(() => { setEmailNum(Math.floor(Math.random() * 9000) + 1000) }, [])
 
   const FIND_TRUTHS = [
     "OK FINE HERE'S THE TRUTH: We scan Craigslist, EstateSales.net, and Facebook Marketplace in your zip code. Then we email you every Thursday at noon. That's literally it. You're on a website with Comic Sans for a newsletter. Welcome to 2026.",
@@ -145,7 +146,7 @@ function ValuePropsSection({ cleanMode }: { cleanMode?: boolean }) {
                   ⚠️ THE TRUTH:
                 </p>
                 <p className="text-xs" style={{ color: '#ccc', lineHeight: 1.8 }}>
-                  {card.truthPool[Math.floor(Math.random() * card.truthPool.length)]}
+                  {card.truthPool[i % card.truthPool.length]}
                 </p>
                 <p className="text-[10px] mt-3" style={{ color: '#555' }}>(click again to hide the truth)</p>
               </div>
@@ -1197,7 +1198,7 @@ export default function Home() {
           borderBottom: '8px ridge #996633',
         }),
         position: 'relative',
-        overflow: 'hidden',
+        overflow: cleanMode ? 'visible' : 'hidden',
         // Progressive degradation: tilt as searches run out (chaos only)
         transform: !cleanMode && searchGate && !searchGate.is_premium && searchGate.searches_remaining !== undefined
           ? searchGate.searches_remaining <= 1 ? 'rotate(1.5deg)' : searchGate.searches_remaining <= 3 ? 'rotate(0.5deg)' : 'none'
