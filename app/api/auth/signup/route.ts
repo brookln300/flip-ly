@@ -58,7 +58,7 @@ function getWelcomeEmail(email: string, marketName: string | null) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password, market_id, include_events, utm_source, utm_medium, utm_campaign } = await req.json()
+    const { email, password, market_id, include_events, utm_source, utm_medium, utm_campaign, gclid, fbclid } = await req.json()
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
@@ -150,6 +150,8 @@ export async function POST(req: NextRequest) {
       state: market.state,
       utm_medium: utm_medium || '',
       utm_campaign: utm_campaign || '',
+      ...(gclid ? { gclid } : {}),
+      ...(fbclid ? { fbclid } : {}),
     }, user.id)
 
     // Send welcome email

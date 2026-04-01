@@ -520,6 +520,8 @@ export default function Home() {
           utm_source: sessionStorage.getItem('fliply_utm_source') || undefined,
           utm_medium: sessionStorage.getItem('fliply_utm_medium') || undefined,
           utm_campaign: sessionStorage.getItem('fliply_utm_campaign') || undefined,
+          gclid: sessionStorage.getItem('fliply_gclid') || undefined,
+          fbclid: sessionStorage.getItem('fliply_fbclid') || undefined,
         }),
       })
       const data = await res.json()
