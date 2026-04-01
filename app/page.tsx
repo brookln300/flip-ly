@@ -354,6 +354,10 @@ export default function Home() {
       const saved = sessionStorage.getItem('fliply_utm_source')
       if (saved) setUtmSource(saved)
     }
+    // Auto-open signup if redirected from /pro
+    if (params.get('signup') === 'pro') {
+      setShowSignup(true)
+    }
   }, [])
 
   // Clean mode: persist in localStorage + auto-detect from UTM/referrer

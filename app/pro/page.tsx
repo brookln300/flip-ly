@@ -1,43 +1,61 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Suspense, useState } from 'react'
 
 function ProContent() {
   const params = useSearchParams()
   const status = params.get('status')
+  const { data: authSession, status: authStatus } = useSession()
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleUpgrade = async () => {
+    if (authStatus !== 'authenticated') {
+      // Not logged in — redirect to home with signup prompt
+      window.location.href = '/?signup=pro'
+      return
+    }
     setLoading(true)
+    setError('')
     try {
       const res = await fetch('/api/stripe/checkout', { method: 'POST' })
       const data = await res.json()
       if (data.url) {
         window.location.href = data.url
+      } else if (res.status === 401) {
+        window.location.href = '/?signup=pro'
       } else {
-        alert(data.error || 'Something broke. The lobster is investigating.')
+        setError(data.error || 'Something went wrong. Try again.')
         setLoading(false)
       }
     } catch {
-      alert('Network error. Try again.')
+      setError('Network error. Try again.')
       setLoading(false)
     }
   }
 
   const handleManage = async () => {
+    if (authStatus !== 'authenticated') {
+      window.location.href = '/?signup=pro'
+      return
+    }
     setLoading(true)
+    setError('')
     try {
       const res = await fetch('/api/stripe/portal', { method: 'POST' })
       const data = await res.json()
       if (data.url) {
         window.location.href = data.url
+      } else if (res.status === 401) {
+        window.location.href = '/?signup=pro'
       } else {
-        alert(data.error || 'Portal unavailable.')
+        setError(data.error || 'Portal unavailable. Try again.')
         setLoading(false)
       }
     } catch {
-      alert('Network error. Try again.')
+      setError('Network error. Try again.')
       setLoading(false)
     }
   }
@@ -150,6 +168,28 @@ function ProContent() {
           </p>
         </div>
 
+        {error && (
+          <div className="mb-4 px-4 py-3" style={{
+            background: '#1a0000', border: '1px solid var(--hotpink)',
+            borderRadius: '6px', maxWidth: '400px', margin: '0 auto 16px',
+          }}>
+            <p style={{ color: 'var(--hotpink)', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
+              {error}
+            </p>
+          </div>
+        )}
+
+        {authStatus !== 'authenticated' && (
+          <div className="mb-4 px-4 py-3" style={{
+            background: '#0a0a1a', border: '1px solid var(--electric)',
+            borderRadius: '6px', maxWidth: '400px', margin: '0 auto 16px',
+          }}>
+            <p style={{ color: '#ccc', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
+              Sign up or log in first to upgrade to Pro.
+            </p>
+          </div>
+        )}
+
         <div className="flex flex-col items-center gap-3">
           <button
             onClick={handleUpgrade}
@@ -157,24 +197,27 @@ function ProContent() {
             style={{
               background: loading ? '#333' : 'var(--neon-orange)',
               color: '#fff',
-              border: '3px solid var(--lime)',
-              fontFamily: '"Comic Sans MS", cursive',
+              border: '2px solid var(--lime)',
+              borderRadius: '8px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
               fontSize: '18px',
+              fontWeight: 700,
               padding: '14px 48px',
               cursor: loading ? 'wait' : 'pointer',
-              boxShadow: loading ? 'none' : '0 0 20px var(--neon-orange)',
+              boxShadow: loading ? 'none' : '0 0 20px rgba(255,102,0,0.3)',
             }}
           >
-            {loading ? 'LOADING...' : 'UPGRADE TO PRO — $5/mo'}
+            {loading ? 'Loading...' : (authStatus !== 'authenticated' ? 'Sign Up to Upgrade' : 'Upgrade to Pro — $5/mo')}
           </button>
 
           <button
             onClick={handleManage}
             style={{
               background: 'none',
-              border: '1px solid #444',
+              border: '1px solid #333',
+              borderRadius: '6px',
               color: '#666',
-              fontFamily: 'monospace',
+              fontFamily: 'system-ui, sans-serif',
               fontSize: '12px',
               padding: '8px 20px',
               cursor: 'pointer',
@@ -184,10 +227,10 @@ function ProContent() {
           </button>
 
           <a href="/" style={{
-            color: '#555', fontFamily: 'monospace',
+            color: '#555', fontFamily: 'system-ui, sans-serif',
             textDecoration: 'underline', fontSize: '12px', marginTop: '8px',
           }}>
-            ← nah, i like being poor
+            ← back to free tier
           </a>
         </div>
       </div>
