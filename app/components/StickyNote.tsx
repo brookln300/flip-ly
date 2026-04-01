@@ -42,8 +42,8 @@ export default function StickyNote({ onOpenHunt }: { onOpenHunt?: () => void } =
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setPos({
-        x: window.innerWidth - 280,
-        y: window.innerHeight - 320,
+        x: 20,
+        y: 140,
       })
     }
   }, [])
