@@ -2,6 +2,79 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../lib/supabase'
 import { getSession } from '../../lib/auth'
 
+// GET /api/feedback?key=<admin_key>&status=new&limit=50
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const key = searchParams.get('key')
+
+  // Simple admin key check — uses the same JWT_SECRET as auth
+  if (key !== process.env.JWT_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const status = searchParams.get('status') // 'new', 'reviewed', 'implemented', 'dismissed', or null for all
+  const limit = Math.min(Number(searchParams.get('limit')) || 50, 200)
+  const category = searchParams.get('category') // 'bug', 'feature', 'ux', 'general'
+
+  let query = supabase
+    .from('fliply_feedback')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (status) query = query.eq('status', status)
+  if (category) query = query.eq('category', category)
+
+  const { data, error } = await query
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Summary stats
+  const { data: stats } = await supabase
+    .from('fliply_feedback')
+    .select('status, category')
+
+  const summary = {
+    total: stats?.length || 0,
+    by_status: {} as Record<string, number>,
+    by_category: {} as Record<string, number>,
+  }
+  stats?.forEach(row => {
+    summary.by_status[row.status || 'new'] = (summary.by_status[row.status || 'new'] || 0) + 1
+    summary.by_category[row.category] = (summary.by_category[row.category] || 0) + 1
+  })
+
+  return NextResponse.json({ summary, feedback: data })
+}
+
+// PATCH /api/feedback — update status of a feedback item
+export async function PATCH(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const key = searchParams.get('key')
+  if (key !== process.env.JWT_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { id, status } = await req.json()
+  const validStatuses = ['new', 'reviewed', 'implemented', 'dismissed']
+  if (!id || !validStatuses.includes(status)) {
+    return NextResponse.json({ error: 'Invalid id or status' }, { status: 400 })
+  }
+
+  const { error } = await supabase
+    .from('fliply_feedback')
+    .update({ status })
+    .eq('id', id)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true, id, status })
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json()
   const { message, category } = body

@@ -2905,12 +2905,12 @@ export default function Home() {
         className="fixed z-[50]"
         style={{
           bottom: '16px', left: '16px',
-          background: cleanMode ? '#1a1a1a' : 'var(--dark)',
-          border: cleanMode ? '1px solid #333' : '2px solid var(--lime)',
+          background: '#1a1a1a',
+          border: '1px solid #333',
           borderRadius: '8px',
           padding: '8px 14px', cursor: 'pointer',
           fontFamily: 'system-ui, sans-serif',
-          fontSize: '12px', color: cleanMode ? '#888' : 'var(--lime)',
+          fontSize: '12px', color: '#888',
         }}>
         💬 Feedback
       </button>
@@ -2921,16 +2921,16 @@ export default function Home() {
           style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}>
           <div onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: '420px',
-            background: cleanMode ? '#111' : 'var(--dark)',
-            border: cleanMode ? '1px solid #333' : '2px solid var(--lime)',
-            borderRadius: cleanMode ? '12px' : '0',
+            background: '#111',
+            border: '1px solid #333',
+            borderRadius: '12px',
             padding: '24px',
           }}>
             <div className="flex items-center justify-between mb-4">
               <h4 style={{
                 fontFamily: 'system-ui, sans-serif',
                 fontSize: '18px', fontWeight: 700,
-                color: cleanMode ? '#fff' : 'var(--lime)',
+                color: '#fff',
               }}>
                 {feedbackSent ? 'Thanks!' : 'Send Feedback'}
               </h4>
@@ -2966,9 +2966,9 @@ export default function Home() {
                 <div className="mb-3">
                   <select value={feedbackCat} onChange={e => setFeedbackCat(e.target.value)} style={{
                     width: '100%', padding: '8px 12px',
-                    background: cleanMode ? '#1a1a1a' : '#111',
-                    border: cleanMode ? '1px solid #333' : '1px solid #444',
-                    borderRadius: cleanMode ? '6px' : '0',
+                    background: '#1a1a1a',
+                    border: '1px solid #333',
+                    borderRadius: '6px',
                     color: '#ccc', fontSize: '13px',
                     fontFamily: 'system-ui, -apple-system, sans-serif',
                   }}>
@@ -2988,9 +2988,9 @@ export default function Home() {
                     required
                     style={{
                       width: '100%', padding: '12px',
-                      background: cleanMode ? '#1a1a1a' : '#111',
-                      border: cleanMode ? '1px solid #333' : '1px solid #444',
-                      borderRadius: cleanMode ? '6px' : '0',
+                      background: '#1a1a1a',
+                      border: '1px solid #333',
+                      borderRadius: '6px',
                       color: '#eee', fontSize: '14px', resize: 'vertical',
                       fontFamily: 'system-ui, -apple-system, sans-serif',
                       outline: 'none',
@@ -3007,7 +3007,7 @@ export default function Home() {
                   width: '100%', padding: '12px',
                   background: feedbackSending ? '#333' : 'var(--clean-accent)',
                   color: feedbackSending ? '#888' : '#000',
-                  border: 'none', borderRadius: cleanMode ? '6px' : '0',
+                  border: 'none', borderRadius: '6px',
                   fontFamily: 'system-ui, -apple-system, sans-serif',
                   fontWeight: 600, fontSize: '14px',
                   cursor: feedbackSending ? 'wait' : 'pointer',
