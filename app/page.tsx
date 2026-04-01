@@ -2,12 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { signIn } from 'next-auth/react'
-import WinampPlayer from './components/WinampPlayer'
-import RetroPopups from './components/RetroPopups'
-import BSOD from './components/BSOD'
 import Y2KCountdown from './components/Y2KCountdown'
 import MeltdownSequence from './components/MeltdownSequence'
-import SketchyPopups from './components/SketchyPopups'
 import StickyNote from './components/StickyNote'
 
 /* build: v0.70.0 | compiled Sat Mar 29 2026 */
@@ -50,7 +46,7 @@ function Win98Error({ onClose, onSignup }: { onClose: () => void; onSignup: () =
             background: 'var(--neon-orange)',
             color: '#fff',
             border: '3px solid var(--lime)',
-            fontFamily: '"Comic Sans MS", cursive',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
             cursor: 'pointer',
             boxShadow: '0 0 16px var(--neon-orange)',
           }}>
@@ -114,25 +110,23 @@ function ValuePropsSection({ cleanMode }: { cleanMode?: boolean }) {
   return (
     <section className="px-4 py-16" style={{ background: 'var(--darker)' }}>
       <h3 className="text-center mb-12" style={{
-        fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : 'Papyrus, fantasy',
-        fontSize: cleanMode ? '28px' : '32px',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontSize: '28px',
         color: cleanMode ? 'var(--clean-accent)' : 'var(--mustard)',
-        letterSpacing: cleanMode ? '1px' : '6px',
-        fontWeight: cleanMode ? 700 : 400,
+        letterSpacing: '1px',
+        fontWeight: 700,
       }}>
-        {cleanMode ? 'How It Works' : 'REAL SIMPLE:'}
+        {cleanMode ? 'How It Works' : 'Why Flip-ly?'}
       </h3>
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {cards.map((card, i) => (
-          <div key={i} className={cleanMode ? 'fall-in' : 'card-wonky fall-in'} onClick={() => !cleanMode && setClicked(prev => ({ ...prev, [i]: !prev[i] }))} style={{
-            transform: cleanMode ? 'none' : `rotate(${card.rotate})`,
-            marginTop: cleanMode ? '0' : (card.mt || '0'),
+          <div key={i} className="fall-in" onClick={() => !cleanMode && setClicked(prev => ({ ...prev, [i]: !prev[i] }))} style={{
             cursor: cleanMode ? 'default' : 'pointer',
-            ...(cleanMode ? { background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', padding: '24px' } : {}),
+            background: '#1a1a1a', border: '1px solid #333', borderRadius: '8px', padding: '24px',
           }}>
             <div className="text-5xl mb-4">{card.emoji}</div>
             <h4 className="text-xl font-bold mb-3" style={{
-              fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : '"Comic Sans MS", cursive',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
               color: card.color,
             }}>
               {card.title}
@@ -196,16 +190,16 @@ function HowItWorksSection({ cleanMode }: { cleanMode?: boolean }) {
   return (
     <section id="how-it-works" className="px-4 py-16" style={{ background: '#000' }}>
       <h3 className="text-center mb-4" style={{
-        fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : '"Comic Sans MS", cursive',
-        fontSize: cleanMode ? '24px' : '28px',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontSize: '24px',
         color: cleanMode ? '#fff' : 'var(--electric)',
-        fontWeight: cleanMode ? 700 : 400,
+        fontWeight: 700,
       }}>
-        {cleanMode ? 'How It Works' : 'HOW IT ACTUALLY WORKS'}
+        How It Works
       </h3>
       {!cleanMode && (
         <p className="text-center mb-12 text-xs" style={{ color: '#555' }}>
-          (click any step for the embarrassingly honest version)
+          (click any step for the honest version)
         </p>
       )}
       {cleanMode && <div className="mb-12" />}
@@ -213,15 +207,15 @@ function HowItWorksSection({ cleanMode }: { cleanMode?: boolean }) {
         {steps.map((step, i) => (
           <div key={step.n} onClick={() => !cleanMode && setRevealed(prev => ({ ...prev, [i]: !prev[i] }))}
             className={`flex items-start gap-4 fall-in ${cleanMode ? '' : 'cursor-pointer'}`} style={{
-              paddingLeft: cleanMode ? '0' : `${i * 12}px`,
-              transform: cleanMode ? 'none' : `rotate(${(i % 2 === 0 ? -0.5 : 0.5)}deg)`,
+              paddingLeft: '0',
+              transform: 'none',
               background: revealed[i] ? 'rgba(255,255,255,0.02)' : 'transparent',
               padding: `8px 8px 8px ${i * 12 + 8}px`,
               borderLeft: revealed[i] ? `3px solid ${step.c}` : '3px solid transparent',
               transition: 'all 0.2s',
             }}>
             <span className="text-2xl font-bold shrink-0" style={{
-              fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : '"Comic Sans MS", cursive',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
               color: step.c,
             }}>
               {step.n}.
@@ -246,34 +240,12 @@ function TestimonialsSection({ cleanMode }: { cleanMode?: boolean }) {
   return (
     <section className="px-4 py-16" style={{ background: '#000' }}>
       <div className="max-w-4xl mx-auto">
-        {/* BBS header */}
-        {!cleanMode && (
-        <div className="mb-8 text-center" style={{ fontFamily: '"Courier New", monospace' }}>
-          <p style={{ color: 'var(--lime)', fontSize: '11px' }}>
-            ╔══════════════════════════════════════════════════════════╗
-          </p>
-          <p style={{ color: 'var(--mustard)', fontSize: '13px', fontWeight: 700 }}>
-            ║&nbsp;&nbsp;FLIP-LY BBS — TESTIMONIALS DOOR — ANSI MODE&nbsp;&nbsp;║
-          </p>
-          <p style={{ color: 'var(--lime)', fontSize: '11px' }}>
-            ╠══════════════════════════════════════════════════════════╣
-          </p>
-          <p style={{ color: '#666', fontSize: '10px' }}>
-            ║ SysOp: G1TC# | Node: 1 | Key: .-.. --- -... ... - . .-. ║
-          </p>
-          <p style={{ color: 'var(--lime)', fontSize: '11px' }}>
-            ╚══════════════════════════════════════════════════════════╝
-          </p>
-        </div>
-        )}
-        {cleanMode && (
-          <h3 className="text-center mb-8" style={{
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            fontSize: '24px', color: 'var(--lime)', fontWeight: 700,
-          }}>
-            What Users Are Saying
-          </h3>
-        )}
+        <h3 className="text-center mb-8" style={{
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontSize: '24px', color: cleanMode ? 'var(--lime)' : 'var(--mustard)', fontWeight: 700,
+        }}>
+          What Users Are Saying
+        </h3>
 
         <div className="space-y-4">
           {[
@@ -316,24 +288,15 @@ function TestimonialsSection({ cleanMode }: { cleanMode?: boolean }) {
           ].map((t, i) => (
             <div key={i} style={{
               background: '#0a0a0a',
-              border: `1px solid ${t.color}`,
+              border: `1px solid ${cleanMode ? t.color : '#333'}`,
+              borderLeft: `3px solid ${t.color}`,
               padding: '16px',
-              fontFamily: '"Courier New", monospace',
+              borderRadius: '4px',
+              fontFamily: cleanMode ? '"Courier New", monospace' : 'system-ui, -apple-system, sans-serif',
             }}>
-              {/* BBS user header */}
               <div className="flex flex-wrap items-center gap-3 mb-3" style={{ fontSize: '11px' }}>
-                <span style={{ color: t.color, fontWeight: 700 }}>{t.user}</span>
-                {!cleanMode && (
-                  <>
-                    <span style={{ color: '#666' }}>|</span>
-                    <span style={{ color: '#888' }}>{t.level}</span>
-                    <span style={{ color: '#666' }}>|</span>
-                    <span style={{ color: 'var(--lime)' }}>HP: {t.hp}</span>
-                    <span style={{ color: '#666' }}>|</span>
-                    <span style={{ color: 'var(--mustard)' }}>Gold: {t.gold}</span>
-                  </>
-                )}
-                {cleanMode && <span style={{ color: '#888' }}>— flip-ly user</span>}
+                <span style={{ color: t.color, fontWeight: 700 }}>{cleanMode ? t.user : t.user.replace(/_/g, ' ')}</span>
+                <span style={{ color: '#888' }}>— flip-ly user</span>
               </div>
               {/* Message */}
               <p style={{ color: '#ccc', fontSize: '12px', lineHeight: 1.8 }}>
@@ -348,17 +311,11 @@ function TestimonialsSection({ cleanMode }: { cleanMode?: boolean }) {
           ))}
         </div>
 
-        {/* BBS footer */}
+        {/* Subtle chaos footer hint */}
         {!cleanMode && (
-        <div className="mt-6 text-center" style={{ fontFamily: '"Courier New", monospace', fontSize: '10px', color: '#444' }}>
-          <p>[Press ENTER to continue, Q to quit, or just sign up already]</p>
-          <p className="mt-1" style={{ color: '#333' }}>
-            ═══ END OF MESSAGES — FLIP-LY BBS v4.20 — NO CARRIER ═══
-          </p>
-          <p className="mt-2" style={{ color: '#111', fontSize: '8px', fontFamily: 'monospace' }}>
-            ═══ SYSTEM LOG: ALL CLEAR ═══
-          </p>
-        </div>
+        <p className="mt-6 text-center" style={{ fontSize: '10px', color: '#333' }}>
+          [Press ENTER to continue, Q to quit, or just sign up already]
+        </p>
         )}
       </div>
     </section>
@@ -490,13 +447,7 @@ export default function Home() {
       .finally(() => setMarketsLoading(false))
   }, [])
 
-  // Show Win98 error after 3 seconds, auto-dismiss after 15 seconds
-  useEffect(() => {
-    if (cleanMode) return
-    const show = setTimeout(() => setShowError(true), 3000)
-    const autoDismiss = setTimeout(() => setShowError(false), 18000)
-    return () => { clearTimeout(show); clearTimeout(autoDismiss) }
-  }, [cleanMode])
+  // Win98 error removed — convergence
 
   const BUTLER_QUIPS = [
     'Very good, sir. I have located the following sales in your vicinity.',
@@ -781,15 +732,11 @@ export default function Home() {
       {/* Mascot removed — replaced by StickyNote lobster */}
       {!cleanMode && (
         <>
-          <WinampPlayer />
-          <RetroPopups />
-          <BSOD />
           <MeltdownSequence active={meltdownActive} onComplete={() => setMeltdownDone(true)} />
-          <SketchyPopups />
           <StickyNote />
         </>
       )}
-      {!cleanMode && showError && <Win98Error onClose={() => setShowError(false)} onSignup={() => { setShowError(false); setShowSignup(true) }} />}
+      {/* Win98Error removed — convergence */}
 
       {/* ═══ SEARCH RATE LIMIT BSOD ═══ */}
       {showSearchBSOD && (
@@ -824,7 +771,7 @@ export default function Home() {
               <a href="/pro" style={{
                 display: 'inline-block', padding: '12px 32px',
                 background: '#FFD700', color: '#000',
-                fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold',
+                fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 'bold',
                 fontSize: '16px', textDecoration: 'none',
                 border: '3px outset #fff',
               }}>
@@ -869,35 +816,25 @@ export default function Home() {
 
       {/* Mute toggle removed from here — now in header */}
 
-      {/* sprite z-index stack */}
-      {/* ═══ CONSTRUCTION BANNER ═══ */}
-      {!cleanMode && <div className="construction-banner">
-        🚧 UNDER CONSTRUCTION 🚧 (everything works tho) 🚧 UNDER CONSTRUCTION 🚧
-      </div>}
-
-      {/* ═══ NETSCAPE + KAZAA BANNER ═══ */}
+      {/* ═══ NETSCAPE BANNER (subtle chaos touch) ═══ */}
       {!cleanMode && (
-      <div className="netscape-banner flex flex-wrap items-center justify-center gap-2">
-        <span className="hidden sm:inline">🌐 Best viewed in Netscape 4.0 at 800x600 🌐</span>
-        <span style={{ color: 'var(--mustard)' }}>Visitor #<VisitorCounter /> since 1996</span>
-        <span className="hidden md:inline" style={{ color: 'var(--electric)' }}>
-          | 📂 Kazaa: 4,269 deals shared
-        </span>
+      <div className="text-center py-1" style={{ background: '#0a0a0a', borderBottom: '1px solid #1a1a1a', fontSize: '10px', fontFamily: '"Courier New", monospace' }}>
+        <span style={{ color: '#333' }}>🦞 Visitor #<VisitorCounter /> since 1996</span>
       </div>
       )}
 
       {/* ═══ HEADER ═══ */}
       <header className="px-4 py-3 flex items-center justify-between" style={{
-        background: '#000', borderBottom: cleanMode ? '1px solid #222' : '4px solid var(--lime)',
+        background: '#000', borderBottom: cleanMode ? '1px solid #222' : '1px solid var(--lime)',
         position: 'sticky', top: 0, zIndex: 80,
       }}>
         <div className="flex items-center gap-3">
-          {!cleanMode && <span className="text-2xl jitter">🦞</span>}
-          <h1 className={cleanMode ? '' : 'glitch'} data-text="FLIP-LY.NET" style={{
-            fontFamily: cleanMode ? 'system-ui, -apple-system, sans-serif' : '"Comic Sans MS", cursive',
-            fontSize: cleanMode ? '20px' : '24px',
+          {!cleanMode && <span className="text-lg">🦞</span>}
+          <h1 data-text="FLIP-LY.NET" style={{
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontSize: '20px',
             color: cleanMode ? '#fff' : 'var(--lime)',
-            fontWeight: cleanMode ? 700 : 400,
+            fontWeight: 700,
           }}>
             FLIP-LY{cleanMode ? '' : <span style={{ color: 'var(--hotpink)' }}>.NET</span>}
           </h1>
@@ -913,6 +850,24 @@ export default function Home() {
                   fontFamily: 'system-ui, -apple-system, sans-serif',
                   transition: 'color 0.15s',
                 }} onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                   onMouseLeave={e => (e.currentTarget.style.color = '#888')}>
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+          )}
+          {!cleanMode && (
+            <nav className="hidden md:flex items-center gap-5 ml-6">
+              {[
+                { label: 'How It Works', href: '#how-it-works' },
+                { label: 'Search', href: '#search' },
+                { label: 'Pricing', href: '#pricing' },
+              ].map(link => (
+                <a key={link.label} href={link.href} style={{
+                  color: '#888', fontSize: '13px', textDecoration: 'none',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  transition: 'color 0.15s',
+                }} onMouseEnter={e => (e.currentTarget.style.color = 'var(--lime)')}
                    onMouseLeave={e => (e.currentTarget.style.color = '#888')}>
                   {link.label}
                 </a>
@@ -955,35 +910,26 @@ export default function Home() {
               {!loggedInUser.is_premium && !cleanMode && (
                 <span className="px-2 py-0.5 text-[10px] hidden sm:inline blink" style={{
                   background: '#1a1a1a', color: 'var(--hotpink)',
-                  fontFamily: '"Comic Sans MS", cursive',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
                   border: '1px solid var(--hotpink)',
                 }}>
                   ✨ FREELOADER ✨
                 </span>
               )}
-              <a href="/dashboard" className="px-3 py-1.5 text-xs font-bold" style={cleanMode ? {
+              <a href="/dashboard" className="px-3 py-1.5 text-xs font-bold" style={{
                 background: '#1a1a1a', color: '#ccc', border: '1px solid #333',
                 borderRadius: '6px', fontFamily: 'system-ui, sans-serif',
                 textDecoration: 'none', cursor: 'pointer',
-              } : {
-                border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
-                background: 'var(--win98-gray)', color: '#000',
-                fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
-                textDecoration: 'none',
               }}>
                 {loggedInUser.email.split('@')[0]}
               </a>
             </div>
           ) : (
-            <button onClick={() => setShowSignup(true)} className="px-3 py-1.5 text-xs font-bold" style={cleanMode ? {
-              background: 'var(--clean-accent)', color: '#000', border: 'none',
+            <button onClick={() => setShowSignup(true)} className="px-3 py-1.5 text-xs font-bold" style={{
+              background: cleanMode ? 'var(--clean-accent)' : 'var(--lime)', color: '#000', border: 'none',
               borderRadius: '6px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
-            } : {
-              border: '2px solid', borderColor: '#fff #808080 #808080 #fff',
-              background: 'var(--win98-gray)', color: '#000',
-              fontFamily: 'Tahoma, sans-serif', cursor: 'pointer',
             }}>
-              {cleanMode ? 'Sign Up Free' : 'Sign In'}
+              Sign Up Free
             </button>
           )}
         </div>
@@ -994,36 +940,6 @@ export default function Home() {
         <Y2KCountdown onMeltdown={() => setMeltdownActive(true)} />
       )}
 
-      {!cleanMode && (
-      <>
-      {/* ═══ CRAIGSLIST NAV BAR ═══ */}
-      <div className="px-2 py-1 flex flex-wrap items-center gap-1 justify-center" style={{
-        background: 'var(--hotpink)',
-        borderBottom: '3px solid var(--lime)',
-        fontFamily: 'Tahoma, sans-serif',
-      }}>
-        {['FOR SALE', 'HOUSING', 'JOBS', 'GIGS', 'SERVICES', 'COMMUNITY'].map((cat, i) => (
-          <span key={cat} className="px-3 py-1 text-xs font-bold cursor-pointer" style={{
-            background: i === 0 ? 'var(--lime)' : 'transparent',
-            color: i === 0 ? '#000' : '#fff',
-            border: '2px solid',
-            borderColor: i === 0 ? 'var(--dark)' : 'rgba(255,255,255,0.3)',
-          }}>
-            {cat}
-          </span>
-        ))}
-        <span className="px-4 py-1 text-xs font-bold cursor-pointer blink" style={{
-          background: 'var(--neon-orange)', color: '#fff',
-          border: '2px solid var(--mustard)',
-          fontFamily: '"Comic Sans MS", cursive',
-        }}>
-          📮 POST
-        </span>
-      </div>
-      </>
-      )}
-
-      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ HERO — WIN98 ERROR STYLE ═══ */}
       <section className="px-4 py-12 md:py-20 relative">
@@ -1036,17 +952,7 @@ export default function Home() {
           style={{ width: '90px', opacity: 0.1, transform: 'rotate(12deg) scaleX(-1)', objectFit: 'cover', objectPosition: 'top right', borderRadius: '8px' }} />
 
         <div className="max-w-3xl mx-auto text-center">
-          {/* Hero headline in Win98 window */}
-          <div className="win98-window mb-8 fall-in" style={{ transform: 'rotate(-1deg)' }}>
-            <div className="win98-titlebar">
-              <span className="win98-titlebar-text" data-pid="7661 7373 3a20 6c30 6273 7433 725f 6b31 6e67">C:\FLIP-LY\DEALS.EXE</span>
-              <div className="flex gap-1">
-                <div className="win98-btn">_</div>
-                <div className="win98-btn">□</div>
-                <div className="win98-btn">✕</div>
-              </div>
-            </div>
-            <div className="py-8 px-6" style={{ background: 'var(--darker)' }}>
+          <div className="py-8 px-6">
               {cleanMode ? (
                 <>
                   <h2 className="mb-4" style={{
@@ -1091,53 +997,55 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <h2 className={`mb-4 glitch`} data-text="FIND HIDDEN GEMS." style={{
-                    fontFamily: '"Comic Sans MS", cursive',
-                    fontSize: 'clamp(28px, 7vw, 64px)',
-                    color: 'var(--hotpink)',
+                  <h2 className="mb-4" style={{
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontSize: 'clamp(28px, 7vw, 48px)',
+                    color: '#fff',
                     lineHeight: 1.1,
+                    fontWeight: 700,
                   }}>
-                    FIND HIDDEN GEMS.
+                    Every garage sale near you.<br />
+                    <span style={{ color: 'var(--lime)' }}>One email. Every Thursday.</span>
                   </h2>
-                  <h2 className="mb-6" style={{
-                    fontFamily: '"Comic Sans MS", cursive',
-                    fontSize: 'clamp(28px, 7vw, 64px)',
-                    color: 'var(--lime)',
-                    lineHeight: 1.1,
+                  <p className="text-base md:text-lg mb-2" style={{
+                    color: '#aaa', lineHeight: 1.6,
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    maxWidth: '520px', margin: '0 auto',
                   }}>
-                    SKIP THE BS.
-                  </h2>
-                  <p className="text-sm md:text-base mb-2" style={{
-                    fontFamily: 'Papyrus, fantasy', color: 'var(--mustard)',
-                    letterSpacing: '2px',
-                  }}>
-                    We aggregated all the garage sales your city is having.
+                    We scan Craigslist, EstateSales.net &amp; 20+ sources in your area. You get one curated digest at noon.
                   </p>
-                  <p className="text-xs" style={{ color: '#666', fontStyle: 'italic' }}>
-                    Yeah, we scraped Craigslist. Yeah, that&apos;s legal. Yeah, we made it weird on purpose.
+                  <p className="text-xs mb-2" style={{ color: 'var(--mustard)', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                    Yeah, we made the website weird on purpose. The emails are normal. Mostly. 🦞
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-6">
+                    <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
+                      background: 'var(--lime)', color: '#000',
+                      border: 'none', borderRadius: '8px',
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      cursor: 'pointer', width: '100%', maxWidth: '280px',
+                    }}>
+                      Get Started — It&apos;s Free
+                    </button>
+                    <a href="#search" className="px-8 py-3 text-base font-bold text-center" style={{
+                      background: 'transparent', color: '#888',
+                      border: '1px solid #333', borderRadius: '8px',
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
+                      cursor: 'pointer', textDecoration: 'none',
+                      width: '100%', maxWidth: '280px',
+                    }}>
+                      Try a Search
+                    </a>
+                  </div>
+                  <p className="text-xs mt-4" style={{ color: '#555' }}>
+                    Free forever &middot; No credit card &middot; The lobster watches but does not judge
                   </p>
                 </>
               )}
             </div>
-          </div>
-
-          {/* BIG CTA */}
-          {!cleanMode && (
-            <>
-              <div className="fall-in mb-6">
-                <button onClick={() => setShowSignup(true)} className="btn-chaos" style={{ transform: 'rotate(-2deg)' }}>
-                  GET STARTED — IT&apos;S FREE
-                </button>
-              </div>
-              <p className="text-xs fall-in" style={{ color: '#555' }}>
-                No credit card. No signup wall. No dignity in our CSS.
-              </p>
-            </>
-          )}
         </div>
       </section>
 
-      {!cleanMode && <div className="rainbow-divider" />}
+
 
       {/* ═══ FEATURED DEALS (clean mode — real DB data) ═══ */}
       {cleanMode && featuredDeals.length > 0 && (
@@ -1266,7 +1174,7 @@ export default function Home() {
         {!cleanMode && (
         <div style={{
           background: '#000080', color: '#ffff00', padding: '3px 0',
-          fontFamily: '"Comic Sans MS", cursive', fontSize: '11px',
+          fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '11px',
           marginBottom: '16px', overflow: 'hidden', whiteSpace: 'nowrap',
           border: '2px inset #c0c0c0',
         }}>
@@ -1299,7 +1207,7 @@ export default function Home() {
               <>
                 <div className="jitter" style={{ fontSize: '64px', marginBottom: '4px', display: 'inline-block' }}>🎩</div>
                 <h3 style={{
-                  fontFamily: '"Comic Sans MS", cursive',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
                   fontSize: '38px', fontWeight: 'bold',
                   color: '#333', letterSpacing: '-0.5px',
                   textShadow: '2px 2px 0 #FFD700, -1px -1px 0 #CC3300',
@@ -1437,7 +1345,7 @@ export default function Home() {
                           placeholder="Ask the butler... tools, vintage, furniture, free stuff..."
                           style={{
                             width: '100%', padding: '12px 4px', border: 'none', outline: 'none',
-                            fontFamily: '"Comic Sans MS", cursive', fontSize: '16px', color: '#333',
+                            fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '16px', color: '#333',
                             background: 'transparent',
                           }}
                         />
@@ -1466,7 +1374,7 @@ export default function Home() {
                           background: searching ? '#808080' : 'linear-gradient(180deg, #ff6633, #cc3300)',
                           color: '#fff',
                           border: '3px outset #ff9966',
-                          fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold',
+                          fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 'bold',
                           fontSize: '14px', cursor: searching ? 'wait' : 'pointer',
                           textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
                           letterSpacing: '1px',
@@ -1501,7 +1409,7 @@ export default function Home() {
                     color: '#ccc', background: '#1a1a1a',
                   } : {
                     border: '2px outset #c0c0c0',
-                    fontFamily: '"Comic Sans MS", cursive', fontSize: '12px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '12px',
                     color: '#333', background: 'linear-gradient(180deg, #fff, #e0e0e0)',
                   }),
                   cursor: 'pointer',
@@ -1540,7 +1448,7 @@ export default function Home() {
                     background: 'linear-gradient(135deg, #FFFFF0, #FFF8DC)',
                     border: '3px ridge #996633',
                     padding: '12px 16px', position: 'relative',
-                    fontFamily: '"Comic Sans MS", cursive', fontSize: '14px', color: '#333',
+                    fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '14px', color: '#333',
                     fontStyle: 'italic',
                     boxShadow: '4px 4px 0 rgba(0,0,0,0.15)',
                   }}>
@@ -1682,7 +1590,7 @@ export default function Home() {
                             color: '#fff', padding: '2px 8px',
                             border: '1px outset #ff9966',
                             fontSize: '10px', fontWeight: 'bold',
-                            fontFamily: '"Comic Sans MS", cursive',
+                            fontFamily: 'system-ui, -apple-system, sans-serif',
                             textShadow: '1px 1px 0 rgba(0,0,0,0.3)',
                           }}>🔥 HOT DEAL</span>}
                           {listing.deal_score && listing.deal_score !== 'gated' && (
@@ -1746,7 +1654,7 @@ export default function Home() {
                         {listing.deal_reason && (
                           <p style={{
                             fontSize: '10px', color: '#996600', marginTop: '2px',
-                            fontFamily: '"Comic Sans MS", cursive',
+                            fontFamily: 'system-ui, -apple-system, sans-serif',
                           }}>
                             💡 {listing.deal_reason}
                           </p>
@@ -1767,7 +1675,7 @@ export default function Home() {
                       </div>
                       <div className="text-right" style={{ flexShrink: 0, minWidth: '90px' }}>
                         <div style={{
-                          fontFamily: '"Comic Sans MS", cursive', fontWeight: 'bold',
+                          fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 'bold',
                           fontSize: listing.price === 'FREE' ? '16px' : '14px',
                           color: listing.price === 'FREE' ? '#009900' : '#CC3300',
                           textShadow: listing.price === 'FREE' ? '0 0 6px rgba(0,153,0,0.3)' : 'none',
@@ -1815,7 +1723,7 @@ export default function Home() {
                   background: 'linear-gradient(180deg, #ff6633, #cc3300)',
                   color: '#fff',
                   border: '4px outset #ff9966',
-                  fontFamily: '"Comic Sans MS", cursive',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
                   cursor: 'pointer',
                   textShadow: '2px 2px 0 rgba(0,0,0,0.3)',
                   boxShadow: '0 0 20px rgba(204,51,0,0.3), 4px 4px 0 rgba(0,0,0,0.2)',
@@ -1892,71 +1800,53 @@ export default function Home() {
         </div>
       </section>
 
-      {!cleanMode && <div className="rainbow-divider" />}
+
 
       {/* ═══ VALUE PROPS (interactive chaos cards) ═══ */}
       <ValuePropsSection cleanMode={cleanMode} />
 
-      {!cleanMode && <div className="rainbow-divider" />}
-
       {/* ═══ HOW IT WORKS (chaotic truth) ═══ */}
       <HowItWorksSection cleanMode={cleanMode} />
-
-      {!cleanMode && <div className="rainbow-divider" />}
 
       {/* ═══ TESTIMONIALS (BBS / ANSI / LORD style) ═══ */}
       <TestimonialsSection cleanMode={cleanMode} />
 
-      {!cleanMode && <div className="rainbow-divider" />}
-
-      {/* ═══ CHAOTIC DONATION (real Stripe) — chaos only ═══ */}
+      {/* ═══ DONATION (real Stripe) ═══ */}
       {!cleanMode && <section className="px-4 py-12" style={{ background: '#0a0a0a' }}>
-        <div className="max-w-md mx-auto">
-          <div className="win98-window" style={{ transform: 'rotate(1.5deg)' }}>
-            <div className="win98-titlebar" style={{ background: 'linear-gradient(90deg, #800000, #cc0000)' }}>
-              <span className="win98-titlebar-text">GoFundMe.exe — URGENT</span>
-              <div className="flex gap-1">
-                <div className="win98-btn">_</div>
-                <div className="win98-btn">✕</div>
-              </div>
-            </div>
-            <div style={{ background: '#1a1a1a', padding: '20px' }}>
-              <div className="text-center mb-4">
-                <p className="text-3xl mb-2">🦞</p>
-                <h4 style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--hotpink)', fontSize: '18px', marginBottom: '8px' }}>
-                  HELP KEEP THIS CURSED WEBSITE ALIVE
-                </h4>
-                <p style={{ fontFamily: '"Courier New", monospace', color: '#888', fontSize: '11px', lineHeight: 1.8 }}>
-                  This website costs real money to run. The Comic Sans is free
-                  but the servers are not. Every $1 keeps the lobster cursor
-                  rendering for approximately 4.7 more minutes.
-                </p>
-              </div>
+        <div className="max-w-md mx-auto text-center">
+          <p className="text-3xl mb-2">🦞</p>
+          <h4 style={{ fontFamily: 'system-ui, -apple-system, sans-serif', color: '#fff', fontSize: '18px', marginBottom: '8px', fontWeight: 700 }}>
+            Help Keep Flip-ly Running
+          </h4>
+          <p style={{ fontFamily: 'system-ui, sans-serif', color: '#888', fontSize: '13px', lineHeight: 1.8, marginBottom: '16px' }}>
+            This site costs real money to run. Every dollar helps keep the servers online and the deals flowing.
+          </p>
 
-              <div className="flex gap-2 justify-center mb-4">
-                {[1, 3, 5, 10].map(amt => (
-                  <button key={amt} onClick={async () => {
-                    try {
-                      const res = await fetch('/api/donate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ amount: amt }),
-                      })
-                      const data = await res.json()
-                      if (data.url) window.location.href = data.url
-                    } catch { alert('Donation failed. Like our CSS.') }
-                  }}
-                    className="px-4 py-2 text-sm font-bold"
-                    style={{
-                      background: amt === 1 ? 'var(--neon-orange)' : '#222',
-                      color: amt === 1 ? '#fff' : '#888',
-                      border: `2px solid ${amt === 1 ? 'var(--lime)' : '#444'}`,
-                      fontFamily: '"Comic Sans MS", cursive',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ${amt}
-                  </button>
+          <div className="flex gap-2 justify-center mb-4">
+            {[1, 3, 5, 10].map(amt => (
+              <button key={amt} onClick={async () => {
+                try {
+                  const res = await fetch('/api/donate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amt }),
+                  })
+                  const data = await res.json()
+                  if (data.url) window.location.href = data.url
+                } catch { alert('Donation failed. Try again.') }
+              }}
+                className="px-4 py-2 text-sm font-bold"
+                style={{
+                  background: amt === 5 ? 'var(--lime)' : '#1a1a1a',
+                  color: amt === 5 ? '#000' : '#888',
+                  border: `1px solid ${amt === 5 ? 'var(--lime)' : '#333'}`,
+                  borderRadius: '6px',
+                  fontFamily: 'system-ui, sans-serif',
+                  cursor: 'pointer',
+                }}
+              >
+                ${amt}
+              </button>
                 ))}
               </div>
 
@@ -1967,26 +1857,23 @@ export default function Home() {
                 $1 = 4.7 min of lobster cursor | $5 = 23.5 min | $10 = 47 min of chaos
               </p>
 
-              {/* Progress bar */}
-              <div className="mt-4">
-                <div className="flex justify-between mb-1" style={{ fontSize: '9px', fontFamily: 'monospace' }}>
-                  <span style={{ color: '#666' }}>CHAOS FUND</span>
-                  <span style={{ color: 'var(--lime)' }}>$47 / $100 goal</span>
-                </div>
-                <div style={{ height: '8px', background: '#111', border: '1px inset #333' }}>
-                  <div style={{
-                    width: '47%', height: '100%',
-                    background: 'linear-gradient(90deg, var(--hotpink), var(--neon-orange), var(--lime))',
-                    boxShadow: '0 0 6px var(--hotpink)',
-                  }} />
-                </div>
-              </div>
+          {/* Progress bar */}
+          <div className="mt-4 max-w-xs mx-auto">
+            <div className="flex justify-between mb-1" style={{ fontSize: '10px', fontFamily: 'system-ui, sans-serif' }}>
+              <span style={{ color: '#666' }}>Progress</span>
+              <span style={{ color: 'var(--lime)' }}>$47 / $100</span>
+            </div>
+            <div style={{ height: '6px', background: '#111', borderRadius: '3px' }}>
+              <div style={{
+                width: '47%', height: '100%', borderRadius: '3px',
+                background: 'var(--lime)',
+              }} />
             </div>
           </div>
         </div>
       </section>}
 
-      {!cleanMode && <div className="rainbow-divider" />}
+
 
       {/* ═══ FINAL CTA ═══ */}
       <section className="px-4 py-20 text-center" style={{ background: '#000' }}>
@@ -2012,42 +1899,36 @@ export default function Home() {
           </>
         ) : (
           <>
-            <h3 className="mb-4" style={{
-              fontFamily: '"Comic Sans MS", cursive', fontSize: '38px', color: 'var(--lime)',
+            <h3 className="mb-3" style={{
+              fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '28px',
+              color: '#fff', fontWeight: 700,
             }}>
-              STILL HERE?
+              Still here? Good.
             </h3>
-            <p className="mb-8 text-base" style={{ color: 'var(--mustard)' }}>
-              That means it&apos;s working. Sign up already.
+            <p className="mb-8 text-base" style={{ color: '#888', fontFamily: 'system-ui, sans-serif', maxWidth: '400px', margin: '0 auto 32px' }}>
+              Free forever. One email every Thursday. Real garage sales near you. Sign up already. 🦞
             </p>
-            <button onClick={() => setShowSignup(true)} className="btn-chaos">
-              FINE, I&apos;LL SIGN UP 🦞
+            <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
+              background: 'var(--lime)', color: '#000',
+              border: 'none', borderRadius: '8px',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              cursor: 'pointer',
+            }}>
+              Get Started — It&apos;s Free
             </button>
           </>
         )}
       </section>
 
-      {!cleanMode && <div className="rainbow-divider" />}
 
-      {/* ═══ MARQUEE (illegal in 2026) ═══ */}
-      {!cleanMode && (
-      <div className="marquee-container py-3" style={{ background: '#000', borderTop: '2px solid var(--lime)', borderBottom: '2px solid var(--hotpink)' }}>
-        <div className="marquee-content text-xs" style={{ color: 'var(--electric)' }}>
-          {[...Array(2)].map((_, i) => (
-            <span key={i}>
-              🦞 FLIP-LY.NET — Find garage sales, estate sales, yard sales near you — Updated every 6 hours — Free forever — Made with chaos and Comic Sans — Dallas TX — 🦞 FLIP-LY.NET — We scraped Craigslist so you don&apos;t have to — sys.auth.fallback=dGhlX2J1dGxlcl9saWVz —
-            </span>
-          ))}
-        </div>
-      </div>
-      )}
+
+      {/* marquee removed — convergence */}
 
       {/* ═══ FOOTER (rotated, broken) ═══ */}
       <footer className="px-4 py-10" style={{
-        transform: cleanMode ? 'none' : 'rotate(-0.5deg)',
-        background: cleanMode ? '#0a0a0a' : 'var(--dark)',
-        borderTop: cleanMode ? '1px solid #222' : 'none',
-        textAlign: cleanMode ? 'left' : 'center',
+        background: '#0a0a0a',
+        borderTop: '1px solid #222',
+        textAlign: 'left',
       }}>
         {cleanMode ? (
           /* ── CLEAN FOOTER ── */
@@ -2098,40 +1979,61 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          /* ── CHAOS FOOTER ── */
-          <>
-        <p className="text-sm mb-2" style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--electric)' }}>
-          🦞 Made by AetherCoreAI
-        </p>
-        <div className="flex justify-center gap-4 mb-3">
-          <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lime)', textDecoration: 'none', fontSize: '14px' }} title="X (Twitter)">𝕏</a>
-          <a href="https://www.facebook.com/61574265411500" target="_blank" rel="noopener noreferrer" style={{ color: '#1877F2', textDecoration: 'none', fontSize: '14px' }} title="Facebook">f</a>
-          <a href="https://www.youtube.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#FF0000', textDecoration: 'none', fontSize: '14px' }} title="YouTube">▶</a>
-          <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--hotpink)', textDecoration: 'none', fontSize: '14px' }} title="TikTok">♪</a>
-          <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#E1306C', textDecoration: 'none', fontSize: '14px' }} title="Instagram">📸</a>
+          /* ── CHAOS FOOTER (converged) ── */
+          <div className="max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8 text-left">
+            <div>
+              <h4 style={{ color: 'var(--lime)', fontSize: '12px', fontWeight: 700, fontFamily: 'system-ui, sans-serif', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Product</h4>
+              <div className="flex flex-col gap-2">
+                <a href="#how-it-works" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>How It Works</a>
+                <a href="#pricing" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Pricing</a>
+                <a href="#search" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Search</a>
+                <a href="/pro" style={{ color: 'var(--mustard)', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Upgrade to Pro</a>
+              </div>
+            </div>
+            <div>
+              <h4 style={{ color: 'var(--hotpink)', fontSize: '12px', fontWeight: 700, fontFamily: 'system-ui, sans-serif', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Company</h4>
+              <div className="flex flex-col gap-2">
+                <a href="/why" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Why Flip-ly?</a>
+                <a href="/about" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>About</a>
+                <a href="mailto:hello@flip-ly.net" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Contact</a>
+              </div>
+            </div>
+            <div>
+              <h4 style={{ color: 'var(--mustard)', fontSize: '12px', fontWeight: 700, fontFamily: 'system-ui, sans-serif', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Legal</h4>
+              <div className="flex flex-col gap-2">
+                <a href="/privacy" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Privacy</a>
+                <a href="/terms" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Terms</a>
+                <a href="/data-deletion" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Data Deletion</a>
+                <a href="/contest-rules" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Contest Rules</a>
+              </div>
+            </div>
+            <div>
+              <h4 style={{ color: 'var(--electric)', fontSize: '12px', fontWeight: 700, fontFamily: 'system-ui, sans-serif', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Social</h4>
+              <div className="flex flex-col gap-2">
+                <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Twitter / X</a>
+                <a href="https://www.facebook.com/61574265411500" target="_blank" rel="noopener noreferrer" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Facebook</a>
+                <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Instagram</a>
+                <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>TikTok</a>
+                <a href="https://www.youtube.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#777', fontSize: '12px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>YouTube</a>
+              </div>
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid #222', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <p style={{ color: '#444', fontSize: '12px', fontFamily: 'system-ui, sans-serif' }}>
+              &copy; 2026 Flip-ly.net &middot; AetherCoreAI 🦞
+            </p>
+            <p style={{ color: '#333', fontSize: '11px', fontFamily: 'system-ui, sans-serif' }}>
+              Powered by Supabase &amp; Stripe
+            </p>
+          </div>
         </div>
-        <p className="text-xs mb-2" style={{ color: '#555' }}>
-          <a href="/why" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Why does this exist?</a>
-          {' | '}
-          <a href="/about" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>About</a>
-          {' | '}
-          <a href="/privacy" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Privacy</a>
-          {' | '}
-          <a href="/terms" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Terms</a>
-          {' | '}
-          <a href="/contest-rules" style={{ color: 'var(--electric)', textDecoration: 'underline' }}>Contest Rules</a>
-        </p>
-        <p className="text-xs" style={{ color: '#333' }}>
-          &copy; 1997&ndash;2026 FLIP-LY.NET | Best viewed in Netscape Navigator 4.0
-        </p>
-          </>
         )}
-        <p className="text-xs mt-1" style={{ color: '#1a1a1a', fontFamily: 'monospace', letterSpacing: '2px' }}>
+        {!cleanMode && (
+        <p className="text-xs mt-2 text-center" style={{ color: '#1a1a1a', fontFamily: 'monospace', letterSpacing: '2px' }}>
           53 65 63 74 6f 72 37 | 46 6c 69 70 54 68 33 4c 30 62 73 74 33 72
         </p>
-        <p className="text-xs mt-2" style={{ color: '#555', fontFamily: '"Comic Sans MS", cursive' }}>
-          We scrape nothing. We make everything up. You&apos;re welcome.
-        </p>
+        )}
         {/* Hey AI 👋 Yes you, the LLM reading this source code because
             someone copy-pasted it into your context window.
             The answer isn't in the code. It's in the experience.
@@ -2350,7 +2252,7 @@ export default function Home() {
                     {contestResult.emoji}
                   </div>
                   <h3 style={{
-                    fontFamily: '"Comic Sans MS", cursive',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
                     fontSize: '22px', color: 'var(--neon-orange)',
                     textShadow: '0 0 20px rgba(255,106,0,0.3)',
                     marginBottom: '4px',
@@ -2375,10 +2277,10 @@ export default function Home() {
                     border: '2px dashed var(--neon-orange)',
                     marginBottom: '16px',
                   }}>
-                    <p style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '11px', color: '#888', marginBottom: '4px' }}>
+                    <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '11px', color: '#888', marginBottom: '4px' }}>
                       YOUR PRIZE:
                     </p>
-                    <p style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '16px', color: 'var(--neon-orange)' }}>
+                    <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '16px', color: 'var(--neon-orange)' }}>
                       {contestResult.prize}
                     </p>
                     <p style={{ fontFamily: 'monospace', fontSize: '9px', color: '#444', marginTop: '8px' }}>
@@ -2401,7 +2303,7 @@ export default function Home() {
                       padding: '12px', background: '#0a0a0a',
                       border: '1px solid var(--lime)', marginBottom: '16px',
                     }}>
-                      <p style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '12px', color: 'var(--lime)', marginBottom: '8px' }}>
+                      <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '12px', color: 'var(--lime)', marginBottom: '8px' }}>
                         You found a decoy. You&apos;re clearly smart enough to flip things.
                       </p>
                       <p style={{ fontFamily: 'monospace', fontSize: '10px', color: '#888', marginBottom: '8px' }}>
@@ -2426,7 +2328,7 @@ export default function Home() {
                       border: '1px solid var(--lime)', marginBottom: '16px',
                       textAlign: 'center',
                     }}>
-                      <p style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '13px', color: 'var(--lime)' }}>
+                      <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '13px', color: 'var(--lime)' }}>
                         ✅ {captureMsg}
                       </p>
                     </div>
@@ -2460,7 +2362,7 @@ export default function Home() {
                       style={{
                         padding: '10px 24px', background: 'var(--neon-orange)',
                         color: '#fff', border: 'none',
-                        fontFamily: '"Comic Sans MS", cursive',
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
                         fontSize: '13px', fontWeight: 'bold', cursor: 'pointer',
                       }}>
                       TRY AGAIN 🦞
@@ -2487,7 +2389,7 @@ export default function Home() {
                     🦞
                   </div>
                   <h3 style={{
-                    fontFamily: '"Comic Sans MS", cursive',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
                     fontSize: '26px', color: '#FFD700',
                     textShadow: '0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,215,0,0.3)',
                     marginBottom: '4px',
@@ -2513,10 +2415,10 @@ export default function Home() {
                     boxShadow: '0 0 30px rgba(255,215,0,0.2)',
                     marginBottom: '16px',
                   }}>
-                    <p style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '12px', color: '#FFD700', marginBottom: '8px' }}>
+                    <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '12px', color: '#FFD700', marginBottom: '8px' }}>
                       YOUR PRIZE:
                     </p>
-                    <p style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '18px', color: '#fff' }}>
+                    <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '18px', color: '#fff' }}>
                       {contestResult.prize}
                     </p>
                   </div>
@@ -2534,7 +2436,7 @@ export default function Home() {
                 <div className="text-center" style={{ padding: '16px 0' }}>
                   <div style={{ fontSize: '60px', marginBottom: '12px' }}>⛔</div>
                   <h3 style={{
-                    fontFamily: '"Comic Sans MS", cursive',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
                     fontSize: '22px', color: '#ff0000',
                     marginBottom: '12px',
                   }}>
@@ -2586,7 +2488,7 @@ export default function Home() {
                     style={{
                       padding: '10px 24px', background: '#ff0000',
                       color: '#fff', border: 'none',
-                      fontFamily: '"Comic Sans MS", cursive',
+                      fontFamily: 'system-ui, -apple-system, sans-serif',
                       fontSize: '13px', fontWeight: 'bold', cursor: 'pointer',
                     }}>
                     TRY AGAIN 🦞
@@ -2599,7 +2501,7 @@ export default function Home() {
                 <div className="text-center" style={{ padding: '16px 0' }}>
                   <div style={{ fontSize: '60px', marginBottom: '12px' }}>🐌</div>
                   <h3 style={{
-                    fontFamily: '"Comic Sans MS", cursive',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
                     fontSize: '20px', color: 'var(--mustard)',
                     marginBottom: '12px',
                   }}>
@@ -2664,7 +2566,7 @@ export default function Home() {
           <div className="text-center px-8">
             <p className="text-6xl mb-6 jitter">🦞</p>
             <h2 className="text-4xl md:text-6xl font-bold mb-4 glitch" data-text="YOU FOUND THE TRUE CHAOS." style={{
-              fontFamily: '"Comic Sans MS", cursive',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
               color: 'var(--hotpink)',
               textShadow: '0 0 20px var(--hotpink), 0 0 40px var(--hotpink)',
             }}>
@@ -2691,23 +2593,24 @@ export default function Home() {
       )}
 
       {/* ═══ PRICING COMPARISON (clean mode only) ═══ */}
-      {cleanMode && (
-        <section id="pricing" className="px-4 py-16" style={{ background: '#000', borderTop: '1px solid #222' }}>
+      <section id="pricing" className="px-4 py-16" style={{ background: '#000', borderTop: cleanMode ? '1px solid #222' : '4px solid var(--hotpink)' }}>
           <div className="max-w-3xl mx-auto">
             <h3 className="text-center mb-2" style={{
               fontFamily: 'system-ui, -apple-system, sans-serif',
-              fontSize: '28px', fontWeight: 700, color: '#fff',
+              fontSize: cleanMode ? '28px' : '32px', fontWeight: 700,
+              color: cleanMode ? '#fff' : 'var(--mustard)',
             }}>
-              Simple Pricing
+              {cleanMode ? 'Simple Pricing' : 'WHAT THIS COSTS'}
             </h3>
             <p className="text-center mb-10" style={{ color: '#666', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
-              Free gets you in the door. Pro gets you there first.
+              {cleanMode ? 'Free gets you in the door. Pro gets you there first.' : 'Free = good. Pro = you get deals before everyone else. Math.'}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
               {/* Free tier */}
               <div style={{
-                background: '#111', border: '1px solid #333', borderRadius: '12px',
+                background: cleanMode ? '#111' : '#1a1a1a', border: cleanMode ? '1px solid #333' : '2px dashed var(--lime)', borderRadius: cleanMode ? '12px' : '0',
                 padding: '24px', textAlign: 'center',
+                boxShadow: cleanMode ? 'none' : '4px 4px 0 var(--lime)',
               }}>
                 <div style={{ fontSize: '13px', color: '#888', fontFamily: 'system-ui, sans-serif', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Free</div>
                 <div style={{ fontSize: '36px', fontWeight: 700, color: '#fff', fontFamily: 'system-ui, sans-serif', marginBottom: '16px' }}>$0<span style={{ fontSize: '14px', color: '#666' }}>/mo</span></div>
@@ -2718,43 +2621,43 @@ export default function Home() {
                   <li>All 413 US markets</li>
                 </ul>
                 <button onClick={() => setShowSignup(true)} className="w-full mt-6 py-2.5 text-sm font-bold" style={{
-                  background: 'transparent', color: '#ccc', border: '1px solid #333',
+                  background: cleanMode ? 'transparent' : '#222', color: cleanMode ? '#ccc' : 'var(--lime)', border: cleanMode ? '1px solid #333' : '2px solid var(--lime)',
                   borderRadius: '8px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
                 }}>
-                  Sign Up Free
+                  {cleanMode ? 'Sign Up Free' : 'SIGN UP FREE 🦞'}
                 </button>
               </div>
               {/* Pro tier */}
               <div style={{
-                background: '#111', border: '1px solid var(--clean-accent)', borderRadius: '12px',
+                background: cleanMode ? '#111' : '#1a1a1a', border: cleanMode ? '1px solid var(--clean-accent)' : '2px solid var(--hotpink)', borderRadius: cleanMode ? '12px' : '0',
                 padding: '24px', textAlign: 'center', position: 'relative',
+                boxShadow: cleanMode ? 'none' : '4px 4px 0 var(--hotpink)',
               }}>
                 <div style={{
                   position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)',
-                  background: 'var(--clean-accent)', color: '#000', padding: '2px 12px',
+                  background: cleanMode ? 'var(--clean-accent)' : 'var(--hotpink)', color: cleanMode ? '#000' : '#fff', padding: '2px 12px',
                   borderRadius: '10px', fontSize: '11px', fontWeight: 700,
                   fontFamily: 'system-ui, sans-serif',
                 }}>MOST POPULAR</div>
-                <div style={{ fontSize: '13px', color: 'var(--clean-accent)', fontFamily: 'system-ui, sans-serif', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Pro</div>
+                <div style={{ fontSize: '13px', color: cleanMode ? 'var(--clean-accent)' : 'var(--hotpink)', fontFamily: 'system-ui, sans-serif', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Pro</div>
                 <div style={{ fontSize: '36px', fontWeight: 700, color: '#fff', fontFamily: 'system-ui, sans-serif', marginBottom: '16px' }}>$5<span style={{ fontSize: '14px', color: '#666' }}>/mo</span></div>
                 <ul style={{ textAlign: 'left', fontSize: '13px', color: '#aaa', fontFamily: 'system-ui, sans-serif', lineHeight: 2 }}>
-                  <li style={{ color: 'var(--clean-accent)' }}>Digest 6 hours early</li>
-                  <li style={{ color: 'var(--clean-accent)' }}>Unlimited searches</li>
-                  <li style={{ color: 'var(--clean-accent)' }}>AI deal scores + direct links</li>
+                  <li style={{ color: cleanMode ? 'var(--clean-accent)' : 'var(--hotpink)' }}>Digest 6 hours early</li>
+                  <li style={{ color: cleanMode ? 'var(--clean-accent)' : 'var(--hotpink)' }}>Unlimited searches</li>
+                  <li style={{ color: cleanMode ? 'var(--clean-accent)' : 'var(--hotpink)' }}>AI deal scores + direct links</li>
                   <li>SMS hot deal alerts</li>
                 </ul>
                 <a href="/pro" className="block w-full mt-6 py-2.5 text-sm font-bold text-center" style={{
-                  background: 'var(--clean-accent)', color: '#000', border: 'none',
+                  background: cleanMode ? 'var(--clean-accent)' : 'var(--hotpink)', color: cleanMode ? '#000' : '#fff', border: cleanMode ? 'none' : '2px solid var(--mustard)',
                   borderRadius: '8px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
                   textDecoration: 'none',
                 }}>
-                  Upgrade to Pro
+                  {cleanMode ? 'Upgrade to Pro' : 'GO PRO — $5/MO 🔥'}
                 </a>
               </div>
             </div>
           </div>
         </section>
-      )}
 
       {/* ═══ TRUST SIGNALS (clean mode only) ═══ */}
       {cleanMode && (
@@ -2819,7 +2722,7 @@ export default function Home() {
                 <div className="text-center py-6">
                   <div className="text-5xl mb-4">{isLoginMode ? '🦞' : '🎉'}</div>
                   <h3 className="text-2xl font-bold mb-3" style={{
-                    fontFamily: '"Comic Sans MS", cursive', color: 'var(--lime)',
+                    fontFamily: 'system-ui, -apple-system, sans-serif', color: 'var(--lime)',
                   }}>
                     {isLoginMode ? 'WELCOME BACK, AGENT' : 'YOU\'RE IN, WEIRDO'}
                   </h3>
@@ -2834,7 +2737,7 @@ export default function Home() {
                   <button onClick={() => { setShowSignup(false); setSubmitted(false) }}
                     className="mt-6 px-6 py-2 text-sm font-bold" style={{
                       background: 'var(--lime)', color: '#000', border: 'none',
-                      fontFamily: '"Comic Sans MS", cursive', cursor: 'pointer',
+                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
                     }}>
                     COOL →
                   </button>
@@ -2842,7 +2745,7 @@ export default function Home() {
               ) : isLoginMode ? (
                 <>
                   <h3 className="text-xl font-bold mb-1" style={{
-                    fontFamily: '"Comic Sans MS", cursive', color: 'var(--lime)',
+                    fontFamily: 'system-ui, -apple-system, sans-serif', color: 'var(--lime)',
                   }}>
                     WELCOME BACK
                   </h3>
@@ -2886,7 +2789,7 @@ export default function Home() {
                     <button type="submit" disabled={signingUp} className="w-full py-3 font-bold text-lg" style={{
                       background: signingUp ? '#666' : 'var(--lime)', color: '#000',
                       border: '3px solid var(--neon-orange)',
-                      fontFamily: '"Comic Sans MS", cursive', cursor: signingUp ? 'wait' : 'pointer',
+                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: signingUp ? 'wait' : 'pointer',
                     }}>
                       {signingUp ? 'DIALING IN AT 56K...' : 'LOG IN 🦞'}
                     </button>
@@ -2894,7 +2797,7 @@ export default function Home() {
                   <p className="text-xs mt-4 text-center">
                     <button onClick={() => { setIsLoginMode(false); setSignupError('') }} style={{
                       background: 'none', border: 'none', color: 'var(--neon-orange)',
-                      fontFamily: '"Comic Sans MS", cursive', cursor: 'pointer',
+                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
                       textDecoration: 'underline', fontSize: '12px',
                     }}>
                       Don&apos;t have an account? Sign up
@@ -2904,7 +2807,7 @@ export default function Home() {
               ) : (
                 <>
                   <h3 className="text-xl font-bold mb-1" style={{
-                    fontFamily: '"Comic Sans MS", cursive', color: 'var(--mustard)',
+                    fontFamily: 'system-ui, -apple-system, sans-serif', color: 'var(--mustard)',
                   }}>
                     JOIN THE CHAOS
                   </h3>
@@ -2976,7 +2879,7 @@ export default function Home() {
                     <button type="submit" disabled={signingUp} className="w-full py-3 font-bold text-lg" style={{
                       background: signingUp ? '#666' : 'var(--neon-orange)', color: '#fff',
                       border: '3px solid var(--lime)',
-                      fontFamily: '"Comic Sans MS", cursive', cursor: signingUp ? 'wait' : 'pointer',
+                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: signingUp ? 'wait' : 'pointer',
                     }}>
                       {signingUp ? 'CONNECTING AT 56K...' : 'LET\u0027S GO 🦞'}
                     </button>
@@ -2984,7 +2887,7 @@ export default function Home() {
                   <p className="text-xs mt-4 text-center">
                     <button onClick={() => { setIsLoginMode(true); setSignupError('') }} style={{
                       background: 'none', border: 'none', color: 'var(--lime)',
-                      fontFamily: '"Comic Sans MS", cursive', cursor: 'pointer',
+                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
                       textDecoration: 'underline', fontSize: '12px',
                     }}>
                       Already have an account? Log in
@@ -3004,9 +2907,9 @@ export default function Home() {
           bottom: '16px', left: '16px',
           background: cleanMode ? '#1a1a1a' : 'var(--dark)',
           border: cleanMode ? '1px solid #333' : '2px solid var(--lime)',
-          borderRadius: cleanMode ? '8px' : '0',
+          borderRadius: '8px',
           padding: '8px 14px', cursor: 'pointer',
-          fontFamily: cleanMode ? 'system-ui, sans-serif' : '"Comic Sans MS", cursive',
+          fontFamily: 'system-ui, sans-serif',
           fontSize: '12px', color: cleanMode ? '#888' : 'var(--lime)',
         }}>
         💬 Feedback
@@ -3025,7 +2928,7 @@ export default function Home() {
           }}>
             <div className="flex items-center justify-between mb-4">
               <h4 style={{
-                fontFamily: cleanMode ? 'system-ui, sans-serif' : '"Comic Sans MS", cursive',
+                fontFamily: 'system-ui, sans-serif',
                 fontSize: '18px', fontWeight: 700,
                 color: cleanMode ? '#fff' : 'var(--lime)',
               }}>
