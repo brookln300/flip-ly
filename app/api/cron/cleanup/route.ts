@@ -49,6 +49,22 @@ export async function GET(req: NextRequest) {
 
     results.push(`Denied contest attempts: ${deniedCount || 0} old rows deleted`)
 
+    // Delete listings whose event date has passed (sale is over, links will be dead)
+    const today = new Date().toISOString().split('T')[0]
+    const { count: pastEventCount } = await supabase
+      .from('fliply_listings')
+      .select('*', { count: 'exact', head: true })
+      .lt('event_date', today)
+
+    if (pastEventCount && pastEventCount > 0) {
+      await supabase
+        .from('fliply_listings')
+        .delete()
+        .lt('event_date', today)
+    }
+
+    results.push(`Past-event listings: ${pastEventCount || 0} dead rows deleted`)
+
     // Expire stale listings (older than 14 days — gives buffer between weekly scrapes)
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
     const { count: expiredCount } = await supabase
