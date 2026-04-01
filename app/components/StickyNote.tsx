@@ -278,15 +278,8 @@ export default function StickyNote({ onOpenHunt }: { onOpenHunt?: () => void } =
         </p>
         <p style={{
           fontFamily: '"Comic Sans MS", cursive',
-          fontSize: '11px', color: '#666',
-          marginTop: '8px', marginBottom: '0',
-        }}>
-          → <span onClick={(e) => { e.stopPropagation(); onOpenHunt?.() }} style={{ color: '#8B4513', textDecoration: 'underline', cursor: 'pointer' }}>try a password</span>
-        </p>
-        <p style={{
-          fontFamily: '"Comic Sans MS", cursive',
           fontSize: '9px', color: '#999',
-          marginTop: '4px', marginBottom: '0',
+          marginTop: '8px', marginBottom: '0',
         }}>
           → <a href="/lobster-hunt" onClick={e => e.stopPropagation()} style={{ color: '#aaa', textDecoration: 'underline' }}>hall of almost</a>
         </p>
