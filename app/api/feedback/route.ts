@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../lib/supabase'
-import { getSession } from '../../lib/auth'
+import { getSession, requireAdmin } from '../../lib/auth'
 
 // GET /api/feedback?key=<admin_key>&status=new&limit=50
 export async function GET(req: NextRequest) {
+  // Require admin access for listing/reading feedback
+  const admin = await requireAdmin(req as unknown as Request)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { searchParams } = new URL(req.url)
-  const key = searchParams.get('key')
-
-  // Simple admin key check — uses the same JWT_SECRET as auth
-  if (key !== process.env.JWT_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
 
   const status = searchParams.get('status') // 'new', 'reviewed', 'implemented', 'dismissed', or null for all
   const limit = Math.min(Number(searchParams.get('limit')) || 50, 200)
@@ -51,11 +48,9 @@ export async function GET(req: NextRequest) {
 
 // PATCH /api/feedback — update status of a feedback item
 export async function PATCH(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const key = searchParams.get('key')
-  if (key !== process.env.JWT_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // Require admin access for modifying feedback
+  const admin = await requireAdmin(req as unknown as Request)
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id, status } = await req.json()
   const validStatuses = ['new', 'reviewed', 'implemented', 'dismissed']
@@ -63,13 +58,18 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid id or status' }, { status: 400 })
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('fliply_feedback')
     .update({ status })
     .eq('id', id)
+    .select()
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  if (!data || data.length === 0) {
+    return NextResponse.json({ error: 'Feedback not found' }, { status: 404 })
   }
 
   return NextResponse.json({ ok: true, id, status })

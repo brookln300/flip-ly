@@ -14,7 +14,12 @@ function getWelcomeEmail(email: string, marketName: string | null) {
   const username = email.split('@')[0]
   const location = marketName || 'your area'
 
-  return `<div style="background:#ffffff;max-width:520px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  return `<div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+  Welcome — your Thursday deal digest starts this week
+  <!-- Padding to prevent email client from pulling body text -->
+  &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+</div>
+<div style="background:#ffffff;max-width:520px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
     <div style="background:#0a0a0a;padding:24px 32px;">
       <h1 style="color:#22C55E;font-size:22px;margin:0;font-weight:700;">🦞 flip-ly.net</h1>
     </div>

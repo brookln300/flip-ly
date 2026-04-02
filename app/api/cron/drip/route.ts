@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (!process.env.RESEND_API_KEY) {
-    return NextResponse.json({ error: 'No RESEND_API_KEY' })
+    return NextResponse.json({ error: 'No RESEND_API_KEY' }, { status: 500 })
   }
 
   const start = Date.now()
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       .select('id, user_id, sequence_id, current_step, variant, status, enrolled_at, last_sent_at')
 
     if (enrollErr) {
-      return NextResponse.json({ error: String(enrollErr.message), hint: enrollErr.hint || null })
+      return NextResponse.json({ error: String(enrollErr.message), hint: enrollErr.hint || null }, { status: 500 })
     }
 
     // Filter active in application code (bypasses any RLS/index weirdness)

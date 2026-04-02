@@ -26,7 +26,7 @@ const SUBJECTS_PRO = [
 const SUBJECTS_FREE = [
   "🎩 Your butler found {count} deals this week",
   "🔥 {count} garage sales near you — the butler insists",
-  "📢 {count} new deals in DFW — from your favorite chaos engine",
+  "📢 {count} new deals in {city} — from your favorite chaos engine",
   "🦞 flip-ly weekly: {count} deals, 0 regrets (probably)",
   "⚡ The butler's weekly report: {count} bargains detected",
 ]
@@ -119,7 +119,9 @@ export async function GET(req: NextRequest) {
         const isPro = user.is_premium
         const subjectPool = isPro ? SUBJECTS_PRO : SUBJECTS_FREE
         const subjectTemplate = subjectPool[Math.floor(Math.random() * subjectPool.length)]
-        const subject = subjectTemplate.replace('{count}', String(listings.length))
+        const subject = subjectTemplate
+          .replace('{count}', String(listings.length))
+          .replace('{city}', user.city || 'your area')
         const html = buildDigestEmail(user, listings, stats, isPro, user.email)
 
         const { error: sendError } = await sendEmail({
@@ -265,11 +267,20 @@ function buildDigestEmail(
         </p>
       </div>`
 
+  const previewText = isPro
+    ? `${listings.length} deals — you're seeing this 6 hours early`
+    : `${listings.length} deals near you this week`
+
   return `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#000;font-family:Tahoma,sans-serif;">
+<div style="display:none;font-size:1px;color:#0d0d0d;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+  ${previewText}
+  <!-- Padding to prevent email client from pulling body text -->
+  &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+</div>
 
 ${proBanner}
 

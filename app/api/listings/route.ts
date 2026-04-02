@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
   const query = searchParams.get('q') || ''
   const marketSlug = searchParams.get('market') || ''
   const hot = searchParams.get('hot') === 'true'
-  const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50)
-  const offset = parseInt(searchParams.get('offset') || '0')
+  const limit = Math.max(1, Math.min(parseInt(searchParams.get('limit') || '20') || 20, 50))
+  const offset = Math.max(0, parseInt(searchParams.get('offset') || '0') || 0)
 
   // ── Price range filters (Pro feature, cents) ──
   const priceMin = searchParams.get('price_min') ? parseInt(searchParams.get('price_min')!) * 100 : null

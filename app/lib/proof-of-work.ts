@@ -16,7 +16,14 @@ import { createHash } from 'crypto'
 
 const POW_DIFFICULTY = 4 // Number of leading hex zeros required (4 = ~65k iterations avg)
 const POW_TTL_MS = 5 * 60 * 1000 // Challenge valid for 5 minutes
-const POW_SECRET = process.env.POW_SECRET || 'lobster-council-pow-secret-2026'
+
+function getPowSecret(): string {
+  const secret = process.env.POW_SECRET
+  if (!secret) {
+    throw new Error('POW_SECRET environment variable is required')
+  }
+  return secret
+}
 
 export function sha256hex(input: string): string {
   return createHash('sha256').update(input).digest('hex')
@@ -32,8 +39,9 @@ export function generateChallenge(): {
   signature: string
 } {
   const expires = Date.now() + POW_TTL_MS
-  const challenge = sha256hex(`${Date.now()}-${Math.random()}-${POW_SECRET}`)
-  const signature = sha256hex(`${challenge}:${expires}:${POW_SECRET}`)
+  const secret = getPowSecret()
+  const challenge = sha256hex(`${Date.now()}-${Math.random()}-${secret}`)
+  const signature = sha256hex(`${challenge}:${expires}:${secret}`)
 
   return {
     challenge,
@@ -59,7 +67,7 @@ export function verifyProofOfWork(
   }
 
   // Verify signature (prevents forged/tampered challenges)
-  const expectedSig = sha256hex(`${challenge}:${expires}:${POW_SECRET}`)
+  const expectedSig = sha256hex(`${challenge}:${expires}:${getPowSecret()}`)
   if (signature !== expectedSig) {
     return { valid: false, error: 'Invalid challenge signature.' }
   }

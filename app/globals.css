@@ -420,9 +420,9 @@ body::after {
   .btn-chaos:hover { transform: none !important; font-size: 22px !important; }
   .btn-chaos:active { transform: scale(0.97) !important; }
 
-  /* Larger tap targets */
+  /* Larger tap targets (WCAG 44px minimum) */
   .btn-chaos { padding: 16px 32px; font-size: 20px; width: 100%; }
-  button, a { min-height: 44px; }
+  button { min-height: 44px; }
 
   /* Full-width search */
   .cl-input { font-size: 16px; } /* prevents iOS zoom on focus */
@@ -432,6 +432,21 @@ body::after {
 
   /* Lobster cursor off on mobile (touch devices don't have cursors) */
   body { cursor: auto; }
+}
+
+/* ── CLEAN MODE: disable CSS animations on mobile ──────── */
+@media (max-width: 768px) {
+  .clean-mode * {
+    animation-duration: 0s !important;
+    transition-duration: 0.1s !important;
+  }
+
+  /* Larger tap targets for clean-mode footer links */
+  .clean-mode footer a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 /* Respect reduced motion preference */

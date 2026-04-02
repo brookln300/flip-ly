@@ -1,6 +1,12 @@
 import { createHash } from 'crypto'
 
-const SECURITY_SECRET = process.env.POW_SECRET || 'lobster-council-pow-secret-2026'
+function getSecuritySecret(): string {
+  const s = process.env.POW_SECRET
+  if (!s) {
+    throw new Error('POW_SECRET environment variable is required')
+  }
+  return s
+}
 
 /**
  * Contest Security Utilities
@@ -35,7 +41,7 @@ export function getProgressiveDelay(attemptCount: number): number {
  */
 export function hashFingerprint(fingerprint: string): string {
   return createHash('sha256')
-    .update(`${fingerprint}:${SECURITY_SECRET}`)
+    .update(`${fingerprint}:${getSecuritySecret()}`)
     .digest('hex')
     .substring(0, 32)
 }

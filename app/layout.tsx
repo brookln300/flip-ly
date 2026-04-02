@@ -4,20 +4,20 @@ import GoogleAnalytics from './components/GoogleAnalytics'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'FLIP-LY.NET — Find Garbage. We Mean Treasures.',
-  description: 'AI-powered garage sale finder. We scraped Craigslist so you don\'t have to. Built in Comic Sans because we respect you.',
+  title: 'Flip-ly.net — AI-Powered Garage Sale Finder',
+  description: 'Find the best garage sales, estate sales, and local deals near you. AI-scored listings from 20+ sources, delivered to your inbox every Thursday.',
   metadataBase: new URL('https://flip-ly.net'),
   openGraph: {
-    title: 'FLIP-LY.NET — Find Garbage. We Mean Treasures.',
-    description: 'AI-powered garage sale finder with a lobster cursor, a fake Winamp player, and actual real deals. This is not a joke. OK it\'s a little bit of a joke.',
+    title: 'Flip-ly.net — AI-Powered Garage Sale Finder',
+    description: 'Find the best garage sales and estate sales near you. AI-scored listings from Craigslist, EstateSales.net, and 20+ local sources delivered weekly.',
     url: 'https://flip-ly.net',
-    siteName: 'flip-ly.net',
+    siteName: 'Flip-ly',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'flip-ly.net — AI-powered garage sale chaos',
+        alt: 'Flip-ly.net — AI-powered garage sale finder',
       },
     ],
     locale: 'en_US',
@@ -25,8 +25,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FLIP-LY.NET — Find Garbage. We Mean Treasures.',
-    description: 'AI-powered garage sale finder. Comic Sans. Lobster cursor. Real deals. Yes, all of those things at once.',
+    title: 'Flip-ly.net — AI-Powered Garage Sale Finder',
+    description: 'AI-scored garage sale and estate sale listings from 20+ sources, delivered to your inbox every Thursday. Free to use.',
     images: ['/og-image.png'],
   },
   robots: {

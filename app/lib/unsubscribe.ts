@@ -1,12 +1,15 @@
 import { createHmac } from 'crypto'
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required')
+function getSecret(): string {
+  const s = process.env.JWT_SECRET
+  if (!s) {
+    throw new Error('JWT_SECRET environment variable is required')
+  }
+  return s
 }
-const SECRET = process.env.JWT_SECRET
 
 export function generateUnsubToken(email: string): string {
-  return createHmac('sha256', SECRET).update(email.toLowerCase()).digest('hex').substring(0, 32)
+  return createHmac('sha256', getSecret()).update(email.toLowerCase()).digest('hex').substring(0, 32)
 }
 
 export function getUnsubscribeUrl(email: string): string {

@@ -36,7 +36,7 @@ export async function sendEmail(opts: {
       to: opts.to.toLowerCase(),
       subject: opts.subject,
       html: opts.html,
-      replyTo: opts.replyTo || 'aethercoreai@outlook.com',
+      replyTo: opts.replyTo || process.env.RESEND_REPLY_TO || 'hello@flip-ly.net',
       headers: {
         'List-Unsubscribe': `<${unsubUrl}>`,
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',

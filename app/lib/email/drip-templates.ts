@@ -21,13 +21,32 @@ interface TemplateVars {
 
 export async function getDripEmailHtml(
   templateKey: string,
-  vars: TemplateVars
+  vars: TemplateVars,
+  previewText?: string
 ): Promise<string> {
   const username = vars.email.split('@')[0]
   const location = `${vars.city}, ${vars.state}`
 
+  const previewTexts: Record<string, string> = {
+    'welcome': 'Your weekly garage sale digest starts Thursday',
+    'first-finds': `We found deals near ${esc(vars.city)} — here's what's out there`,
+    'social-proof': 'Your neighbors are already scoring deals',
+    'first-digest-teaser': 'Your first weekly digest just dropped',
+    'soft-pitch': `Hot deal alerts are a Pro thing — here's why`,
+    'fomo': 'A Pro member got this deal 6 hours before you saw it',
+    'hard-convert': 'The butler has a special offer for you',
+    'contest-welcome': 'You found the hidden entry point',
+    'contest-depth': 'The clues go deeper than you think',
+    'contest-reveal': 'OK but seriously — this site finds real deals',
+    'contest-leaderboard': 'The Hall of Almost has been updated',
+    'contest-final-hint': 'One last declassified clue',
+  }
+
+  const resolvedPreview = previewText || previewTexts[templateKey] || ''
+  const wrap = (content: string) => wrapEmail(content, resolvedPreview)
+
   const templates: Record<string, () => string> = {
-    'welcome': () => wrapEmail(`
+    'welcome': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#0FFF50;font-size:26px;margin:0 0 16px;">
         &#x1F3A9; Welcome to flip-ly.net, ${esc(username)}
       </h1>
@@ -53,7 +72,7 @@ export async function getDripEmailHtml(
       </p>
     `),
 
-    'first-finds': () => wrapEmail(`
+    'first-finds': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#0FFF50;font-size:24px;margin:0 0 16px;">
         &#x1F3A9; The butler found deals near ${esc(vars.city)}
       </h1>
@@ -76,7 +95,7 @@ export async function getDripEmailHtml(
       </div>
     `),
 
-    'social-proof': () => wrapEmail(`
+    'social-proof': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#FF10F0;font-size:24px;margin:0 0 16px;">
         &#x1F4AC; Your neighbors are already finding deals
       </h1>
@@ -99,7 +118,7 @@ export async function getDripEmailHtml(
       </div>
     `),
 
-    'first-digest-teaser': () => wrapEmail(`
+    'first-digest-teaser': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#FFB81C;font-size:24px;margin:0 0 16px;">
         &#x1F4E8; Your first weekly digest is here
       </h1>
@@ -122,7 +141,7 @@ export async function getDripEmailHtml(
       </div>
     `),
 
-    'soft-pitch': () => wrapEmail(`
+    'soft-pitch': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#0FFF50;font-size:24px;margin:0 0 16px;">
         &#x1F514; Unlock hot deal alerts
       </h1>
@@ -150,7 +169,7 @@ export async function getDripEmailHtml(
       </div>
     `),
 
-    'fomo': () => wrapEmail(`
+    'fomo': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#FF10F0;font-size:24px;margin:0 0 16px;">
         &#x23F1; Pro members got this deal 6 hours before you
       </h1>
@@ -180,7 +199,7 @@ export async function getDripEmailHtml(
       </div>
     `),
 
-    'hard-convert': () => wrapEmail(`
+    'hard-convert': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#FFB81C;font-size:24px;margin:0 0 16px;">
         &#x1F381; Special offer from the butler
       </h1>
@@ -207,7 +226,7 @@ export async function getDripEmailHtml(
 
     // ═══ CONTEST SEQUENCE — for Lobster Hunt acquired users ═══
 
-    'contest-welcome': () => wrapEmail(`
+    'contest-welcome': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#FF10F0;font-size:24px;margin:0 0 16px;">
         &#x1F99E; You Found the Lobster Hunt.
       </h1>
@@ -235,7 +254,7 @@ export async function getDripEmailHtml(
       </div>
     `),
 
-    'contest-depth': () => wrapEmail(`
+    'contest-depth': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#0FFF50;font-size:24px;margin:0 0 16px;">
         &#x1F9E0; The Clues Go Deeper
       </h1>
@@ -263,7 +282,7 @@ export async function getDripEmailHtml(
       </div>
     `),
 
-    'contest-reveal': () => wrapEmail(`
+    'contest-reveal': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#FFB81C;font-size:24px;margin:0 0 16px;">
         &#x1F3A9; OK But Seriously — This Website Finds Real Deals
       </h1>
@@ -289,7 +308,7 @@ export async function getDripEmailHtml(
       </div>
     `),
 
-    'contest-leaderboard': () => wrapEmail(`
+    'contest-leaderboard': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#FF10F0;font-size:24px;margin:0 0 16px;">
         &#x1F4CA; Hall of Almost — Leaderboard Update
       </h1>
@@ -312,7 +331,7 @@ export async function getDripEmailHtml(
       </div>
     `),
 
-    'contest-final-hint': () => wrapEmail(`
+    'contest-final-hint': () => wrap(`
       <h1 style="font-family:'Comic Sans MS',cursive;color:#FFD700;font-size:24px;margin:0 0 16px;">
         &#x1F513; One Last Clue
       </h1>
@@ -342,7 +361,7 @@ export async function getDripEmailHtml(
 
   const renderer = templates[templateKey]
   if (!renderer) {
-    return wrapEmail(`<p style="color:#ccc;">Email template "${esc(templateKey)}" not found.</p>`)
+    return wrap(`<p style="color:#ccc;">Email template "${esc(templateKey)}" not found.</p>`)
   }
 
   return renderer()
@@ -352,10 +371,17 @@ export async function getDripEmailHtml(
 const btnStyle = `display:inline-block;padding:14px 32px;background:linear-gradient(180deg,#ff6633,#cc3300);color:#fff;text-decoration:none;font-family:'Comic Sans MS',cursive;font-weight:bold;font-size:16px;border:3px outset #ff9966;text-shadow:2px 2px 0 rgba(0,0,0,0.3);`
 
 // Shared email wrapper
-function wrapEmail(content: string): string {
+function wrapEmail(content: string, previewText?: string): string {
+  const previewHtml = previewText ? `
+<div style="display:none;font-size:1px;color:#0d0d0d;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+  ${previewText}
+  <!-- Padding to prevent email client from pulling body text -->
+  &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+</div>` : ''
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#000;font-family:Tahoma,sans-serif;">
+${previewHtml}
 <div style="max-width:560px;margin:0 auto;">
   <!-- Header -->
   <div style="background:linear-gradient(135deg,#1a0a2e,#0a0a1a);padding:20px;text-align:center;border-bottom:3px solid #0FFF50;">
