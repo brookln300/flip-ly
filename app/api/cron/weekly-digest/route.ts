@@ -18,17 +18,16 @@ function addUtm(url: string, source: string, medium: string, campaign: string, c
 }
 
 const SUBJECTS_PRO = [
-  "Your early access digest: {count} deals in {city}",
-  "{count} deals — you're seeing this 6 hours before everyone else",
-  "Pro digest: {count} deals near {city}, scored and sorted",
+  "{count} deals near {city} — you're seeing this 6 hours early",
+  "Early access: {count} scored deals in {city}",
+  "{count} deals near {city}, ranked by AI — Pro early access",
 ]
 
 const SUBJECTS_FREE = [
-  "Your weekly digest: {count} deals near {city}",
-  "{count} garage sales near you this week",
-  "{count} new deals in {city} — scored by AI",
-  "This week's deals: {count} listings near {city}",
-  "Weekly roundup: {count} deals, sorted by quality",
+  "{count} deals near {city} this week",
+  "{count} garage sales near you — AI scored and sorted",
+  "This week near {city}: {count} deals, best ones first",
+  "{count} new deals near {city} — your weekly digest",
 ]
 
 export async function GET(req: NextRequest) {

@@ -144,13 +144,14 @@ export async function GET(req: NextRequest) {
         }
         const sendResult = messageId ? { id: messageId } : null
 
-        // Log the send
+        // Log the send (use resolved subject with city replaced)
+        const resolvedSubject = subject.replace('{city}', user.city || 'DFW')
         await supabase.from('email_sends').insert({
           enrollment_id: enrollment.id,
           step_id: step.id,
           user_id: user.id,
           to_email: user.email,
-          subject,
+          subject: resolvedSubject,
           template_key: step.template_key,
           variant: enrollment.variant,
           resend_message_id: sendResult?.id || null,

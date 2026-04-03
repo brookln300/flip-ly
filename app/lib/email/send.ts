@@ -2,7 +2,7 @@ import { Resend } from 'resend'
 import { getUnsubscribeUrl } from '../unsubscribe'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
-const FROM = process.env.RESEND_FROM_ADDRESS || 'Flip-ly <hello@flip-ly.net>'
+const FROM = process.env.RESEND_FROM_ADDRESS || 'flip-ly.net <hello@flip-ly.net>'
 
 /**
  * Centralized email sender with proper deliverability headers.

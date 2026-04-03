@@ -21,7 +21,7 @@ function getWelcomeEmail(email: string, marketName: string | null) {
 </div>
 <div style="background:#ffffff;max-width:520px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
     <div style="background:#0a0a0a;padding:24px 32px;">
-      <h1 style="color:#22C55E;font-size:22px;margin:0;font-weight:700;">🦞 flip-ly.net</h1>
+      <h1 style="color:#22C55E;font-size:22px;margin:0;font-weight:700;">flip-ly.net</h1>
     </div>
     <div style="padding:32px;color:#333;line-height:1.7;">
       <p style="font-size:16px;margin:0 0 20px;">Hey ${username},</p>
@@ -206,11 +206,10 @@ export async function POST(req: NextRequest) {
     // Discover sources for this market if it's newly activated (fire-and-forget)
     discoverSourcesForMarket(market.id)
 
-    // Drip sequence disabled — only welcome email is live.
-    // Re-enable after brainstorm on content/cadence.
-    // enrollInWelcomeSequence(user.id).catch(err =>
-    //   console.error('[SIGNUP] Drip enrollment failed:', err.message)
-    // )
+    // Enroll in welcome-to-convert drip sequence (7 emails over 21 days)
+    enrollInWelcomeSequence(user.id).catch(err =>
+      console.error('[SIGNUP] Drip enrollment failed:', err.message)
+    )
 
     return response
   } catch (err) {

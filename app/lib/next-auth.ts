@@ -5,6 +5,34 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { supabase } from './supabase'
 import { trackEvent } from './analytics'
+import { sendTelegramAlert } from './telegram'
+
+/**
+ * Enroll a new OAuth user in the welcome-to-convert drip sequence.
+ * Same logic as signup route — randomly assigns A/B variant.
+ */
+async function enrollInWelcomeSequence(userId: string) {
+  const { data: seqs } = await supabase
+    .from('drip_sequences')
+    .select('id')
+    .eq('name', 'welcome-to-convert')
+    .eq('is_active', true)
+    .limit(1)
+
+  if (!seqs?.length) return
+
+  const variant = Math.random() < 0.5 ? 'a' : 'b'
+
+  await supabase.from('sequence_enrollments').upsert({
+    user_id: userId,
+    sequence_id: seqs[0].id,
+    current_step: 0,
+    status: 'active',
+    variant,
+  }, { onConflict: 'user_id,sequence_id' })
+
+  console.log(`[DRIP] OAuth user ${userId} enrolled in welcome sequence (variant ${variant})`)
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -76,6 +104,10 @@ export const authOptions: NextAuthOptions = {
           if (newUser) {
             user.id = newUser.id
             trackEvent('signup_complete', { signup_source: 'twitter', x_username: user.name || '' }, newUser.id)
+            enrollInWelcomeSequence(newUser.id).catch(err =>
+              console.error('[OAUTH] Twitter drip enrollment failed:', err.message)
+            )
+            sendTelegramAlert(`<b>New Signup (Twitter)</b>\nEmail: ${user.email}\nX: @${user.name || 'unknown'}`)
           }
         } else {
           // Existing user — link X account
@@ -116,6 +148,10 @@ export const authOptions: NextAuthOptions = {
           if (newUser) {
             user.id = newUser.id
             trackEvent('signup_complete', { signup_source: 'google', google_name: user.name || '' }, newUser.id)
+            enrollInWelcomeSequence(newUser.id).catch(err =>
+              console.error('[OAUTH] Google drip enrollment failed:', err.message)
+            )
+            sendTelegramAlert(`<b>New Signup (Google)</b>\nEmail: ${user.email}\nName: ${user.name || 'unknown'}`)
           }
         } else {
           await supabase
