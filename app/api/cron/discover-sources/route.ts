@@ -65,10 +65,27 @@ async function runSourceDiscovery(results: { researched: number; sources_found: 
       console.log(`[DISCOVER-SOURCES] Researching ${marketName}, ${market.state}`)
       const research = await researchLocalSources(cityName, market.state)
 
+      // Fetch previously rejected URLs for this market to avoid re-inserting
+      const { data: rejectedSources } = await supabase
+        .from('fliply_sources')
+        .select('config')
+        .eq('market_id', market.id)
+        .eq('trust_level', 'rejected')
+
+      const rejectedUrls = new Set(
+        (rejectedSources || []).map(s => (s.config as any)?.url).filter(Boolean)
+      )
+
       const insertedSources: string[] = []
 
       for (const source of research.sources) {
         if (source.confidence < 0.5) continue
+
+        // Skip URLs that were previously rejected
+        if (rejectedUrls.has(source.url)) {
+          console.log(`[DISCOVER-SOURCES] Skipping rejected URL: ${source.url}`)
+          continue
+        }
 
         const { error } = await supabase.from('fliply_sources').insert({
           market_id: market.id,
@@ -152,7 +169,7 @@ async function runAutoApprove(results: { auto_approved: number; errors: string[]
     })
     .eq('is_approved', false)
     .eq('trust_level', 'pending')
-    .gte('ai_confidence', 7)
+    .gte('ai_confidence', 10)
     .lt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
     .select('id, name, market_id, ai_confidence')
 

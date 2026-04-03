@@ -79,6 +79,24 @@ export async function GET(req: NextRequest) {
 
     results.push(`Expired listings: ${expiredCount || 0} stale rows deleted (>14 days)`)
 
+    // Delete rejected sources older than 60 days
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
+    const { count: rejectedCount } = await supabase
+      .from('fliply_sources')
+      .select('*', { count: 'exact', head: true })
+      .eq('trust_level', 'rejected')
+      .lt('reviewed_at', sixtyDaysAgo)
+
+    if (rejectedCount && rejectedCount > 0) {
+      await supabase
+        .from('fliply_sources')
+        .delete()
+        .eq('trust_level', 'rejected')
+        .lt('reviewed_at', sixtyDaysAgo)
+    }
+
+    results.push(`Rejected sources: ${rejectedCount || 0} old rows deleted (>60 days)`)
+
     await sendTelegramAlert([
       `🧹 <b>Weekly Cleanup</b>`,
       ...results,

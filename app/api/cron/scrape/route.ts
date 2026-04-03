@@ -89,8 +89,17 @@ export async function GET(req: NextRequest) {
       }
 
       if (result.errors.length > 0) {
-        updateData.consecutive_failures = (source.consecutive_failures || 0) + 1
+        const failures = (source.consecutive_failures || 0) + 1
+        updateData.consecutive_failures = failures
         updateData.last_error = result.errors[0]
+
+        // Auto-deactivate after 5 consecutive failures
+        if (failures >= 5) {
+          updateData.is_active = false
+          await sendTelegramAlert(
+            `⚠️ <b>Source Deactivated</b> (5 consecutive failures)\n${source.name}\nLast error: ${result.errors[0]}`
+          )
+        }
       } else {
         updateData.consecutive_failures = 0
         updateData.last_error = null
