@@ -15,9 +15,9 @@ function HallContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D0D0D' }}>
-        <p style={{ fontFamily: '"Courier New", monospace', color: '#00ff00', fontSize: '14px' }}>
-          &gt; Loading Lobster Council records..._
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#000' }}>
+        <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', color: '#888', fontSize: '14px' }}>
+          Loading leaderboard...
         </p>
       </div>
     )
@@ -28,363 +28,251 @@ function HallContent() {
   const wallOfShame = data?.wall_of_shame || []
 
   return (
-    <div className="min-h-screen" style={{
-      background: '#0D0D0D',
-      backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(255,106,0,0.02) 0%, transparent 70%)',
-    }}>
-      {/* ═══ HEADER — hand-coded geocities energy ═══ */}
+    <div className="min-h-screen" style={{ background: '#000' }}>
+      {/* Header */}
       <div style={{
         background: '#000',
-        borderBottom: '3px solid #ff6a00',
-        padding: '24px 16px',
+        borderBottom: '1px solid #222',
+        padding: '32px 16px',
         textAlign: 'center',
       }}>
-        <div style={{ fontSize: '48px', marginBottom: '8px' }}>🦞</div>
+        <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F99E;</div>
         <h1 style={{
-          fontFamily: '"Comic Sans MS", cursive',
-          fontSize: '32px',
-          color: '#ff6a00',
-          textShadow: '2px 2px 0px #000, 0 0 10px rgba(255,106,0,0.4)',
-          marginBottom: '4px',
-          letterSpacing: '3px',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontSize: '28px',
+          fontWeight: 700,
+          color: '#fff',
+          letterSpacing: '-0.02em',
+          marginBottom: '8px',
         }}>
-          HALL OF ALMOST
+          The Lobster Hunt
         </h1>
         <p style={{
-          fontFamily: '"Courier New", monospace',
-          fontSize: '12px',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontSize: '14px',
           color: '#888',
+          maxWidth: '400px',
+          margin: '0 auto',
         }}>
-          Brave agents who found a decoy. Close, but no lobster.
-        </p>
-        <p style={{
-          fontFamily: '"Courier New", monospace',
-          fontSize: '9px',
-          color: '#333',
-          marginTop: '8px',
-          fontStyle: 'italic',
-        }}>
-          Last updated by the webmaster (it was a long night)
+          A hidden contest. Decode the clues. Find the password. Win a lobster dinner.
         </p>
       </div>
 
-      {/* ═══ RAINBOW HR ═══ */}
-      <div style={{
-        height: '3px',
-        background: 'linear-gradient(90deg, #ff0000, #ff8800, #ffff00, #00ff00, #0088ff, #8800ff, #ff0088)',
-      }} />
-
-      {/* ═══ STATS — old-school hit counter style ═══ */}
+      {/* Stats */}
       <div style={{
         background: '#0a0a0a',
-        borderBottom: '1px solid #222',
-        padding: '12px 16px',
-        textAlign: 'center',
-        fontFamily: '"Courier New", monospace',
+        borderBottom: '1px solid #1a1a1a',
+        padding: '16px',
       }}>
-        <div className="max-w-3xl mx-auto flex flex-wrap justify-center" style={{ gap: '24px' }}>
+        <div className="max-w-3xl mx-auto flex flex-wrap justify-center" style={{ gap: '32px' }}>
           <div className="text-center">
             <div style={{
-              fontSize: '24px', color: '#00ff00', fontWeight: 'bold',
-              fontFamily: '"Courier New", monospace',
-              background: '#000', border: '2px inset #444',
-              padding: '2px 12px', display: 'inline-block',
+              fontSize: '24px', color: '#22C55E', fontWeight: 700,
+              fontFamily: 'system-ui, -apple-system, sans-serif',
             }}>
-              {String(stats.total_attempts || 0).padStart(5, '0')}
+              {stats.total_attempts || 0}
             </div>
-            <div style={{ fontSize: '9px', color: '#555', marginTop: '4px', textTransform: 'uppercase' }}>Total Attempts</div>
+            <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', fontFamily: 'system-ui, sans-serif' }}>Total Attempts</div>
           </div>
           <div className="text-center">
             <div style={{
-              fontSize: '24px', color: '#ff6a00', fontWeight: 'bold',
-              fontFamily: '"Courier New", monospace',
-              background: '#000', border: '2px inset #444',
-              padding: '2px 12px', display: 'inline-block',
+              fontSize: '24px', color: '#ff6600', fontWeight: 700,
+              fontFamily: 'system-ui, -apple-system, sans-serif',
             }}>
-              {String(stats.total_decoys || 0).padStart(5, '0')}
+              {stats.total_decoys || 0}
             </div>
-            <div style={{ fontSize: '9px', color: '#555', marginTop: '4px', textTransform: 'uppercase' }}>Decoys Found</div>
+            <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', fontFamily: 'system-ui, sans-serif' }}>Decoys Found</div>
           </div>
           <div className="text-center">
             <div style={{
-              fontSize: '24px', color: '#ff1070', fontWeight: 'bold',
-              fontFamily: '"Courier New", monospace',
-              background: '#000', border: '2px inset #444',
-              padding: '2px 12px', display: 'inline-block',
+              fontSize: '24px', color: '#ff4444', fontWeight: 700,
+              fontFamily: 'system-ui, -apple-system, sans-serif',
             }}>
-              {String(stats.total_denied || 0).padStart(5, '0')}
+              {stats.total_denied || 0}
             </div>
-            <div style={{ fontSize: '9px', color: '#555', marginTop: '4px', textTransform: 'uppercase' }}>Denied</div>
+            <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', fontFamily: 'system-ui, sans-serif' }}>Denied</div>
           </div>
           <div className="text-center">
             <div style={{
-              fontSize: '24px', fontWeight: 'bold',
-              color: stats.winner_found ? '#FFD700' : '#222',
-              fontFamily: '"Courier New", monospace',
-              background: '#000', border: '2px inset #444',
-              padding: '2px 12px', display: 'inline-block',
+              fontSize: '24px', fontWeight: 700,
+              color: stats.winner_found ? '#EAB308' : '#333',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
             }}>
-              {stats.winner_found ? '00001' : '00000'}
+              {stats.winner_found ? '1' : '0'}
             </div>
-            <div style={{ fontSize: '9px', color: '#555', marginTop: '4px', textTransform: 'uppercase' }}>
-              {stats.winner_found ? `WON BY ${stats.winner_agent}` : 'WINNER (UNCLAIMED)'}
+            <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', fontFamily: 'system-ui, sans-serif' }}>
+              {stats.winner_found ? `Won by ${stats.winner_agent}` : 'Winner (Unclaimed)'}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ═══ MAIN CONTENT ═══ */}
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Main content */}
+      <div className="max-w-3xl mx-auto px-4 py-10">
 
-        {/* How it works — looks like it was typed in notepad */}
+        {/* How it works */}
         <div style={{
           background: '#0a0a0a',
-          border: '2px outset #333',
-          padding: '16px 20px',
-          marginBottom: '24px',
+          border: '1px solid #222',
+          borderRadius: '12px',
+          padding: '24px',
+          marginBottom: '32px',
         }}>
           <h2 style={{
-            fontFamily: '"Comic Sans MS", cursive',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
             fontSize: '16px',
-            color: '#00ff00',
-            marginBottom: '8px',
-            borderBottom: '1px dashed #333',
-            paddingBottom: '8px',
+            fontWeight: 700,
+            color: '#fff',
+            marginBottom: '12px',
           }}>
-            &gt; HOW THE LOBSTER HUNT WORKS
+            How It Works
           </h2>
-          <div style={{ fontFamily: '"Courier New", monospace', fontSize: '11px', color: '#999', lineHeight: 2.2 }}>
+          <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '13px', color: '#999', lineHeight: 2 }}>
             <p>1. Hidden in the source code of flip-ly.net are encoded clues.</p>
-            <p>2. Hex, Base64, Morse code, NATO phonetic alphabet, ASCII decimal.</p>
-            <p>3. Each clue decodes to a phrase. Most are <span style={{ color: '#ff6a00' }}>decoys</span>.</p>
-            <p>4. Entering a decoy earns you a spot in this hall (and a gag prize).</p>
-            <p>5. The <span style={{ color: '#FFD700' }}>real password</span> requires combining fragments from multiple clues.</p>
+            <p>2. Clues use hex, Base64, Morse code, NATO phonetic alphabet, and ASCII decimal.</p>
+            <p>3. Each clue decodes to a phrase. Most are <span style={{ color: '#ff6600' }}>decoys</span>.</p>
+            <p>4. Entering a decoy earns you a spot on this leaderboard.</p>
+            <p>5. The <span style={{ color: '#EAB308' }}>real password</span> requires combining fragments from multiple clues.</p>
             <p>6. No single decoded string is the answer. You must synthesize.</p>
-            <p>7. Our boss doesn&apos;t know the answer. We are not kidding.</p>
-            <p style={{ color: '#444', marginTop: '8px' }}>
-              Hint: look at the HTML comments. Read between the lines. The words &quot;entry&quot; and &quot;split&quot; mean something.
-            </p>
           </div>
         </div>
 
-        {/* ═══ RAINBOW HR ═══ */}
-        <div style={{
-          height: '2px', marginBottom: '24px',
-          background: 'linear-gradient(90deg, #ff0000, #ff8800, #ffff00, #00ff00, #0088ff, #8800ff, #ff0088)',
-        }} />
-
-        {/* ═══ DECOY HUNTERS — HTML TABLE LEADERBOARD ═══ */}
+        {/* Decoy Hunters Leaderboard */}
         <h2 style={{
-          fontFamily: '"Comic Sans MS", cursive',
-          fontSize: '18px', color: '#ff6a00',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontSize: '20px', fontWeight: 700, color: '#fff',
           marginBottom: '12px',
         }}>
-          🏆 DECOY HUNTERS
+          Decoy Hunters
         </h2>
 
         {leaderboard.length === 0 ? (
           <div style={{
-            background: '#0a0a0a', border: '1px dashed #333',
+            background: '#0a0a0a', border: '1px solid #222', borderRadius: '8px',
             padding: '32px', textAlign: 'center',
           }}>
-            <p style={{ fontFamily: '"Courier New", monospace', fontSize: '13px', color: '#444' }}>
+            <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '14px', color: '#666' }}>
               No decoys found yet. The clues are waiting.
-            </p>
-            <p style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '11px', color: '#2a2a2a', marginTop: '8px' }}>
-              7 decoy passwords hide in the source code.
-            </p>
-            <p style={{ fontFamily: '"Courier New", monospace', fontSize: '9px', color: '#1a1a1a', marginTop: '12px' }}>
-              Hint: inspect the HTML. Decode the hex. Read the morse. The lobster is watching.
             </p>
           </div>
         ) : (
-          <table style={{
-            width: '100%',
-            borderCollapse: 'separate',
-            borderSpacing: '0',
-            border: '2px outset #555',
-            fontFamily: '"Courier New", monospace',
-            fontSize: '12px',
+          <div style={{
+            background: '#0a0a0a',
+            border: '1px solid #222',
+            borderRadius: '8px',
+            overflow: 'hidden',
             marginBottom: '8px',
           }}>
-            <thead>
-              <tr style={{ background: '#1a1a1a' }}>
-                <th style={{ border: '1px inset #444', padding: '6px 8px', color: '#ff6a00', textAlign: 'left', fontSize: '10px' }}>#</th>
-                <th style={{ border: '1px inset #444', padding: '6px 8px', color: '#ff6a00', textAlign: 'left', fontSize: '10px' }}>AGENT</th>
-                <th style={{ border: '1px inset #444', padding: '6px 8px', color: '#ff6a00', textAlign: 'left', fontSize: '10px' }}>TIER</th>
-                <th style={{ border: '1px inset #444', padding: '6px 8px', color: '#ff6a00', textAlign: 'left', fontSize: '10px' }}>PRIZE</th>
-                <th style={{ border: '1px inset #444', padding: '6px 8px', color: '#ff6a00', textAlign: 'right', fontSize: '10px' }}>DATE</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaderboard.map((entry: any, i: number) => (
-                <tr key={i} style={{
-                  background: i % 2 === 0 ? '#0a0a0a' : '#111',
-                  ...(entry.tier >= 6 ? { borderLeft: '2px solid #ff6a00' } : {}),
-                }}>
-                  <td style={{ border: '1px inset #333', padding: '5px 8px', color: '#555', fontSize: '11px' }}>
-                    {i + 1}
-                  </td>
-                  <td style={{ border: '1px inset #333', padding: '5px 8px', color: '#00ff00', fontWeight: 'bold', fontSize: '11px' }}>
-                    {entry.agent}
-                    {i === 0 && <span style={{ color: '#FFD700', marginLeft: '6px', fontSize: '9px' }}>&larr; NEW!</span>}
-                  </td>
-                  <td style={{ border: '1px inset #333', padding: '5px 8px', color: '#888', fontSize: '11px' }}>
-                    T{entry.tier}: {entry.tier_name}
-                  </td>
-                  <td style={{ border: '1px inset #333', padding: '5px 8px', fontSize: '11px' }}>
-                    {entry.prize}
-                  </td>
-                  <td style={{ border: '1px inset #333', padding: '5px 8px', color: '#333', fontSize: '9px', textAlign: 'right' }}>
-                    {new Date(entry.when).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            {/* Table header */}
+            <div className="hidden sm:flex" style={{
+              background: '#111',
+              padding: '8px 16px',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: '#666',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              borderBottom: '1px solid #222',
+            }}>
+              <span style={{ width: '40px' }}>#</span>
+              <span style={{ flex: 1 }}>Agent</span>
+              <span style={{ width: '140px' }}>Tier</span>
+              <span style={{ width: '180px' }}>Prize</span>
+              <span style={{ width: '160px', textAlign: 'right' }}>Date</span>
+            </div>
+            {/* Table rows */}
+            {leaderboard.map((entry: any, i: number) => (
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center" style={{
+                padding: '10px 16px',
+                background: i % 2 === 0 ? 'transparent' : '#0d0d0d',
+                borderBottom: i < leaderboard.length - 1 ? '1px solid #1a1a1a' : 'none',
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                fontSize: '13px',
+              }}>
+                <span style={{ width: '40px', color: '#555', fontWeight: 600 }}>{i + 1}</span>
+                <span style={{ flex: 1, color: '#22C55E', fontWeight: 600 }}>
+                  {entry.agent}
+                  {i === 0 && <span style={{ color: '#EAB308', marginLeft: '8px', fontSize: '10px', fontWeight: 700 }}>LATEST</span>}
+                </span>
+                <span style={{ width: '140px', color: '#888', fontSize: '12px' }}>T{entry.tier}: {entry.tier_name}</span>
+                <span style={{ width: '180px', fontSize: '12px', color: '#ccc' }}>{entry.prize}</span>
+                <span style={{ width: '160px', textAlign: 'right', color: '#444', fontSize: '11px' }}>
+                  {new Date(entry.when).toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
         )}
 
-        {/* ═══ RAINBOW HR ═══ */}
-        <div style={{
-          height: '2px', margin: '28px 0',
-          background: 'linear-gradient(90deg, #ff0088, #8800ff, #0088ff, #00ff00, #ffff00, #ff8800, #ff0000)',
-        }} />
-
-        {/* ═══ WALL OF SHAME — guestbook style ═══ */}
+        {/* Wall of Shame */}
         {wallOfShame.length > 0 && (
-          <>
+          <div style={{ marginTop: '40px' }}>
             <h2 style={{
-              fontFamily: '"Comic Sans MS", cursive',
-              fontSize: '18px', color: '#ff1070',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              fontSize: '20px', fontWeight: 700, color: '#ff4444',
               marginBottom: '4px',
             }}>
-              💀 WALL OF SHAME
+              Wall of Shame
             </h2>
             <p style={{
-              fontFamily: '"Courier New", monospace', fontSize: '10px',
-              color: '#444', marginBottom: '16px',
+              fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '13px',
+              color: '#666', marginBottom: '16px',
             }}>
-              Agents who guessed wrong. Passphrases redacted to preserve what little dignity remains.
+              Agents who guessed wrong. Passphrases partially redacted.
             </p>
             <div style={{
-              border: '2px outset #333',
               background: '#0a0a0a',
+              border: '1px solid #222',
+              borderRadius: '8px',
+              overflow: 'hidden',
             }}>
               {wallOfShame.map((entry: any, i: number) => (
                 <div key={i} style={{
-                  padding: '8px 12px',
+                  padding: '10px 16px',
                   borderBottom: i < wallOfShame.length - 1 ? '1px solid #1a1a1a' : 'none',
-                  fontFamily: '"Courier New", monospace',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
                 }}>
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
-                      <span style={{ color: '#00ff00', fontSize: '11px', fontWeight: 'bold' }}>
+                      <span style={{ color: '#22C55E', fontSize: '13px', fontWeight: 600 }}>
                         {entry.agent}
                       </span>
-                      <span style={{ color: '#333', fontSize: '10px', marginLeft: '8px' }}>
+                      <span style={{ color: '#555', fontSize: '12px', marginLeft: '8px' }}>
                         tried &quot;{entry.guess}&quot;
                       </span>
                     </div>
-                    <div style={{ fontSize: '8px', color: '#222' }}>
+                    <div style={{ fontSize: '10px', color: '#333' }}>
                       {new Date(entry.when).toLocaleString()}
                     </div>
                   </div>
-                  <div style={{ fontSize: '9px', color: '#442222', marginTop: '2px', fontStyle: 'italic' }}>
-                    {entry.reaction}
-                  </div>
+                  {entry.reaction && (
+                    <div style={{ fontSize: '11px', color: '#444', marginTop: '2px', fontStyle: 'italic' }}>
+                      {entry.reaction}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
-          </>
+          </div>
         )}
 
-        {/* ═══ RAINBOW HR ═══ */}
-        <div style={{
-          height: '2px', margin: '28px 0',
-          background: 'linear-gradient(90deg, #ff0000, #ff8800, #ffff00, #00ff00, #0088ff, #8800ff, #ff0088)',
-        }} />
-
-        {/* ═══ UNDER CONSTRUCTION + GUESTBOOK BUTTONS ═══ */}
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <p style={{
-            fontFamily: '"Comic Sans MS", cursive',
-            fontSize: '14px',
-            color: '#ffff00',
-            marginBottom: '12px',
-          }}>
-            🚧 MORE FEATURES UNDER CONSTRUCTION 🚧
-          </p>
-          <p style={{
-            fontFamily: '"Courier New", monospace',
-            fontSize: '9px',
-            color: '#333',
-            marginBottom: '16px',
-          }}>
-            The webmaster is learning JavaScript. Please be patient.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <a href="/" style={{
-              fontFamily: '"Courier New", monospace',
-              fontSize: '11px',
-              color: '#000',
-              background: '#ccc',
-              border: '2px outset #eee',
-              padding: '4px 12px',
-              textDecoration: 'none',
-              cursor: 'pointer',
-            }}>
-              [ 🔑 Find the Entry Point ]
-            </a>
-            <a href="/lobster-hunt" style={{
-              fontFamily: '"Courier New", monospace',
-              fontSize: '11px',
-              color: '#000',
-              background: '#ccc',
-              border: '2px outset #eee',
-              padding: '4px 12px',
-              textDecoration: 'none',
-              cursor: 'pointer',
-            }}>
-              [ 📖 View Guestbook ]
-            </a>
-          </div>
-        </div>
-
-        {/* ═══ FAKE WEBRING ═══ */}
-        <div style={{
-          border: '2px outset #444',
-          background: '#111',
-          padding: '10px',
-          textAlign: 'center',
-          marginBottom: '24px',
-        }}>
-          <p style={{ fontFamily: '"Courier New", monospace', fontSize: '10px', color: '#666', marginBottom: '6px' }}>
-            This site is part of the 🦞 <span style={{ color: '#ff6a00' }}>Lobster Council WebRing</span>
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-            <span style={{ fontFamily: '"Courier New", monospace', fontSize: '10px', color: '#444', cursor: 'pointer' }}>[&larr; Prev]</span>
-            <span style={{ fontFamily: '"Courier New", monospace', fontSize: '10px', color: '#444', cursor: 'pointer' }}>[Random]</span>
-            <span style={{ fontFamily: '"Courier New", monospace', fontSize: '10px', color: '#444', cursor: 'pointer' }}>[Next &rarr;]</span>
-          </div>
-        </div>
-
-        {/* ═══ BACK LINK ═══ */}
-        <div className="text-center mb-4">
+        {/* Back link */}
+        <div className="text-center mt-12 space-y-4">
           <a href="/" style={{
-            color: '#00ff00', fontFamily: '"Comic Sans MS", cursive',
-            textDecoration: 'underline', fontSize: '14px',
+            color: '#22C55E',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            textDecoration: 'underline',
+            fontSize: '14px',
           }}>
-            &larr; back to the chaos (and the clues)
+            &larr; Back to Flip-ly
           </a>
-        </div>
-
-        {/* ═══ BEST VIEWED IN ═══ */}
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <p style={{ fontFamily: '"Courier New", monospace', fontSize: '8px', color: '#222' }}>
-            Best viewed in Netscape Navigator 4.0 at 800x600
-          </p>
-          <p style={{ fontFamily: '"Courier New", monospace', fontSize: '8px', color: '#1a1a1a', marginTop: '4px' }}>
-            &lt;!-- TODO: fix this table before Keith sees it --&gt;
+          <p style={{
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontSize: '11px',
+            color: '#333',
+          }}>
+            The clues are hidden in the source. Look carefully.
           </p>
         </div>
       </div>
@@ -394,7 +282,7 @@ function HallContent() {
 
 export default function LobsterHuntPage() {
   return (
-    <Suspense fallback={<div style={{ background: '#0D0D0D', minHeight: '100vh' }} />}>
+    <Suspense fallback={<div style={{ background: '#000', minHeight: '100vh' }} />}>
       <HallContent />
     </Suspense>
   )

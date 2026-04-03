@@ -1,169 +1,128 @@
-'use client'
+import Link from 'next/link'
+
+export const metadata = {
+  title: 'Why Flip-ly? — Flip-ly.net',
+  description: 'Why we built Flip-ly — the problem with finding garage sales, and how we solved it.',
+}
 
 export default function WhyPage() {
   return (
-    <div className="min-h-screen" style={{ background: '#0D0D0D', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: '#000', color: '#fff' }}>
       {/* Header */}
       <header className="px-4 py-3 flex items-center justify-between" style={{
-        background: '#000', borderBottom: '4px solid var(--lime)',
+        background: '#000', borderBottom: '1px solid #222',
       }}>
         <a href="/" className="flex items-center gap-2" style={{ textDecoration: 'none' }}>
-          <span className="text-xl jitter">🦞</span>
-          <span style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '20px', color: 'var(--lime)' }}>
-            FLIP-LY<span style={{ color: 'var(--hotpink)' }}>.NET</span>
+          <span style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '20px', fontWeight: 700, color: '#fff' }}>
+            FLIP-LY
           </span>
         </a>
         <a href="/" className="text-xs" style={{
-          color: 'var(--electric)', fontFamily: '"Comic Sans MS", cursive',
+          color: '#22C55E', fontFamily: 'system-ui, -apple-system, sans-serif',
+          textDecoration: 'none',
         }}>
-          ← back to chaos
+          &larr; Back to Flip-ly
         </a>
       </header>
 
-      <div className="rainbow-divider" />
-
       <main className="max-w-2xl mx-auto px-6 py-16">
-        {/* Title in a Win98 window */}
-        <div className="win98-window mb-12" style={{ transform: 'rotate(-1deg)' }}>
-          <div className="win98-titlebar">
-            <span className="win98-titlebar-text">C:\FLIP-LY\WHY.TXT — Notepad</span>
-            <div className="flex gap-1">
-              <div className="win98-btn">_</div>
-              <div className="win98-btn">□</div>
-              <div className="win98-btn">✕</div>
+        <h1 className="text-3xl font-bold mb-4" style={{
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          letterSpacing: '-0.02em',
+        }}>
+          Why Flip-ly?
+        </h1>
+        <p className="mb-12" style={{ color: '#888', fontSize: '15px', fontFamily: 'system-ui, -apple-system, sans-serif', lineHeight: 1.7 }}>
+          Finding garage sales shouldn&apos;t be a full-time job. Here&apos;s why we built this.
+        </p>
+
+        <div className="space-y-10" style={{ fontFamily: 'system-ui, -apple-system, sans-serif', lineHeight: 1.8 }}>
+
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: '#fff' }}>
+              The Problem
+            </h2>
+            <p className="text-sm" style={{ color: '#ccc' }}>
+              Garage sales, estate sales, and secondhand listings are scattered across dozens of sources &mdash;
+              Craigslist, Facebook Marketplace, EstateSales.net, local community boards. To find the best deals,
+              you have to manually check each one, every week. Most people don&apos;t have the time.
+            </p>
+            <p className="text-sm mt-3" style={{ color: '#ccc' }}>
+              The deals are out there. The problem is discovery.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: '#fff' }}>
+              What We Built
+            </h2>
+            <p className="text-sm" style={{ color: '#ccc' }}>
+              Flip-ly aggregates listings from 20+ sources across 413 US markets into a single searchable database.
+              Our AI evaluates every listing for flip potential, pricing anomalies, and deal quality. You see a simple
+              1&ndash;10 score. We do the homework.
+            </p>
+            <p className="text-sm mt-3" style={{ color: '#ccc' }}>
+              Every Thursday at noon, you get one curated email with the best sales near your zip code.
+              No app to download. No feed to scroll. Just the deals that matter.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: '#fff' }}>
+              Who It&apos;s For
+            </h2>
+            <div className="space-y-3 text-sm" style={{ color: '#ccc' }}>
+              <p><strong style={{ color: '#22C55E' }}>Flippers</strong> &mdash; People who buy low at garage sales and resell on eBay, Facebook Marketplace, or Mercari. Time is money. We save you the search.</p>
+              <p><strong style={{ color: '#22C55E' }}>Bargain hunters</strong> &mdash; Anyone who loves a good deal. Furniture, tools, vintage items, electronics &mdash; if it&apos;s underpriced at a garage sale near you, we&apos;ll find it.</p>
+              <p><strong style={{ color: '#22C55E' }}>Weekend explorers</strong> &mdash; People who enjoy hitting garage sales on Saturday morning but want to plan their route in advance.</p>
             </div>
-          </div>
-          <div style={{ background: '#fff', padding: '20px', color: '#000', fontFamily: '"Courier New", monospace', fontSize: '13px', lineHeight: 2 }}>
-            <p style={{ color: '#808080', fontSize: '10px' }}>File Edit Search Help</p>
-            <br />
-            <p style={{ fontWeight: 700 }}>WHY DOES THIS WEBSITE EXIST?</p>
-            <p style={{ fontWeight: 700 }}>Last modified: March 26, 2026 3:47 AM</p>
-            <p style={{ fontWeight: 700 }}>Author: someone who should have been sleeping</p>
-            <br />
-            <p>==================================================</p>
-          </div>
-        </div>
+          </section>
 
-        {/* The actual content — 1999 Geocities writing style */}
-        <div className="space-y-8" style={{ fontFamily: '"Courier New", monospace', lineHeight: 2.2 }}>
-
-          <div className="card-wonky" style={{ transform: 'rotate(-1deg)' }}>
-            <h2 className="text-xl font-bold mb-4" style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--lime)' }}>
-              Chapter 1: The Problem
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: '#fff' }}>
+              Simple Pricing
             </h2>
-            <p className="text-sm" style={{ color: '#ccc' }}>
-              Real life is boring. The internet used to be fun. Remember when websites had visitor counters
-              and construction GIFs and everything was in Comic Sans and NOBODY COMPLAINED?
-            </p>
-            <p className="text-sm mt-3" style={{ color: '#ccc' }}>
-              Now everything is &ldquo;clean&rdquo; and &ldquo;minimal&rdquo; and &ldquo;accessible&rdquo; and honestly?
-              We miss the chaos. We miss the raw, unfiltered, dial-up-powered, seizure-inducing glory of 1999.
-            </p>
-          </div>
-
-          <div className="card-wonky" style={{ transform: 'rotate(1.5deg)' }}>
-            <h2 className="text-xl font-bold mb-4" style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--hotpink)' }}>
-              Chapter 2: The Solution
-            </h2>
-            <p className="text-sm" style={{ color: '#ccc' }}>
-              We built flip-ly.net. A garage sale aggregator that looks like it was made in 1996
-              by someone who just discovered HTML and had strong opinions about font choices.
-            </p>
-            <p className="text-sm mt-3" style={{ color: '#ccc' }}>
-              The search results are fake. The Winamp player doesn&apos;t play real music.
-              The LimeWire downloads aren&apos;t real files. The visitor counter started at 69,420.
-              The construction banner has been there since day one and will never come down.
-            </p>
-            <p className="text-sm mt-3" style={{ color: 'var(--mustard)' }}>
-              None of this makes sense. That&apos;s the point.
-            </p>
-          </div>
-
-          <div className="card-wonky" style={{ transform: 'rotate(-0.5deg)' }}>
-            <h2 className="text-xl font-bold mb-4" style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--mustard)' }}>
-              Chapter 3: But Does It Actually Do Anything?
-            </h2>
-            <p className="text-sm" style={{ color: '#ccc' }}>
-              Technically, yes. If you sign up, we will eventually send you a weekly email
-              with actual garage sale listings near your zip code. Like a newsletter.
-              But delivered by a website that looks like it was possessed by Winamp and LimeWire.
-            </p>
-            <p className="text-sm mt-3" style={{ color: '#ccc' }}>
-              Think of it as Craigslist meets Geocities meets your uncle&apos;s forwarded email chain
-              from 2003. But with better deals and worse CSS.
-            </p>
-          </div>
-
-          <div className="card-wonky" style={{ transform: 'rotate(2deg)' }}>
-            <h2 className="text-xl font-bold mb-4" style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--electric)' }}>
-              Chapter 4: Who Made This?
-            </h2>
-            <p className="text-sm" style={{ color: '#ccc' }}>
-              A small team in Dallas, TX who believe that the internet peaked in 1999
-              and has been going downhill ever since. We&apos;re trying to bring it back.
-              One Comic Sans headline at a time.
-            </p>
-            <p className="text-sm mt-3" style={{ color: '#888' }}>
-              We also have a real business. It&apos;s called AetherCoreAI. We do serious things there.
-              This is not one of them.
-            </p>
-          </div>
-
-          <div className="card-wonky" style={{ transform: 'rotate(-1.5deg)' }}>
-            <h2 className="text-xl font-bold mb-4" style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--neon-orange)' }}>
-              Chapter 5: FAQ
-            </h2>
-            <div className="space-y-4 text-sm" style={{ color: '#ccc' }}>
-              <div>
-                <p style={{ color: 'var(--lime)', fontWeight: 700 }}>Q: Is this a real website?</p>
-                <p>A: Technically yes. Emotionally? Unclear.</p>
-              </div>
-              <div>
-                <p style={{ color: 'var(--lime)', fontWeight: 700 }}>Q: Are the garage sales real?</p>
-                <p>A: Not yet. But the vibes are authentic.</p>
-              </div>
-              <div>
-                <p style={{ color: 'var(--lime)', fontWeight: 700 }}>Q: Why Comic Sans?</p>
-                <p>A: Why NOT Comic Sans? It&apos;s the font of the people.</p>
-              </div>
-              <div>
-                <p style={{ color: 'var(--lime)', fontWeight: 700 }}>Q: Will you ever fix the design?</p>
-                <p>A: Absolutely not. The design IS the product.</p>
-              </div>
-              <div>
-                <p style={{ color: 'var(--lime)', fontWeight: 700 }}>Q: What&apos;s with the lobster?</p>
-                <p>A: 🦞 We don&apos;t talk about the lobster.</p>
-              </div>
-              <div>
-                <p style={{ color: 'var(--lime)', fontWeight: 700 }}>Q: Is there a Blue Screen of Death easter egg?</p>
-                <p>A: ... maybe. Look harder.</p>
-              </div>
+            <div className="mt-2 p-5 rounded-lg" style={{ background: '#0a0a0a', border: '1px solid #222' }}>
+              <p className="text-sm" style={{ color: '#ccc' }}><strong style={{ color: '#22C55E' }}>Free</strong> &mdash; 10 searches/day, weekly digest on Thursdays, basic deal info.</p>
+              <p className="text-sm mt-3" style={{ color: '#ccc' }}><strong style={{ color: '#22C55E' }}>Pro ($5/month)</strong> &mdash; Unlimited searches, full AI scores with direct source links, digest 6 hours early, hot deal alerts. Cancel anytime.</p>
             </div>
-          </div>
+          </section>
 
-          {/* Guestbook-style sign-off */}
-          <div className="text-center py-8" style={{ borderTop: '2px dashed var(--lime)' }}>
-            <p className="text-lg font-bold mb-2" style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--lime)' }}>
-              Thanks for visiting!
+          <section>
+            <h2 className="text-xl font-bold mb-3" style={{ color: '#fff' }}>
+              Built in Dallas
+            </h2>
+            <p className="text-sm" style={{ color: '#ccc' }}>
+              Flip-ly is built by <strong>AetherCoreAI</strong> in Dallas, Texas. We started by solving our own problem &mdash;
+              we wanted a better way to find garage sales in DFW. Now we&apos;re expanding across the country.
             </p>
-            <p className="text-sm mb-4" style={{ color: '#888' }}>
-              Please sign our guestbook. (We don&apos;t have one. Sign up instead.)
+          </section>
+
+          {/* CTA */}
+          <div className="text-center py-10" style={{ borderTop: '1px solid #222' }}>
+            <p className="text-lg font-bold mb-3" style={{ color: '#fff' }}>
+              Ready to find better deals?
             </p>
-            <a href="/" className="btn-chaos" style={{ fontSize: '16px', textDecoration: 'none', display: 'inline-block' }}>
-              BACK TO THE CHAOS 🦞
+            <a href="/" style={{
+              display: 'inline-block',
+              padding: '12px 32px',
+              background: '#22C55E',
+              color: '#000',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              fontWeight: 700,
+              fontSize: '15px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+            }}>
+              Get Started Free
             </a>
-            <p className="text-xs mt-6" style={{ color: '#444' }}>
-              This page was made with 100% recycled HTML and zero respect for web standards.
-            </p>
           </div>
         </div>
       </main>
 
-      <div className="rainbow-divider" />
-
-      <footer className="px-4 py-6 text-center" style={{ background: '#000' }}>
-        <p className="text-xs" style={{ color: '#555', fontFamily: '"Comic Sans MS", cursive' }}>
-          &copy; 1997&ndash;2026 FLIP-LY.NET | &ldquo;We made the internet fun again&rdquo;
+      <footer className="px-4 py-6 text-center" style={{ background: '#000', borderTop: '1px solid #222' }}>
+        <p className="text-xs" style={{ color: '#444', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+          &copy; 2026 Flip-ly.net &middot; AetherCoreAI
         </p>
       </footer>
     </div>

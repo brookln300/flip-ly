@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { signIn } from 'next-auth/react'
 import { motion } from 'framer-motion'
+import { trackGoogleAdsConversion, trackGA4Event } from './components/GoogleAnalytics'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -69,69 +70,6 @@ function ValuePropsSection() {
   )
 }
 
-/* ── HOW IT WORKS ─────────────────────────────────────── */
-function HowItWorksSection() {
-  const steps = [
-    {
-      n: '1', c: 'var(--lime)',
-      text: "FOR REAL: You type your email, city, and zip. We store it in a database. That's step 1. It took us 4 hours to build this form. Please use it.",
-    },
-    {
-      n: '2', c: 'var(--hotpink)',
-      text: "ACTUAL TRUTH: Our robots crawl Craigslist, EstateSales.net, and Facebook every day looking for garage sales near your zip. This part is real.",
-    },
-    {
-      n: '3', c: 'var(--mustard)',
-      text: "YEP THAT'S IT: One email. Thursdays. 12 PM CDT. Contains 5-10 garage sales near you with addresses and dates.",
-    },
-    {
-      n: '4', c: 'var(--electric)',
-      text: "THE BUSINESS MODEL: You flip things for profit. We take none of it. We don't even know what you bought. We're just the messenger.",
-    },
-    {
-      n: '5', c: 'var(--neon-orange)',
-      text: "BRUTAL HONESTY: $5/month gets you First Dibs \u2014 the digest 6hrs before everyone else, unlimited searches (free tier = 10/day), and all the AI scores unredacted.",
-    },
-  ]
-
-  return (
-    <section id="how-it-works" className="px-4 py-20" style={{ background: '#000' }}>
-      <h3 className="text-center mb-4" style={{
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        fontSize: '34px',
-        color: '#fff',
-        fontWeight: 700,
-        letterSpacing: '-0.02em',
-      }}>
-        How It Works
-      </h3>
-      <div className="mb-12" />
-      <div className="max-w-2xl mx-auto space-y-4">
-        {steps.map((step) => (
-          <div key={step.n}
-            className="flex items-start gap-4" style={{
-              padding: '8px 8px',
-              borderLeft: '3px solid transparent',
-              transition: 'all 0.2s',
-            }}>
-            <span className="text-2xl font-bold shrink-0" style={{
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              color: step.c,
-            }}>
-              {step.n}.
-            </span>
-            <div>
-              <p className="text-sm" style={{ color: '#ccc' }}>
-                {step.text}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
 /* ── TESTIMONIALS ─────────────────────────────────────── */
 function TestimonialsSection() {
   const testimonials = [
@@ -139,25 +77,25 @@ function TestimonialsSection() {
       cleanName: 'Sarah M.',
       cleanMsg: 'Found a $400 table for $20 in McKinney. Sold it on Facebook in 2 hours. This service literally changed how I shop for deals.',
       date: '03/24/26',
-      color: 'var(--lime)',
+      color: '#22C55E',
     },
     {
       cleanName: 'Jake R.',
       cleanMsg: "Found a vintage Eames chair at an estate sale for $15. The weekly digest consistently surfaces deals I would have missed on my own.",
       date: '03/23/26',
-      color: 'var(--hotpink)',
+      color: '#EC4899',
     },
     {
       cleanName: 'Maria L.',
       cleanMsg: "I made $200 last weekend from a single estate sale Flip-ly told me about. My husband signed up too. The Thursday email is now a household event.",
       date: '03/25/26',
-      color: 'var(--mustard)',
+      color: '#EAB308',
     },
     {
       cleanName: 'David K.',
       cleanMsg: "Signed up on a whim after a friend shared it. Now I check my email every Thursday at noon. The AI scoring saves me hours of scrolling Marketplace.",
       date: '03/26/26',
-      color: 'var(--electric)',
+      color: '#3B82F6',
     },
   ]
 
@@ -268,6 +206,7 @@ export default function Home() {
   const [searchMarket, setSearchMarket] = useState('')
   const [marketsData, setMarketsData] = useState<Record<string, { id: string; slug: string; name: string }[]>>({})
   const [marketsLoading, setMarketsLoading] = useState(true)
+  const [featuredMarketName, setFeaturedMarketName] = useState('DFW')
   const [searching, setSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [realListings, setRealListings] = useState<any[]>([])
@@ -281,14 +220,25 @@ export default function Home() {
   const [featuredDeals, setFeaturedDeals] = useState<any[]>([])
   const [featuredLoading, setFeaturedLoading] = useState(true)
 
-  // Fetch featured/hot deals on load
+  // Fetch featured/hot deals — use logged-in user's market, fallback to DFW
   useEffect(() => {
-    fetch('/api/listings?hot=true&limit=8')
+    let marketSlug = 'dfw'
+    if (loggedInUser?.market_id && Object.keys(marketsData).length > 0) {
+      for (const markets of Object.values(marketsData)) {
+        const found = markets.find(m => m.id === loggedInUser.market_id)
+        if (found) {
+          marketSlug = found.slug
+          setFeaturedMarketName(found.name)
+          break
+        }
+      }
+    }
+    fetch(`/api/listings?hot=true&limit=8&market=${marketSlug}`)
       .then(res => res.json())
       .then(data => { if (data.results?.length) setFeaturedDeals(data.results) })
       .catch(() => {})
       .finally(() => setFeaturedLoading(false))
-  }, [])
+  }, [loggedInUser, marketsData])
 
   // Fetch market list for dropdowns (signup + search)
   useEffect(() => {
@@ -313,7 +263,7 @@ export default function Home() {
       setSearchGate(gate)
 
       if (gate?.limited) {
-        // Rate limited — show message but no dramatic BSOD
+        // Rate limited
         setRealListings([])
         setTotalResults(0)
         setShowResults(false)
@@ -357,6 +307,9 @@ export default function Home() {
         return
       }
       setSubmitted(true)
+      // Fire conversion events for ad platforms
+      trackGA4Event('sign_up', { method: 'email' })
+      trackGoogleAdsConversion('YYhjCIqC4pQcENWFh4MD')
       setTimeout(() => {
         window.location.href = '/dashboard'
       }, 2000)
@@ -422,7 +375,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Rate limit banner (replaces BSOD) */}
+      {/* Rate limit banner */}
       {searchGate?.limited && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[90] max-w-md w-full mx-4" style={{
           background: '#111', border: '1px solid #ff4444', borderRadius: '12px',
@@ -567,7 +520,7 @@ export default function Home() {
                   boxShadow: '0 24px 60px rgba(0,0,0,0.5), 0 0 40px rgba(34,197,94,0.06)',
                 }}>
                   <video
-                    autoPlay muted loop playsInline
+                    autoPlay muted loop playsInline preload="metadata"
                     poster="/assets/hero-mockup.png"
                     style={{ width: '100%', display: 'block', borderRadius: '12px' }}
                   >
@@ -613,7 +566,7 @@ export default function Home() {
             <div className="flex justify-center items-center gap-10 flex-wrap">
               {[
                 { src: '/assets/logo-craigslist.png', alt: 'Craigslist', w: 100 },
-                { src: '/assets/logo-eventbrite.png', alt: 'EstateSales.net', w: 110 },
+                { src: '/assets/logo-eventbrite.png', alt: 'Eventbrite', w: 110 },
                 { src: '/assets/logo-facebook.jpg', alt: 'Facebook Marketplace', w: 100 },
               ].map((logo, i) => (
                 <img key={i} src={logo.src} alt={logo.alt} width={logo.w} style={{
@@ -633,112 +586,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ═══ FEATURED DEALS ═══ */}
-      {featuredDeals.length > 0 && (
-        <section className="px-4 py-20" style={{ background: '#000', borderTop: '1px solid #1a1a1a' }}>
-          <div className="max-w-3xl mx-auto">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-            <div className="flex items-center justify-between mb-6 gap-2">
-              <div className="flex items-center gap-3">
-                <h3 style={{
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  fontSize: '26px', fontWeight: 700, color: '#fff',
-                  letterSpacing: '-0.02em',
-                }}>
-                  This Week&apos;s Hot Deals
-                </h3>
-                <span style={{
-                  background: 'rgba(34,197,94,0.1)', color: 'var(--clean-accent)',
-                  padding: '2px 8px', borderRadius: '4px',
-                  fontSize: '10px', fontWeight: 600,
-                  fontFamily: 'system-ui, sans-serif',
-                }}>Powered by AI</span>
-              </div>
-              <span className="hidden sm:inline" style={{
-                fontSize: '12px', color: '#888',
-                fontFamily: 'system-ui, sans-serif',
-                flexShrink: 0,
-              }}>
-                Real data &middot; Updated weekly
-              </span>
-            </div>
-            <div className="space-y-2" style={{ background: '#0a0a0a', borderRadius: '12px', padding: '4px', border: '1px solid #1a1a1a' }}>
-              {featuredDeals.map((deal, i) => (
-                <div key={deal.id || i} className="flex items-center gap-4 px-4 py-3" style={{
-                  background: i % 2 === 0 ? '#111' : '#0d0d0d',
-                  borderRadius: '8px',
-                  border: deal.hot ? '1px solid rgba(255,102,0,0.3)' : '1px solid transparent',
-                }}>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {deal.hot && <span style={{
-                        background: '#ff6600', color: '#fff', padding: '1px 6px',
-                        borderRadius: '3px', fontSize: '10px', fontWeight: 600,
-                        fontFamily: 'system-ui, sans-serif',
-                      }}>HOT</span>}
-                      <span className="truncate" style={{
-                        color: '#eee', fontSize: '14px', fontWeight: 500,
-                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                      }}>
-                        {deal.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3" style={{ fontSize: '12px', color: '#888' }}>
-                      {deal.city && <span>{deal.city}</span>}
-                      <span style={{
-                        textTransform: 'uppercase', fontSize: '10px',
-                        color: '#666', border: '1px solid #333',
-                        padding: '0 4px', borderRadius: '2px',
-                      }}>{deal.source}</span>
-                      {deal.description && (
-                        <span className="truncate hidden sm:inline" style={{ color: '#666', maxWidth: '200px' }}>
-                          {deal.description}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div style={{
-                      fontFamily: 'system-ui, sans-serif', fontWeight: 700,
-                      fontSize: deal.price === 'FREE' ? '15px' : '13px',
-                      color: deal.price === 'FREE' ? '#22C55E' : deal.price === 'Not listed' ? '#666' : '#ff6600',
-                    }}>
-                      {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? 'Garage Sale' : deal.price || 'Ask'}
-                    </div>
-                    {deal.deal_score && deal.deal_score !== 'gated' ? (
-                      <div style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'monospace' }}>
-                        Score: {deal.deal_score}/10
-                      </div>
-                    ) : deal.deal_score === 'gated' ? (
-                      <div style={{ fontSize: '10px', color: '#555', fontFamily: 'monospace' }}>
-                        Score: Pro only
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 text-center">
-              <p style={{ fontSize: '12px', color: '#666', fontFamily: 'system-ui, sans-serif' }}>
-                {featuredDeals.length < 8
-                  ? 'All top deals this week.'
-                  : 'Showing top 8 deals. Search below for more, or sign up for the weekly digest.'}
-              </p>
-            </div>
-            </motion.div>
-          </div>
-        </section>
-      )}
-      {featuredLoading && (
-        <section className="px-4 py-8" style={{ background: '#0a0a0a', borderTop: '1px solid #222' }}>
-          <div className="max-w-3xl mx-auto text-center">
-            <p style={{ color: '#555', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
-              Loading deals...
-            </p>
-          </div>
-        </section>
-      )}
 
       {/* ═══ SEARCH ═══ */}
       <section id="search" className="px-4 py-20" style={{
@@ -1000,12 +847,114 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ═══ FEATURED DEALS ═══ */}
+      {featuredDeals.length > 0 && (
+        <section className="px-4 py-20" style={{ background: '#000', borderTop: '1px solid #1a1a1a' }}>
+          <div className="max-w-3xl mx-auto">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
+            <div className="flex items-center justify-between mb-6 gap-2">
+              <div className="flex items-center gap-3">
+                <h3 style={{
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  fontSize: '26px', fontWeight: 700, color: '#fff',
+                  letterSpacing: '-0.02em',
+                }}>
+                  {featuredMarketName} Hot Deals
+                </h3>
+                <span style={{
+                  background: 'rgba(34,197,94,0.1)', color: 'var(--clean-accent)',
+                  padding: '2px 8px', borderRadius: '4px',
+                  fontSize: '10px', fontWeight: 600,
+                  fontFamily: 'system-ui, sans-serif',
+                }}>Powered by AI</span>
+              </div>
+              <span className="hidden sm:inline" style={{
+                fontSize: '12px', color: '#888',
+                fontFamily: 'system-ui, sans-serif',
+                flexShrink: 0,
+              }}>
+                Real data &middot; Updated weekly
+              </span>
+            </div>
+            <div className="space-y-2" style={{ background: '#0a0a0a', borderRadius: '12px', padding: '4px', border: '1px solid #1a1a1a' }}>
+              {featuredDeals.map((deal, i) => (
+                <div key={deal.id || i} className="flex items-center gap-4 px-4 py-3" style={{
+                  background: i % 2 === 0 ? '#111' : '#0d0d0d',
+                  borderRadius: '8px',
+                  border: deal.hot ? '1px solid rgba(255,102,0,0.3)' : '1px solid transparent',
+                }}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {deal.hot && <span style={{
+                        background: '#ff6600', color: '#fff', padding: '1px 6px',
+                        borderRadius: '3px', fontSize: '10px', fontWeight: 600,
+                        fontFamily: 'system-ui, sans-serif',
+                      }}>HOT</span>}
+                      <span className="truncate" style={{
+                        color: '#eee', fontSize: '14px', fontWeight: 500,
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
+                      }}>
+                        {deal.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3" style={{ fontSize: '12px', color: '#888' }}>
+                      {deal.city && <span>{deal.city}</span>}
+                      <span style={{
+                        textTransform: 'uppercase', fontSize: '10px',
+                        color: '#666', border: '1px solid #333',
+                        padding: '0 4px', borderRadius: '2px',
+                      }}>{deal.source}</span>
+                      {deal.description && (
+                        <span className="truncate hidden sm:inline" style={{ color: '#666', maxWidth: '200px' }}>
+                          {deal.description}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div style={{
+                      fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+                      fontSize: deal.price === 'FREE' ? '15px' : '13px',
+                      color: deal.price === 'FREE' ? '#22C55E' : deal.price === 'Not listed' ? '#666' : '#ff6600',
+                    }}>
+                      {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? 'Garage Sale' : deal.price || 'Ask'}
+                    </div>
+                    {deal.deal_score && deal.deal_score !== 'gated' ? (
+                      <div style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'monospace' }}>
+                        Score: {deal.deal_score}/10
+                      </div>
+                    ) : deal.deal_score === 'gated' ? (
+                      <div style={{ fontSize: '10px', color: '#555', fontFamily: 'monospace' }}>
+                        Score: Pro only
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 text-center">
+              <p style={{ fontSize: '12px', color: '#666', fontFamily: 'system-ui, sans-serif' }}>
+                {featuredDeals.length < 8
+                  ? 'All top deals this week.'
+                  : 'Showing top 8 deals. Search below for more, or sign up for the weekly digest.'}
+              </p>
+            </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+      {featuredLoading && (
+        <section className="px-4 py-8" style={{ background: '#0a0a0a', borderTop: '1px solid #222' }}>
+          <div className="max-w-3xl mx-auto text-center">
+            <p style={{ color: '#555', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
+              Loading deals...
+            </p>
+          </div>
+        </section>
+      )}
+
       {/* ═══ VALUE PROPS ═══ */}
       <ValuePropsSection />
-
-      {/* ═══ HOW IT WORKS ═══ */}
-      <HowItWorksSection />
-
       {/* ═══ TESTIMONIALS ═══ */}
       <TestimonialsSection />
 
@@ -1090,7 +1039,7 @@ export default function Home() {
             Stop missing deals.
           </h3>
           <p className="mb-8 text-base" style={{ color: '#888', fontFamily: 'system-ui, sans-serif', maxWidth: '400px', margin: '0 auto 32px' }}>
-            Join thousands of flippers and bargain hunters getting the best garage sales delivered every Thursday.
+            One email. Every Thursday. The best garage sales near you, scored and sorted.
           </p>
           <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
             background: 'var(--clean-accent)', color: '#000',
@@ -1101,38 +1050,6 @@ export default function Home() {
             Get Started — It&apos;s Free
           </button>
         </motion.div>
-      </section>
-
-      {/* ═══ TRUST SIGNALS ═══ */}
-      <section className="px-4 py-12" style={{ background: '#0a0a0a', borderTop: '1px solid #222' }}>
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="flex flex-wrap justify-center gap-8 mb-8">
-            <div>
-              <div className="text-3xl font-bold" style={{ color: 'var(--clean-accent)', fontFamily: 'system-ui, sans-serif' }}>413</div>
-              <div className="text-xs" style={{ color: '#888' }}>US Markets Available</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold" style={{ color: 'var(--mustard)', fontFamily: 'system-ui, sans-serif' }}>20+</div>
-              <div className="text-xs" style={{ color: '#888' }}>Sources Per Market</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold" style={{ color: 'var(--hotpink)', fontFamily: 'system-ui, sans-serif' }}>Thu 12PM</div>
-              <div className="text-xs" style={{ color: '#888' }}>Weekly Digest Delivery</div>
-            </div>
-          </div>
-          <p className="text-sm mb-6" style={{ color: '#666' }}>
-            Powered by Supabase &amp; Stripe. We never sell your data. Unsubscribe anytime.
-          </p>
-          <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
-            background: 'var(--clean-accent)', color: '#000',
-            border: 'none', borderRadius: '6px',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            cursor: 'pointer',
-            boxShadow: '0 0 20px rgba(15, 255, 80, 0.2)',
-          }}>
-            Get Started — It&apos;s Free
-          </button>
-        </div>
       </section>
 
       {/* ═══ FOOTER ═══ */}
