@@ -369,7 +369,7 @@ export default function Home() {
               display: 'block', marginTop: '4px',
               color: '#ff6600', fontSize: '11px', textDecoration: 'underline',
             }}>
-              Go unlimited — $5/mo
+              Go unlimited — $5/mo for life
             </a>
           )}
         </div>
@@ -970,7 +970,7 @@ export default function Home() {
               Simple Pricing
             </h3>
             <p className="text-center mb-10" style={{ color: '#666', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
-              Free gets you in the door. Pro gets you there first.
+              Free gets you in the door. Pro gets you there first. Early adopters lock in $5/mo for life.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
               {/* Free tier */}
@@ -1004,9 +1004,10 @@ export default function Home() {
                   background: 'var(--clean-accent)', color: '#000', padding: '2px 12px',
                   borderRadius: '10px', fontSize: '11px', fontWeight: 700,
                   fontFamily: 'system-ui, sans-serif',
-                }}>MOST POPULAR</div>
+                }}>EARLY ADOPTER PRICING</div>
                 <div style={{ fontSize: '13px', color: 'var(--clean-accent)', fontFamily: 'system-ui, sans-serif', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Pro</div>
-                <div style={{ fontSize: '40px', fontWeight: 700, color: '#fff', fontFamily: 'system-ui, sans-serif', marginBottom: '20px' }}>$5<span style={{ fontSize: '14px', color: '#666' }}>/mo</span></div>
+                <div style={{ fontSize: '40px', fontWeight: 700, color: '#fff', fontFamily: 'system-ui, sans-serif', marginBottom: '4px' }}>$5<span style={{ fontSize: '14px', color: '#666' }}>/mo</span></div>
+                <div style={{ fontSize: '12px', color: '#22C55E', fontFamily: 'system-ui, sans-serif', marginBottom: '16px', fontWeight: 600 }}>Locked in for life</div>
                 <ul style={{ textAlign: 'left', fontSize: '13px', color: '#999', fontFamily: 'system-ui, sans-serif', lineHeight: 2.2, listStyle: 'none', padding: 0 }}>
                   <li style={{ color: 'var(--clean-accent)' }}>Unlimited searches</li>
                   <li style={{ color: 'var(--clean-accent)' }}>Early digest (6hrs before free)</li>
@@ -1023,7 +1024,7 @@ export default function Home() {
               </div>
             </div>
             <p className="text-center mt-6" style={{ fontSize: '13px', color: '#555', fontFamily: 'system-ui, sans-serif' }}>
-              No contracts. Cancel anytime.
+              No contracts. Cancel anytime. Early adopters keep this price forever.
             </p>
           </motion.div>
         </div>

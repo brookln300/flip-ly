@@ -13,7 +13,6 @@ function ProContent() {
 
   const handleUpgrade = async () => {
     if (authStatus !== 'authenticated') {
-      // Not logged in — redirect to home with signup prompt
       window.location.href = '/?signup=pro'
       return
     }
@@ -63,39 +62,46 @@ function ProContent() {
   // POST-CHECKOUT SUCCESS
   if (status === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D0D0D' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#000' }}>
         <div className="text-center px-8 max-w-lg">
-          <p className="text-6xl mb-6">🦞💎</p>
-          <h1 className="text-3xl font-bold mb-4" style={{
-            fontFamily: '"Comic Sans MS", cursive', color: 'var(--lime)',
+          <div style={{
+            width: '64px', height: '64px', borderRadius: '50%',
+            background: 'rgba(34,197,94,0.1)', border: '2px solid #22C55E',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px', fontSize: '28px',
           }}>
-            WELCOME TO FIRST DIBS, PRO.
+            &#x2713;
+          </div>
+          <h1 className="text-3xl font-bold mb-4" style={{
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            color: '#fff',
+          }}>
+            Welcome to Pro
           </h1>
-          <p className="text-base mb-4" style={{ color: '#ccc', fontFamily: '"Courier New", monospace' }}>
-            You now get the digest 6 hours before everyone else.
-            While normies sleep, you flip.
+          <p className="text-base mb-6" style={{ color: '#999', fontFamily: 'system-ui, sans-serif', lineHeight: 1.7 }}>
+            You're now a Pro member. Your weekly digest arrives 6 hours before everyone else, and you have unlimited searches.
           </p>
           <div className="mb-6 p-4 inline-block" style={{
-            border: '3px dashed var(--hotpink)',
-            background: '#1a1a1a',
+            background: '#111', border: '1px solid #22C55E',
+            borderRadius: '12px', padding: '20px 32px',
           }}>
-            <p style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--neon-orange)', fontSize: '16px' }}>
-              PRO MEMBER — FIRST DIBS 🥇
+            <p style={{ fontFamily: 'system-ui, sans-serif', color: '#22C55E', fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>
+              PRO MEMBER
             </p>
-            <p style={{ fontFamily: 'monospace', color: '#888', fontSize: '11px', marginTop: '4px' }}>
-              $5/mo &middot; cancel anytime &middot; no hard feelings
+            <p style={{ fontFamily: 'system-ui, sans-serif', color: '#666', fontSize: '12px' }}>
+              $5/mo &middot; early adopter pricing locked for life
             </p>
           </div>
           <div className="mb-6">
-            <p style={{ color: 'var(--mustard)', fontSize: '13px', fontFamily: 'monospace' }}>
-              ✅ Digest 6hrs early &middot; ✅ Unlimited search &middot; ✅ Full deal data
+            <p style={{ color: '#888', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
+              &#x2705; Digest 6hrs early &middot; &#x2705; Unlimited search &middot; &#x2705; Full deal data &middot; &#x2705; Hot deal alerts
             </p>
           </div>
           <a href="/" style={{
-            color: 'var(--lime)', fontFamily: '"Comic Sans MS", cursive',
-            textDecoration: 'underline',
+            color: '#22C55E', fontFamily: 'system-ui, sans-serif',
+            textDecoration: 'underline', fontSize: '14px',
           }}>
-            ← return to the chaos (now with first dibs)
+            &larr; Go to dashboard
           </a>
         </div>
       </div>
@@ -105,23 +111,24 @@ function ProContent() {
   // POST-CHECKOUT CANCEL
   if (status === 'cancelled') {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D0D0D' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#000' }}>
         <div className="text-center px-8 max-w-lg">
-          <p className="text-6xl mb-6">🦞😔</p>
-          <h1 className="text-3xl font-bold mb-4" style={{
-            fontFamily: '"Comic Sans MS", cursive', color: 'var(--hotpink)',
+          <h1 className="text-2xl font-bold mb-4" style={{
+            fontFamily: 'system-ui, -apple-system, sans-serif', color: '#fff',
           }}>
-            THE LOBSTER UNDERSTANDS.
+            No worries
           </h1>
-          <p className="text-base mb-6" style={{ color: '#888', fontFamily: '"Courier New", monospace' }}>
-            $5 is a lot when you could just... be 6 hours late to every deal.
-            That&apos;s fine. You like sloppy seconds. We don&apos;t judge.
+          <p className="text-base mb-6" style={{ color: '#888', fontFamily: 'system-ui, sans-serif', lineHeight: 1.7 }}>
+            You can always upgrade later. The free tier still gives you a weekly digest and 10 searches per day.
+          </p>
+          <p className="text-sm mb-6" style={{ color: '#555', fontFamily: 'system-ui, sans-serif' }}>
+            Early adopter pricing ($5/mo locked for life) is available while we're in this phase.
           </p>
           <a href="/" style={{
-            color: 'var(--lime)', fontFamily: '"Comic Sans MS", cursive',
-            textDecoration: 'underline',
+            color: '#22C55E', fontFamily: 'system-ui, sans-serif',
+            textDecoration: 'underline', fontSize: '14px',
           }}>
-            ← back to peasant-tier chaos
+            &larr; Back to flip-ly
           </a>
         </div>
       </div>
@@ -130,50 +137,81 @@ function ProContent() {
 
   // DEFAULT: PRO UPGRADE PAGE
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D0D0D' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#000' }}>
       <div className="text-center px-8 max-w-xl">
-        <p className="text-6xl mb-4">🦞</p>
-        <h1 className="text-4xl font-bold mb-2" style={{
-          fontFamily: '"Comic Sans MS", cursive', color: 'var(--lime)',
+
+        {/* Early adopter badge */}
+        <div style={{
+          display: 'inline-block', background: 'rgba(34,197,94,0.1)',
+          border: '1px solid rgba(34,197,94,0.3)', borderRadius: '20px',
+          padding: '4px 14px', marginBottom: '24px',
+          fontSize: '12px', color: '#22C55E', fontFamily: 'system-ui, sans-serif',
+          fontWeight: 600, letterSpacing: '0.5px',
         }}>
-          FIRST DIBS PRO
+          EARLY ADOPTER PRICING
+        </div>
+
+        <h1 className="text-3xl font-bold mb-2" style={{
+          fontFamily: 'system-ui, -apple-system, sans-serif', color: '#fff',
+        }}>
+          Flip-ly Pro
         </h1>
-        <p className="text-lg mb-6" style={{
-          color: 'var(--neon-orange)', fontFamily: '"Comic Sans MS", cursive',
+        <p className="text-lg mb-2" style={{
+          color: '#fff', fontFamily: 'system-ui, sans-serif', fontWeight: 700,
+          fontSize: '40px',
         }}>
-          $5/month &middot; cancel anytime &middot; lobster-approved
+          $5<span style={{ fontSize: '16px', color: '#666', fontWeight: 400 }}>/month</span>
+        </p>
+        <p className="mb-8" style={{
+          color: '#22C55E', fontFamily: 'system-ui, sans-serif',
+          fontSize: '14px', fontWeight: 600,
+        }}>
+          Lock this price in for life. Even when the price goes up.
         </p>
 
         <div className="mb-8 text-left inline-block" style={{
-          border: '2px solid var(--lime)',
-          background: '#111',
-          padding: '20px 28px',
-          maxWidth: '400px',
+          background: '#111', border: '1px solid #222', borderRadius: '12px',
+          padding: '24px 28px', maxWidth: '400px', width: '100%',
         }}>
-          <p style={{ fontFamily: '"Comic Sans MS", cursive', color: 'var(--hotpink)', fontSize: '14px', marginBottom: '12px' }}>
-            WHAT YOU GET:
+          <p style={{ fontFamily: 'system-ui, sans-serif', color: '#fff', fontSize: '14px', fontWeight: 600, marginBottom: '16px' }}>
+            What you get:
           </p>
-          <ul style={{ fontFamily: '"Courier New", monospace', color: '#ccc', fontSize: '13px', listStyle: 'none', padding: 0 }}>
-            <li style={{ marginBottom: '8px' }}>🕐 <span style={{ color: 'var(--lime)' }}>Digest 6 hours early</span> — while normies sleep, you flip</li>
-            <li style={{ marginBottom: '8px' }}>🔍 <span style={{ color: 'var(--lime)' }}>Unlimited search</span> — free tier gets 10/day</li>
-            <li style={{ marginBottom: '8px' }}>📊 <span style={{ color: 'var(--lime)' }}>Full deal data</span> — AI scores, price history, source links</li>
-            <li style={{ marginBottom: '8px' }}>📱 <span style={{ color: 'var(--lime)' }}>Instant SMS alerts</span> — hot deals, straight to your phone</li>
-            <li>🦞 <span style={{ color: 'var(--lime)' }}>Lobster status</span> — you are now better than everyone</li>
+          <ul style={{ fontFamily: 'system-ui, sans-serif', color: '#999', fontSize: '14px', listStyle: 'none', padding: 0, margin: 0 }}>
+            <li style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
+              <span style={{ color: '#22C55E' }}>&#x2713;</span>
+              <span><strong style={{ color: '#fff' }}>Digest 6 hours early</strong> — get deals before free users see them</span>
+            </li>
+            <li style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
+              <span style={{ color: '#22C55E' }}>&#x2713;</span>
+              <span><strong style={{ color: '#fff' }}>Unlimited searches</strong> — free tier is limited to 10/day</span>
+            </li>
+            <li style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
+              <span style={{ color: '#22C55E' }}>&#x2713;</span>
+              <span><strong style={{ color: '#fff' }}>Full AI scores + direct links</strong> — know exactly what's worth your time</span>
+            </li>
+            <li style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
+              <span style={{ color: '#22C55E' }}>&#x2713;</span>
+              <span><strong style={{ color: '#fff' }}>Hot deal alerts</strong> — get notified when a 9+/10 deal drops</span>
+            </li>
+            <li style={{ display: 'flex', gap: '10px' }}>
+              <span style={{ color: '#22C55E' }}>&#x2713;</span>
+              <span><strong style={{ color: '#fff' }}>Custom saved searches</strong> — alerts for what you care about</span>
+            </li>
           </ul>
         </div>
 
-        <div className="mb-6">
-          <p style={{ color: '#666', fontSize: '11px', fontFamily: 'monospace', marginBottom: '16px' }}>
-            FREE TIER: 10 searches/day &middot; digest on Thursdays &middot; basic listings only
+        <div className="mb-4">
+          <p style={{ color: '#555', fontSize: '12px', fontFamily: 'system-ui, sans-serif' }}>
+            One good find pays for a year of Pro. Cancel anytime.
           </p>
         </div>
 
         {error && (
           <div className="mb-4 px-4 py-3" style={{
-            background: '#1a0000', border: '1px solid var(--hotpink)',
-            borderRadius: '6px', maxWidth: '400px', margin: '0 auto 16px',
+            background: '#1a0000', border: '1px solid #dc2626',
+            borderRadius: '8px', maxWidth: '400px', margin: '0 auto 16px',
           }}>
-            <p style={{ color: 'var(--hotpink)', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
+            <p style={{ color: '#dc2626', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
               {error}
             </p>
           </div>
@@ -181,10 +219,10 @@ function ProContent() {
 
         {authStatus !== 'authenticated' && (
           <div className="mb-4 px-4 py-3" style={{
-            background: '#0a0a1a', border: '1px solid var(--electric)',
-            borderRadius: '6px', maxWidth: '400px', margin: '0 auto 16px',
+            background: '#111', border: '1px solid #333',
+            borderRadius: '8px', maxWidth: '400px', margin: '0 auto 16px',
           }}>
-            <p style={{ color: '#ccc', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
+            <p style={{ color: '#999', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
               Sign up or log in first to upgrade to Pro.
             </p>
           </div>
@@ -195,19 +233,18 @@ function ProContent() {
             onClick={handleUpgrade}
             disabled={loading}
             style={{
-              background: loading ? '#333' : 'var(--neon-orange)',
-              color: '#fff',
-              border: '2px solid var(--lime)',
+              background: loading ? '#333' : '#22C55E',
+              color: '#000',
+              border: 'none',
               borderRadius: '8px',
               fontFamily: 'system-ui, -apple-system, sans-serif',
-              fontSize: '18px',
+              fontSize: '16px',
               fontWeight: 700,
               padding: '14px 48px',
               cursor: loading ? 'wait' : 'pointer',
-              boxShadow: loading ? 'none' : '0 0 20px rgba(255,102,0,0.3)',
             }}
           >
-            {loading ? 'Loading...' : (authStatus !== 'authenticated' ? 'Sign Up to Upgrade' : 'Upgrade to Pro — $5/mo')}
+            {loading ? 'Loading...' : (authStatus !== 'authenticated' ? 'Sign Up to Upgrade' : 'Lock In $5/month')}
           </button>
 
           <button
@@ -230,7 +267,7 @@ function ProContent() {
             color: '#555', fontFamily: 'system-ui, sans-serif',
             textDecoration: 'underline', fontSize: '12px', marginTop: '8px',
           }}>
-            ← back to free tier
+            &larr; back to free tier
           </a>
         </div>
       </div>
@@ -240,7 +277,7 @@ function ProContent() {
 
 export default function ProPage() {
   return (
-    <Suspense fallback={<div style={{ background: '#0D0D0D', minHeight: '100vh' }} />}>
+    <Suspense fallback={<div style={{ background: '#000', minHeight: '100vh' }} />}>
       <ProContent />
     </Suspense>
   )

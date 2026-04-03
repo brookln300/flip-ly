@@ -39,12 +39,12 @@ function getWelcomeEmail(email: string, marketName: string | null) {
 
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:0 0 24px;">
         <p style="font-size:14px;font-weight:600;color:#166534;margin:0 0 8px;">🚀 Want more?</p>
-        <p style="font-size:13px;color:#555;margin:0;">Pro members ($5/mo) get unlimited searches, AI deal scores, and deals 6 hours before everyone else. <a href="https://flip-ly.net/pro" style="color:#22C55E;font-weight:600;">Learn more →</a></p>
+        <p style="font-size:13px;color:#555;margin:0;">Pro members ($5/mo) get unlimited searches, AI deal scores, and deals 6 hours before everyone else. Early adopters lock in this price for life. <a href="https://flip-ly.net/pro" style="color:#22C55E;font-weight:600;">Learn more →</a></p>
       </div>
 
       <p style="font-size:15px;margin:0 0 24px;">Your first digest arrives this Thursday. In the meantime, <a href="https://flip-ly.net" style="color:#22C55E;font-weight:600;">search for deals now</a>.</p>
 
-      <p style="font-size:14px;color:#888;margin:0;">Yes, the website looks like that on purpose. The deals are real though.</p>
+      <p style="font-size:14px;color:#888;margin:0;">Simple, honest, and built to save you time every week.</p>
     </div>
     <div style="background:#f8f8f8;padding:20px 32px;border-top:1px solid #eee;">
       <p style="font-size:12px;color:#999;margin:0 0 4px;">flip-ly.net — Garage sale intelligence, delivered weekly.</p>

@@ -18,17 +18,17 @@ function addUtm(url: string, source: string, medium: string, campaign: string, c
 }
 
 const SUBJECTS_PRO = [
-  "🦞 FIRST DIBS: {count} deals before anyone else",
-  "🥇 Pro early access: {count} deals — 6hrs before the peasants",
-  "⚡ Your First Dibs digest: {count} deals, 0 competition (for now)",
+  "Your early access digest: {count} deals in {city}",
+  "{count} deals — you're seeing this 6 hours before everyone else",
+  "Pro digest: {count} deals near {city}, scored and sorted",
 ]
 
 const SUBJECTS_FREE = [
-  "🎩 Your butler found {count} deals this week",
-  "🔥 {count} garage sales near you — the butler insists",
-  "📢 {count} new deals in {city} — from your favorite chaos engine",
-  "🦞 flip-ly weekly: {count} deals, 0 regrets (probably)",
-  "⚡ The butler's weekly report: {count} bargains detected",
+  "Your weekly digest: {count} deals near {city}",
+  "{count} garage sales near you this week",
+  "{count} new deals in {city} — scored by AI",
+  "This week's deals: {count} listings near {city}",
+  "Weekly roundup: {count} deals, sorted by quality",
 ]
 
 export async function GET(req: NextRequest) {
@@ -46,11 +46,11 @@ export async function GET(req: NextRequest) {
   const tier = searchParams.get('tier') as 'pro' | 'free' | null
 
   try {
-    // Fetch users based on tier — now includes market_id
+    // Fetch users based on tier
     let userQuery = supabase
       .from('fliply_users')
       .select('id, email, city, state, market_id, is_premium')
-      .or('unsubscribed.is.null,unsubscribed.eq.false')  // Skip unsubscribed users
+      .or('unsubscribed.is.null,unsubscribed.eq.false')
 
     if (tier === 'pro') {
       userQuery = userQuery.eq('is_premium', true)
@@ -207,63 +207,62 @@ function buildDigestEmail(
   const unsubUrl = getUnsubscribeUrl(userEmail)
 
   const listingRows = listings.slice(0, isPro ? 15 : 10).map((l, i) => {
+    const scoreColor = l.deal_score >= 8 ? '#22C55E' : l.deal_score >= 6 ? '#EAB308' : '#999'
     const scoreDisplay = isPro
-      ? (l.deal_score ? `<span style="background:${l.deal_score >= 8 ? '#006600' : '#666'};color:${l.deal_score >= 8 ? '#0f0' : '#fff'};padding:1px 6px;font-size:10px;font-weight:bold;font-family:monospace;">${l.deal_score}/10</span> ` : '')
-      : (l.deal_score ? `<span style="background:#333;color:#888;padding:1px 6px;font-size:10px;font-weight:bold;font-family:monospace;">&#x2588;&#x2588;/10</span> ` : '')
+      ? (l.deal_score ? `<span style="display:inline-block;background:${l.deal_score >= 8 ? '#f0fdf4' : '#f8f8f8'};color:${scoreColor};padding:2px 8px;font-size:11px;font-weight:700;border-radius:4px;font-family:monospace;">${l.deal_score}/10</span> ` : '')
+      : (l.deal_score ? `<span style="display:inline-block;background:#f8f8f8;color:#ccc;padding:2px 8px;font-size:11px;font-weight:700;border-radius:4px;font-family:monospace;">--/10</span> ` : '')
 
     const aiDesc = isPro
-      ? (l.ai_description ? `<br/><span style="color:#555;font-size:11px;font-family:Tahoma,sans-serif;font-style:italic;">&#x1F916; ${escapeHtml(l.ai_description.substring(0, 120))}</span>` : '')
-      : (l.ai_description ? `<br/><span style="color:#999;font-size:11px;font-family:Tahoma,sans-serif;font-style:italic;">&#x1F916; ${escapeHtml(l.ai_description.substring(0, 40))}... <a href="${utm('https://flip-ly.net/pro', 'ai-analysis')}" style="color:#FF10F0;font-size:10px;">[PRO: see full AI analysis]</a></span>` : '')
+      ? (l.ai_description ? `<br/><span style="color:#888;font-size:12px;">${escapeHtml(l.ai_description.substring(0, 120))}</span>` : '')
+      : (l.ai_description ? `<br/><span style="color:#bbb;font-size:12px;">${escapeHtml(l.ai_description.substring(0, 40))}... <a href="${utm('https://flip-ly.net/pro', 'ai-analysis')}" style="color:#22C55E;font-size:11px;">See full analysis</a></span>` : '')
 
     const linkUrl = isPro ? (l.source_url || utm('https://flip-ly.net', 'listing')) : utm('https://flip-ly.net', 'listing')
-    const linkNote = isPro ? '' : `<br/><span style="font-size:9px;color:#FF10F0;">&#x1F512; <a href="${utm('https://flip-ly.net/pro', 'listing-lock')}" style="color:#FF10F0;">Upgrade to Pro for direct links</a></span>`
+    const linkNote = isPro ? '' : `<br/><span style="font-size:10px;color:#bbb;"><a href="${utm('https://flip-ly.net/pro', 'listing-lock')}" style="color:#22C55E;">Upgrade for direct links</a></span>`
+
+    const hotBadge = l.is_hot ? '<span style="display:inline-block;background:#fef2f2;color:#dc2626;padding:1px 6px;font-size:10px;font-weight:700;border-radius:4px;margin-right:4px;">HOT</span>' : ''
 
     return `
-    <tr style="background:${l.is_hot ? '#FFF5F0' : i % 2 === 0 ? '#FFFFF8' : '#FFF'}; border-bottom:1px solid #ddd;">
-      <td style="padding:10px 12px; vertical-align:top;">
-        ${l.is_hot ? '<span style="background:#CC3300;color:#fff;padding:1px 6px;font-size:10px;font-weight:bold;font-family:Comic Sans MS,cursive;">&#x1F525; HOT</span> ' : ''}
-        ${scoreDisplay}
+    <tr style="border-bottom:1px solid #eee;">
+      <td style="padding:14px 16px;vertical-align:top;">
+        ${hotBadge}${scoreDisplay}
         <br/>
-        <a href="${linkUrl}" style="color:#0000CC;text-decoration:underline;font-size:14px;font-family:Times New Roman,serif;font-weight:${l.is_hot ? 'bold' : 'normal'};">
-          ${l.is_hot ? '&#x2B50; ' : ''}${escapeHtml(l.title)}
+        <a href="${linkUrl}" style="color:#000;text-decoration:none;font-size:15px;font-weight:${l.is_hot ? '700' : '600'};">
+          ${escapeHtml(l.title)}
         </a>
         ${aiDesc}
         ${linkNote}
-        ${l.ai_tags?.length ? `<br/><span style="font-size:9px;color:#888;">${(isPro ? l.ai_tags.slice(0, 4) : l.ai_tags.slice(0, 2)).map((t: string) => `#${t}`).join(' ')}</span>` : ''}
+        ${l.ai_tags?.length ? `<br/><span style="font-size:10px;color:#bbb;">${(isPro ? l.ai_tags.slice(0, 4) : l.ai_tags.slice(0, 2)).map((t: string) => `#${t}`).join(' ')}</span>` : ''}
       </td>
-      <td style="padding:10px 12px;text-align:right;vertical-align:top;white-space:nowrap;">
-        <span style="font-family:Comic Sans MS,cursive;font-weight:bold;font-size:13px;color:${l.price_text === 'FREE' ? '#009900' : '#CC3300'};">
-          ${l.price_text === 'FREE' ? '&#x1F195; FREE' : escapeHtml(l.price_text || 'Ask')}
+      <td style="padding:14px 16px;text-align:right;vertical-align:top;white-space:nowrap;">
+        <span style="font-weight:700;font-size:14px;color:${l.price_text === 'FREE' ? '#22C55E' : '#000'};">
+          ${l.price_text === 'FREE' ? 'FREE' : escapeHtml(l.price_text || 'Ask')}
         </span>
-        <br/><span style="font-size:10px;color:#888;">&#x1F4CD; ${escapeHtml(l.city || 'DFW')}</span>
-        ${l.event_date ? `<br/><span style="font-size:10px;color:#aaa;">&#x1F4C5; ${l.event_date}</span>` : ''}
+        <br/><span style="font-size:11px;color:#999;">${escapeHtml(l.city || 'DFW')}</span>
+        ${l.event_date ? `<br/><span style="font-size:11px;color:#bbb;">${l.event_date}</span>` : ''}
       </td>
     </tr>`
   }).join('')
 
   const proBanner = isPro
-    ? `<div style="background:linear-gradient(90deg,#FFD700,#FF8C00);color:#000;padding:8px 16px;font-family:Comic Sans MS,cursive;font-size:12px;text-align:center;font-weight:bold;">
-        &#x1F451; FIRST DIBS — You're seeing this 6 hours before everyone else &#x1F451;
+    ? `<div style="background:#f0fdf4;color:#166534;padding:10px 24px;font-size:13px;text-align:center;font-weight:600;">
+        Early access — you're seeing this 6 hours before free users
       </div>`
-    : `<div style="background:#1a1a1a;color:#888;padding:8px 16px;font-family:monospace;font-size:11px;text-align:center;">
-        &#x2728; FREELOADER EDITION &#x2728; &mdash;
-        <a href="${utm('https://flip-ly.net/pro', 'banner-upsell')}" style="color:#FF10F0;font-weight:bold;">Get this 6hrs early for $5/mo</a>
-      </div>`
+    : ''
 
   const proUpsell = isPro
     ? ''
-    : `<div style="background:#111;border:2px solid #FF10F0;padding:16px;margin:16px;text-align:center;">
-        <p style="font-family:Comic Sans MS,cursive;color:#FF10F0;font-size:14px;margin:0 0 8px;">
-          &#x1F512; ${stats.hot_deals} deals had their scores hidden from you
+    : `<div style="background:#f8f8f8;border:1px solid #e5e5e5;border-radius:8px;padding:20px;margin:20px 24px;text-align:center;">
+        <p style="color:#000;font-size:15px;font-weight:600;margin:0 0 4px;">
+          ${stats.hot_deals} deals had their scores hidden
         </p>
-        <p style="font-family:monospace;color:#888;font-size:11px;margin:0 0 12px;">
-          Pro members see: full AI scores &bull; direct source links &bull; address &amp; map data &bull; deal reasons
+        <p style="color:#888;font-size:12px;margin:0 0 16px;">
+          Pro members see full AI scores, direct source links, and get this email 6 hours earlier.
         </p>
-        <a href="${utm('https://flip-ly.net/pro', 'upsell-cta')}" style="display:inline-block;padding:10px 28px;background:#FF10F0;color:#fff;text-decoration:none;font-family:Comic Sans MS,cursive;font-weight:bold;font-size:14px;border:2px solid #FFD700;">
-          &#x1F451; UPGRADE — $5/mo — FIRST DIBS
+        <a href="${utm('https://flip-ly.net/pro', 'upsell-cta')}" style="display:inline-block;padding:10px 28px;background:#22C55E;color:#000;text-decoration:none;font-weight:700;font-size:14px;border-radius:6px;">
+          Upgrade to Pro — $5/mo for life
         </a>
-        <p style="font-family:monospace;color:#555;font-size:9px;margin:8px 0 0;">
-          We genuinely don't know what this is worth. But $5 seems right for you n00bz.
+        <p style="color:#bbb;font-size:11px;margin:8px 0 0;">
+          Early adopter pricing. Locked in as long as you're subscribed.
         </p>
       </div>`
 
@@ -271,72 +270,38 @@ function buildDigestEmail(
     ? `${listings.length} deals — you're seeing this 6 hours early`
     : `${listings.length} deals near you this week`
 
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#000;font-family:Tahoma,sans-serif;">
-<div style="display:none;font-size:1px;color:#0d0d0d;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
   ${previewText}
-  <!-- Padding to prevent email client from pulling body text -->
   &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+</div>
+
+<div style="max-width:560px;margin:0 auto;background:#ffffff;">
+
+<!-- Header -->
+<div style="background:#0a0a0a;padding:24px 32px;">
+  <span style="font-size:20px;color:#22C55E;font-weight:700;letter-spacing:-0.01em;">flip-ly.net</span>
+  <span style="float:right;color:#666;font-size:12px;line-height:20px;">Weekly Digest</span>
 </div>
 
 ${proBanner}
 
-<!-- Marquee banner -->
-<div style="background:#000080;color:#ffff00;padding:6px 12px;font-family:Comic Sans MS,cursive;font-size:11px;text-align:center;">
-  &#x1F3C6; YOUR WEEKLY DEAL INTELLIGENCE BRIEFING &#x1F3C6; FROM THE DESK OF JEEVES &#x1F3C6;
-</div>
-
-<!-- Header -->
-<div style="background:linear-gradient(135deg,#1a0a2e,#0a0a1a);padding:24px;text-align:center;border-bottom:4px solid #0FFF50;">
-  <div style="font-size:48px;">&#x1F3A9;</div>
-  <h1 style="font-family:Comic Sans MS,cursive;font-size:28px;color:#0FFF50;margin:8px 0;text-shadow:2px 2px 0 #FF10F0;">
-    flip-ly<span style="color:#FF10F0;">.net</span>
-  </h1>
-  <p style="color:#ccc;font-size:13px;font-style:italic;font-family:Georgia,serif;">
-    Your weekly garage sale intelligence report for <strong style="color:#FFD700;">${escapeHtml(city)}</strong>
+<!-- Intro -->
+<div style="padding:24px 32px 16px;">
+  <p style="color:#000;font-size:16px;font-weight:600;margin:0 0 4px;">
+    This week's deals near ${escapeHtml(city)}
+  </p>
+  <p style="color:#888;font-size:13px;margin:0;">
+    ${stats.total_new} new listings &middot; ${stats.hot_deals} hot deals &middot; Top score: ${isPro ? stats.top_score + '/10' : 'Pro only'}
   </p>
 </div>
 
-<!-- Stats bar -->
-<div style="background:#111;padding:12px 24px;display:flex;border-bottom:2px solid #333;">
-  <table width="100%" cellpadding="0" cellspacing="0"><tr>
-    <td style="text-align:center;padding:8px;">
-      <div style="font-size:24px;font-weight:bold;color:#0FFF50;font-family:monospace;">${stats.total_new}</div>
-      <div style="font-size:10px;color:#888;">NEW THIS WEEK</div>
-    </td>
-    <td style="text-align:center;padding:8px;border-left:1px solid #333;border-right:1px solid #333;">
-      <div style="font-size:24px;font-weight:bold;color:#FF10F0;font-family:monospace;">${stats.hot_deals}</div>
-      <div style="font-size:10px;color:#888;">&#x1F525; HOT DEALS</div>
-    </td>
-    <td style="text-align:center;padding:8px;">
-      <div style="font-size:24px;font-weight:bold;color:#FFD700;font-family:monospace;">${isPro ? stats.top_score + '/10' : '&#x2588;&#x2588;/10'}</div>
-      <div style="font-size:10px;color:#888;">TOP AI SCORE${isPro ? '' : ' &#x1F512;'}</div>
-    </td>
-  </tr></table>
-</div>
-
-<!-- Butler intro -->
-<div style="background:#FFFFF0;padding:16px 24px;border-bottom:3px ridge #996633;">
-  <table cellpadding="0" cellspacing="0"><tr>
-    <td style="vertical-align:top;padding-right:12px;font-size:36px;">&#x1F3A9;</td>
-    <td style="font-family:Comic Sans MS,cursive;font-size:13px;color:#333;font-style:italic;">
-      &ldquo;Good ${new Date().getHours() < 12 ? 'morning' : 'afternoon'}, ${isPro ? 'esteemed Pro member' : 'sir'}. I have curated the finest deals from across the ${escapeHtml(city)} metropolitan area. ${isPro ? `As a First Dibs member, you're seeing this before the commoners wake up.` : `I found ${listings.length} offerings for your consideration.`}&rdquo;
-      <br/><span style="font-size:10px;color:#999;font-style:normal;">&mdash; Jeeves, your AI-powered garage sale butler (est. 1998)</span>
-    </td>
-  </tr></table>
-</div>
-
-<!-- Listings table -->
-<div style="background:#FFFEF0;padding:16px;">
-  <div style="background:#000080;color:#fff;padding:6px 12px;font-family:Tahoma,sans-serif;font-size:11px;margin-bottom:8px;">
-    &#x1F4C2; This Week's Top ${listings.length} Deals &mdash; Sorted by AI Intelligence
-    <span style="float:right;color:#ff0;">&#x1F525; = Score 8+</span>
-  </div>
-
-  <table width="100%" cellpadding="0" cellspacing="0" style="border:2px ridge #996633;border-collapse:collapse;">
+<!-- Listings -->
+<div style="padding:0 16px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
     ${listingRows}
   </table>
 </div>
@@ -344,27 +309,25 @@ ${proBanner}
 ${proUpsell}
 
 <!-- CTA -->
-<div style="background:#000;padding:24px;text-align:center;border-top:4px solid #FF10F0;">
-  <a href="${utm('https://flip-ly.net', 'main-cta')}" style="display:inline-block;padding:12px 32px;background:linear-gradient(180deg,#ff6633,#cc3300);color:#fff;text-decoration:none;font-family:Comic Sans MS,cursive;font-weight:bold;font-size:16px;border:3px outset #ff9966;text-shadow:2px 2px 0 rgba(0,0,0,0.3);">
-    &#x1F3A9; Search All Deals on flip-ly.net
+<div style="padding:24px 32px;text-align:center;">
+  <a href="${utm('https://flip-ly.net', 'main-cta')}" style="display:inline-block;padding:12px 32px;background:#22C55E;color:#000;text-decoration:none;font-weight:700;font-size:15px;border-radius:8px;">
+    Search All Deals
   </a>
-  <p style="color:#666;font-size:10px;margin-top:12px;font-family:Tahoma,sans-serif;">
-    You're receiving this because you signed up on flip-ly.net. The butler does not send spam. He's British.
-    <br/>
-    <a href="${unsubUrl}" style="color:#888;">Unsubscribe</a> (the butler will be disappointed)
-  </p>
 </div>
 
 <!-- Footer -->
-<div style="background:#0a0a1a;padding:12px;text-align:center;">
-  <p style="color:#444;font-size:9px;font-family:monospace;">
-    &#x1F6A7; flip-ly.net v0.69 beta &#x1F6A7; Best viewed in Netscape 4.0 &#x1F6A7; Y2K Compliant (probably) &#x1F6A7;
+<div style="background:#f8f8f8;padding:20px 32px;border-top:1px solid #eee;">
+  <p style="color:#999;font-size:12px;margin:0 0 4px;">flip-ly.net — Garage sale intelligence, delivered weekly.</p>
+  <p style="color:#bbb;font-size:11px;margin:0;">
+    <a href="${utm('https://flip-ly.net', 'footer')}" style="color:#999;">Visit</a> &middot;
+    <a href="https://flip-ly.net/privacy" style="color:#999;">Privacy</a> &middot;
+    <a href="${unsubUrl}" style="color:#999;">Unsubscribe</a>
   </p>
 </div>
 
+</div>
 </body>
-</html>
-`
+</html>`
 }
 
 function escapeHtml(str: string): string {

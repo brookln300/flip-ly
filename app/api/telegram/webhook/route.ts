@@ -137,8 +137,8 @@ function parseNumbers(str: string): number[] {
   return Array.from(new Set(results)).sort((a, b) => a - b)
 }
 
-function reply(lines: string[]) {
-  sendTelegramAlert(lines.join('\n')).catch(console.error)
+async function reply(lines: string[]) {
+  await sendTelegramAlert(lines.join('\n'))
   return OK
 }
 
