@@ -17,7 +17,6 @@ export async function GET() {
   const { data: markets, error } = await supabase
     .from('fliply_markets')
     .select('id, slug, name, display_name, state, cl_subdomain')
-    .eq('is_active', true)
     .order('display_name', { ascending: true })
 
   if (error) {
