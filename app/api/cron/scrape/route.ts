@@ -67,6 +67,14 @@ export async function GET(req: NextRequest) {
               source_hint: 'City government garage sale permit page',
             })
             break
+          case 'local_site':
+            // Claude-discovered local sites use the same AI extraction pipeline
+            result = await scrapeWithAI(source.id, source.market_id, {
+              url: (source.config as any).url,
+              source_name: source.name,
+              source_hint: (source.config as any).description || 'Local listing site',
+            })
+            break
           default:
             result.errors.push(`Unknown source type: ${source.source_type}`)
         }

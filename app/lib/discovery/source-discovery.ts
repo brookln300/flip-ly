@@ -1,30 +1,29 @@
 import { supabase } from '../supabase'
 import { sendTelegramAlert } from '../telegram'
 import { trackEvent } from '../analytics'
-import { researchLocalSources } from './claude-research'
 
 /**
- * Market-based source discovery.
- * Runs once per market lifetime (when first user signs up).
+ * Market source activation on signup.
  *
- * Gate logic:
- *   - Market already has sources_discovered_at? → SKIP (already scouted)
- *   - Market has cl_subdomain? → Auto-create CL source (always)
- *   - Then run AI/Brave research for bonus local sources
+ * With the 009 migration, CL + Eventbrite sources are pre-seeded for all 414
+ * markets as is_active=false. This function just flips them to active.
+ *
+ * AI research for local sources (Claude Haiku) is now handled by the hourly
+ * /api/cron/discover-sources cron — no more fire-and-forget inline.
  *
  * Fire-and-forget — call without await so it doesn't block signup.
  */
 export function discoverSourcesForMarket(marketId: string) {
-  _discover(marketId).catch((err) => {
+  _activateMarketSources(marketId).catch((err) => {
     console.error('[DISCOVERY] Failed for market', marketId, err.message)
   })
 }
 
-async function _discover(marketId: string) {
+async function _activateMarketSources(marketId: string) {
   // Fetch market details
   const { data: market } = await supabase
     .from('fliply_markets')
-    .select('*')
+    .select('id, name, display_name, state, cl_subdomain')
     .eq('id', marketId)
     .single()
 
@@ -33,152 +32,45 @@ async function _discover(marketId: string) {
     return
   }
 
-  // Gate: already discovered?
-  if (market.sources_discovered_at) {
-    console.log(`[DISCOVERY] Sources already discovered for ${market.name} — skipping`)
-    return
-  }
-
   const marketName = market.display_name || market.name
-  console.log(`[DISCOVERY] Starting source discovery for ${marketName}`)
-  const discoveredSources: string[] = []
 
-  // ── 1. Always add Craigslist (we have the subdomain from CL data) ──
-  if (market.cl_subdomain) {
-    const clName = `Craigslist ${marketName} Garage Sales`
-    const { error } = await supabase.from('fliply_sources').upsert({
-      market_id: market.id,
-      name: clName,
-      source_type: 'craigslist_rss',
-      config: {
-        rss_url: `https://${market.cl_subdomain}.craigslist.org/search/gms?format=rss`,
-        hostname: market.cl_subdomain,
-        area_id: market.cl_area_id,
-      },
-      discovery_method: 'auto_craigslist',
-      confidence: 1.0,
-      ai_confidence: 10,
-      trust_level: 'approved',
-      scrape_frequency_hours: 12,
-      is_active: true,
-      is_approved: true,
-    }, { onConflict: 'market_id,name', ignoreDuplicates: true })
+  // Activate all pre-seeded sources for this market
+  const { data: activated } = await supabase
+    .from('fliply_sources')
+    .update({ is_active: true })
+    .eq('market_id', market.id)
+    .eq('is_approved', true)
+    .eq('is_active', false)
+    .select('name, source_type')
 
-    if (!error) discoveredSources.push(`Craigslist (${market.cl_subdomain})`)
-  }
+  const count = activated?.length || 0
+  console.log(`[DISCOVERY] Activated ${count} pre-seeded sources for ${marketName}`)
 
-  // ── 2. Always add Eventbrite (geo search by lat/lng) ──
-  if (market.center_lat && market.center_lng) {
-    const ebName = `Eventbrite ${marketName} Events`
-    const { error } = await supabase.from('fliply_sources').upsert({
-      market_id: market.id,
-      name: ebName,
-      source_type: 'eventbrite_api',
-      config: {
-        latitude: market.center_lat,
-        longitude: market.center_lng,
-        radius: '30mi',
-        keywords: ['garage sale', 'estate sale', 'flea market', 'swap meet'],
-        city_slug: `${market.state.toLowerCase()}--${marketName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-      },
-      discovery_method: 'auto_eventbrite',
-      confidence: 1.0,
-      ai_confidence: 10,
-      trust_level: 'approved',
-      scrape_frequency_hours: 24,
-      is_active: true,
-      is_approved: true,
-    }, { onConflict: 'market_id,name', ignoreDuplicates: true })
-
-    if (!error) discoveredSources.push(`Eventbrite (${marketName})`)
-  }
-
-  // ── 3. AI research for local sources (city-specific) ──
-  // Extract city name from CL description (e.g., "dallas / fort worth" → "Dallas")
-  const cityName = marketName.split('/')[0].trim()
-  const research = await researchLocalSources(cityName, market.state)
-
-  for (const source of research.sources) {
-    if (source.confidence < 0.5) continue
-
-    const { error } = await supabase.from('fliply_sources').insert({
-      market_id: market.id,
-      name: source.name,
-      source_type: source.source_type,
-      config: { url: source.url, description: source.description },
-      discovery_method: 'auto_claude',
-      confidence: source.confidence,
-      ai_confidence: Math.round(source.confidence * 10),
-      ai_reasoning: source.description,
-      trust_level: 'pending',
-      scrape_frequency_hours: 24,
-      is_active: true,
-      is_approved: false, // Requires Keith's approval
-    })
-    if (!error) discoveredSources.push(`${source.name} (pending approval)`)
-  }
-
-  // ── 4. Mark market as discovered ──
+  // Clear local_sources_researched_at so the hourly cron picks this market up
+  // for AI research (it only researches active markets)
   await supabase
     .from('fliply_markets')
-    .update({ sources_discovered_at: new Date().toISOString() })
+    .update({ local_sources_researched_at: null })
     .eq('id', market.id)
+    .is('local_sources_researched_at', null) // no-op if already null
 
-  // ── 5. Fetch pending sources for numbered list ──
-  const { data: pendingSources } = await supabase
-    .from('fliply_sources')
-    .select('id, name, ai_confidence, config')
-    .eq('market_id', market.id)
-    .eq('trust_level', 'pending')
-    .order('created_at', { ascending: true })
-
-  const pendingCount = pendingSources?.length || 0
-
-  // ── 6. Telegram alert with numbered pending sources ──
-  const alertLines = [
-    `<b>New Market Activated</b> 🗺️`,
-    `Market: ${marketName}, ${market.state}`,
-    `CL: ${market.cl_subdomain}.craigslist.org`,
-    ``,
-    `<b>Auto-Approved:</b>`,
-    ...discoveredSources.filter(s => !s.includes('pending')).map(s => `✅ ${s}`),
-  ]
-
-  if (pendingSources && pendingSources.length > 0) {
-    alertLines.push(``, `<b>Pending Approval:</b>`)
-    pendingSources.forEach((s, i) => {
-      const url = (s.config as any)?.url || ''
-      alertLines.push(`  ${i + 1}. ${s.name} (score: ${s.ai_confidence}/10)`)
-      if (url) alertLines.push(`     ${url}`)
-    })
-    alertLines.push(``, `Reply: <code>Approve 1,3,5</code> or <code>Reject 2,4</code>`)
-    alertLines.push(`Reply: <code>Approve all</code> or <code>Reject all</code>`)
+  if (count > 0) {
+    const sourceList = activated!.map(s => `✅ ${s.name}`).join('\n')
+    await sendTelegramAlert([
+      `<b>Market Activated</b>`,
+      `${marketName}, ${market.state}`,
+      ``,
+      `<b>Sources activated (${count}):</b>`,
+      sourceList,
+      ``,
+      `AI local research queued for next hourly cron.`,
+    ].join('\n'))
   }
 
-  if (research.notes) {
-    alertLines.push(``, `Notes: ${research.notes}`)
-  }
-
-  // Store pending source IDs in order so webhook can map numbers → IDs
-  if (pendingSources && pendingSources.length > 0) {
-    await supabase
-      .from('fliply_markets')
-      .update({
-        pending_source_ids: pendingSources.map(s => s.id),
-      })
-      .eq('id', market.id)
-  }
-
-  await sendTelegramAlert(alertLines.join('\n'))
-
-  // ── 6. GA4 tracking ──
   trackEvent('market_activated', {
     market: market.cl_subdomain,
     market_name: marketName,
     state: market.state,
-    sources_count: discoveredSources.length,
-    pending_approval: pendingCount,
+    sources_activated: count,
   })
-
-  console.log(`[DISCOVERY] Complete: ${marketName} — ${discoveredSources.length} sources`)
 }
