@@ -11,6 +11,8 @@
  * Step 7 (Day 21): Founder check-in — personal, plain-text feel
  */
 
+import { getUnsubscribeUrl } from '../unsubscribe'
+
 interface TemplateVars {
   email: string
   city: string
@@ -253,7 +255,7 @@ const btnStyle = `display:inline-block;padding:14px 32px;background:#22C55E;colo
 // Clean email wrapper — white background, professional
 function wrapEmail(content: string, previewText?: string, userEmail?: string): string {
   const unsubUrl = userEmail
-    ? `https://flip-ly.net/api/unsubscribe?email=${encodeURIComponent(userEmail)}`
+    ? getUnsubscribeUrl(userEmail)
     : 'https://flip-ly.net/unsubscribe'
 
   const previewHtml = previewText ? `

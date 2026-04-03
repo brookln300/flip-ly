@@ -237,13 +237,17 @@ async function enrollInWelcomeSequence(userId: string) {
 
   const variant = Math.random() < 0.5 ? 'a' : 'b'
 
+  // Start at step 1 (not 0) because email/password signup already sends
+  // a standalone welcome email. This skips the drip "welcome" step and
+  // starts with "first-finds" on Day 1. OAuth signups use current_step: 0
+  // in next-auth.ts since they don't get a standalone welcome.
   await supabase.from('sequence_enrollments').upsert({
     user_id: userId,
     sequence_id: seqs[0].id,
-    current_step: 0,
+    current_step: 1,
     status: 'active',
     variant,
   }, { onConflict: 'user_id,sequence_id' })
 
-  console.log(`[DRIP] User ${userId} enrolled in welcome sequence (variant ${variant})`)
+  console.log(`[DRIP] User ${userId} enrolled in welcome sequence at step 1 (variant ${variant})`)
 }
