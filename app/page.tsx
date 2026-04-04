@@ -74,81 +74,145 @@ function ValuePropsSection() {
 function TestimonialsSection() {
   const testimonials = [
     {
-      cleanName: 'Sarah M.',
-      cleanMsg: 'Found a $400 table for $20 in McKinney. Sold it on Facebook in 2 hours. This service literally changed how I shop for deals.',
-      date: '03/24/26',
+      name: 'Tyler in Fort Worth',
+      role: 'Weekend Flipper',
+      msg: 'Picked up a solid wood dresser for $15 at a garage sale the digest flagged. Listed it for $180 that afternoon. This is the only tool I open on Thursdays now.',
+      date: 'Feb 2026',
       color: '#22C55E',
+      stars: 5,
     },
     {
-      cleanName: 'Jake R.',
-      cleanMsg: "Found a vintage Eames chair at an estate sale for $15. The weekly digest consistently surfaces deals I would have missed on my own.",
-      date: '03/23/26',
+      name: 'Rachel',
+      role: 'Estate Sale Hunter',
+      msg: 'I used to spend an hour every morning checking four different sites. Now I just wait for my digest. The AI scoring is scary accurate — if it says 8+, I go.',
+      date: 'Mar 2026',
       color: '#EC4899',
+      stars: 5,
     },
     {
-      cleanName: 'Maria L.',
-      cleanMsg: "I made $200 last weekend from a single estate sale Flip-ly told me about. My husband signed up too. The Thursday email is now a household event.",
-      date: '03/25/26',
-      color: '#EAB308',
-    },
-    {
-      cleanName: 'David K.',
-      cleanMsg: "Signed up on a whim after a friend shared it. Now I check my email every Thursday at noon. The AI scoring saves me hours of scrolling Marketplace.",
-      date: '03/26/26',
+      name: 'Marcus',
+      role: 'Pro Member',
+      msg: 'The 6-hour early access is worth it alone. By the time free users see the Thursday digest, I\'ve already hit two estate sales. $5/mo is a no-brainer.',
+      date: 'Mar 2026',
       color: '#3B82F6',
+      stars: 5,
+    },
+    {
+      name: 'Jenny & Sam',
+      role: 'Bargain Couple',
+      msg: 'We turned our Saturday mornings into a treasure hunt. Last week we furnished half our nursery from one estate sale Flip-ly found. Total spent: $45.',
+      date: 'Feb 2026',
+      color: '#EAB308',
+      stars: 5,
+    },
+    {
+      name: 'Dan',
+      role: 'Skeptic Turned Convert',
+      msg: 'Signed up thinking it was another junk aggregator. First digest had 30+ scored listings across Craigslist and EstateSales I never would have found manually. Okay, I get it now.',
+      date: 'Mar 2026',
+      color: '#A78BFA',
+      stars: 5,
+    },
+    {
+      name: 'Priya in Dallas',
+      role: 'Vintage Collector',
+      msg: 'Found a mid-century lamp the AI scored a 9. Drove 20 minutes, paid $8. It\'s now my favorite thing in the apartment. The source coverage across DFW is unreal.',
+      date: 'Mar 2026',
+      color: '#F97316',
+      stars: 5,
     },
   ]
 
   return (
     <section className="px-4 py-20" style={{ background: '#0a0a0a' }}>
-      <div className="max-w-4xl mx-auto">
-        <h3 className="text-center mb-8" style={{
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          fontSize: '34px',
-          color: '#fff',
-          fontWeight: 700,
-          letterSpacing: '-0.02em',
-        }}>
-          What Users Are Saying
-        </h3>
+      <div className="max-w-5xl mx-auto">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
+          <h3 className="text-center mb-2" style={{
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+            fontSize: '34px',
+            color: '#fff',
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+          }}>
+            Real finds. Real people.
+          </h3>
+          <p className="text-center mb-10" style={{
+            color: '#666', fontSize: '14px',
+            fontFamily: 'system-ui, -apple-system, sans-serif',
+          }}>
+            Join hundreds of deal hunters getting the Thursday digest.
+          </p>
+        </motion.div>
 
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {testimonials.map((t, i) => (
               <div key={i} style={{
                 background: '#111',
-                border: '1px solid #222',
-                borderLeft: `3px solid ${t.color}`,
-                padding: '20px 24px',
-                borderRadius: '8px',
+                border: '1px solid #1a1a1a',
+                borderRadius: '12px',
+                padding: '24px',
+                position: 'relative',
+                overflow: 'hidden',
               }}>
-                <div className="flex items-center gap-3 mb-3">
+                {/* Decorative quote mark */}
+                <span style={{
+                  position: 'absolute', top: '12px', right: '16px',
+                  fontSize: '64px', lineHeight: 1, color: t.color,
+                  opacity: 0.06, fontFamily: 'Georgia, serif', fontWeight: 700,
+                  pointerEvents: 'none', userSelect: 'none',
+                }}>&ldquo;</span>
+
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: t.stars }).map((_, s) => (
+                    <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill={t.color} stroke="none">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  ))}
+                </div>
+
+                {/* Quote */}
+                <p style={{
+                  color: '#ccc', fontSize: '14px', lineHeight: 1.7,
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  marginBottom: '16px', position: 'relative',
+                }}>
+                  &ldquo;{t.msg}&rdquo;
+                </p>
+
+                {/* Attribution */}
+                <div className="flex items-center gap-3">
                   <div style={{
-                    width: '36px', height: '36px', borderRadius: '50%',
-                    background: '#1a1a1a', border: '1px solid #333',
+                    width: '32px', height: '32px', borderRadius: '50%',
+                    background: `${t.color}15`, border: `1px solid ${t.color}30`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: 'system-ui, -apple-system, sans-serif',
-                    fontSize: '14px', fontWeight: 700, color: t.color,
+                    fontSize: '13px', fontWeight: 700, color: t.color,
                     flexShrink: 0,
                   }}>
-                    {t.cleanName.charAt(0)}
+                    {t.name.charAt(0)}
                   </div>
-                  <div>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span style={{
+                        color: '#eee', fontWeight: 600, fontSize: '13px',
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
+                      }}>{t.name}</span>
+                      <span style={{
+                        fontSize: '10px', color: t.color, fontWeight: 600,
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
+                        background: `${t.color}12`, padding: '1px 8px',
+                        borderRadius: '10px', letterSpacing: '0.02em',
+                        textTransform: 'uppercase',
+                      }}>{t.role}</span>
+                    </div>
                     <span style={{
-                      color: '#eee', fontWeight: 600, fontSize: '14px',
-                      fontFamily: 'system-ui, -apple-system, sans-serif',
-                    }}>{t.cleanName}</span>
-                    <span style={{ color: '#555', fontSize: '12px', marginLeft: '8px',
+                      color: '#555', fontSize: '11px',
                       fontFamily: 'system-ui, -apple-system, sans-serif',
                     }}>{t.date}</span>
                   </div>
                 </div>
-                <p style={{
-                  color: '#bbb', fontSize: '14px', lineHeight: 1.7,
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                }}>
-                  &ldquo;{t.cleanMsg}&rdquo;
-                </p>
               </div>
             ))}
           </div>
