@@ -66,10 +66,11 @@ const font = 'Inter, system-ui, -apple-system, sans-serif'
 function formatDisplayName(user: User): string {
   if (user.name) return user.name.split(' ')[0]
   const raw = user.email.split('@')[0]
-  // Clean up common patterns: remove dots/underscores, capitalize
-  const cleaned = raw.replace(/[._-]/g, ' ').replace(/\d+$/g, '').trim()
+  // Strip special chars, trailing numbers, possessives
+  const cleaned = raw.replace(/[._\-']/g, ' ').replace(/\d+$/g, '').replace(/\bs\b$/i, '').trim()
   if (!cleaned) return raw
-  return cleaned.split(' ')[0].charAt(0).toUpperCase() + cleaned.split(' ')[0].slice(1)
+  const first = cleaned.split(' ')[0].toLowerCase()
+  return first.charAt(0).toUpperCase() + first.slice(1)
 }
 
 function formatTimeAgo(hours: number): string {
@@ -246,7 +247,9 @@ export default function Dashboard() {
   const dataAge = meta?.age_hours != null ? formatTimeAgo(meta.age_hours) : ''
   const displayListings = activeTab === 'search' ? searchResults : (hotDeals.length > 0 ? hotDeals : listings)
   const displayTotal = activeTab === 'search' ? searchTotal : totalListings
-  const marketLabel = user.city && user.state ? `${user.city}, ${user.state}` : user.city || 'your area'
+  // Avoid "Bowling Green, Ky, KY" — if city already contains state abbreviation, skip appending state
+  const cityAlreadyHasState = user.city && user.state && user.city.toLowerCase().includes(user.state.toLowerCase().replace(/\.$/, ''))
+  const marketLabel = cityAlreadyHasState ? user.city : (user.city && user.state ? `${user.city}, ${user.state}` : user.city || 'your area')
 
   return (
     <div className="min-h-screen" style={{ background: '#060606', color: '#fff' }}>
@@ -367,7 +370,7 @@ export default function Dashboard() {
             <StatCard
               icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={searchGate?.is_premium ? '#22C55E' : '#F59E0B'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>}
               label="Searches"
-              value={searchGate?.is_premium ? '∞' : (searchGate?.searches_remaining != null ? `${searchGate.searches_remaining}` : '—')}
+              value={searchGate?.is_premium ? '∞' : (searchGate?.searches_remaining != null ? `${searchGate.searches_remaining}` : (searchGate?.searches_max != null ? `${searchGate.searches_max}` : '10'))}
               sub={searchGate?.is_premium ? 'unlimited' : (searchGate ? `of ${searchGate.searches_max} today` : '')}
               accent={searchGate?.is_premium}
               accentColor={searchGate?.is_premium ? '#22C55E' : '#F59E0B'}
