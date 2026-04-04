@@ -22,6 +22,7 @@ interface Listing {
 interface User {
   id: string
   email: string
+  name?: string
   city: string
   state: string
   market_id: string
@@ -40,50 +41,74 @@ interface SearchGate {
 /* ── INLINE STYLES ─────────────────────────────────────── */
 const DASH_CSS = `
   @keyframes spin { to { transform: rotate(360deg) } }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
-  @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.5 } }
-  .dash-fade { animation: fadeIn 0.4s ease-out both }
-  .dash-fade-d1 { animation-delay: 0.05s }
-  .dash-fade-d2 { animation-delay: 0.1s }
-  .dash-fade-d3 { animation-delay: 0.15s }
-  .dash-fade-d4 { animation-delay: 0.2s }
-  .dash-row:hover { background: rgba(255,255,255,0.02) !important }
-  .dash-row { transition: background 0.15s ease }
-  .dash-tag:hover { border-color: #444 !important; color: #bbb !important }
-  .dash-search:focus-within { border-color: #333 !important; box-shadow: 0 0 0 3px rgba(34,197,94,0.06) !important }
-  .dash-stat { position: relative; overflow: hidden }
-  .dash-stat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent) }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
+  @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.4 } }
+  @keyframes shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
+  .dash-fade { animation: fadeIn 0.5s cubic-bezier(0.16,1,0.3,1) both }
+  .dash-fade-d1 { animation-delay: 0.06s }
+  .dash-fade-d2 { animation-delay: 0.12s }
+  .dash-fade-d3 { animation-delay: 0.18s }
+  .dash-fade-d4 { animation-delay: 0.24s }
+  .dash-row:hover { background: rgba(255,255,255,0.03) !important; transform: translateX(2px) }
+  .dash-row { transition: all 0.2s cubic-bezier(0.16,1,0.3,1) }
+  .dash-tag:hover { border-color: rgba(34,197,94,0.3) !important; color: #22C55E !important; background: rgba(34,197,94,0.04) !important }
+  .dash-search:focus-within { border-color: rgba(34,197,94,0.2) !important; box-shadow: 0 0 0 4px rgba(34,197,94,0.05), 0 4px 24px rgba(0,0,0,0.3) !important }
+  .dash-stat { position: relative; overflow: hidden; transition: all 0.2s ease }
+  .dash-stat:hover { border-color: rgba(255,255,255,0.1) !important; transform: translateY(-1px) }
+  .dash-stat::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent) }
+  .dash-btn-outline:hover { border-color: rgba(255,255,255,0.2) !important; color: #aaa !important; background: rgba(255,255,255,0.03) !important }
 `
 
 const font = 'Inter, system-ui, -apple-system, sans-serif'
 
+/* ── HELPERS ───────────────────────────────────────────── */
+function formatDisplayName(user: User): string {
+  if (user.name) return user.name.split(' ')[0]
+  const raw = user.email.split('@')[0]
+  // Clean up common patterns: remove dots/underscores, capitalize
+  const cleaned = raw.replace(/[._-]/g, ' ').replace(/\d+$/g, '').trim()
+  if (!cleaned) return raw
+  return cleaned.split(' ')[0].charAt(0).toUpperCase() + cleaned.split(' ')[0].slice(1)
+}
+
+function formatTimeAgo(hours: number): string {
+  if (hours < 1) return 'Just now'
+  if (hours < 2) return '1 hour ago'
+  if (hours < 24) return `${Math.round(hours)}h ago`
+  const days = Math.round(hours / 24)
+  return days === 1 ? '1 day ago' : `${days}d ago`
+}
+
 /* ── STAT CARD ─────────────────────────────────────────── */
-function StatCard({ label, value, sub, accent, icon }: {
-  label: string; value: string; sub?: string; accent?: boolean; icon: string
+function StatCard({ label, value, sub, accent, icon, accentColor }: {
+  label: string; value: string; sub?: string; accent?: boolean; icon: React.ReactNode; accentColor?: string
 }) {
+  const color = accentColor || (accent ? '#22C55E' : '#fff')
   return (
     <div className="dash-stat" style={{
-      background: 'linear-gradient(145deg, #111 0%, #0d0d0d 100%)',
+      background: 'linear-gradient(145deg, rgba(18,18,18,0.9) 0%, rgba(12,12,12,0.9) 100%)',
       border: '1px solid rgba(255,255,255,0.06)',
       borderRadius: '16px',
-      padding: '22px 20px',
-      flex: 1, minWidth: '150px',
+      padding: '20px 20px 18px',
+      flex: 1, minWidth: '140px',
     }}>
-      <div className="flex items-center gap-2 mb-3">
-        <span style={{ fontSize: '14px', opacity: 0.5 }}>{icon}</span>
-        <p style={{ color: '#666', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: font, fontWeight: 500 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+        <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', borderRadius: '8px', background: `${color}08`, border: `1px solid ${color}15` }}>
+          {icon}
+        </span>
+        <p style={{ color: '#555', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: font, fontWeight: 600 }}>
           {label}
         </p>
       </div>
       <p style={{
-        color: accent ? '#22C55E' : '#fff',
-        fontSize: '32px', fontWeight: 700, fontFamily: font,
-        lineHeight: 1, letterSpacing: '-0.03em',
+        color, fontSize: '30px', fontWeight: 700, fontFamily: font,
+        lineHeight: 1, letterSpacing: '-0.04em',
       }}>
         {value}
       </p>
       {sub && (
-        <p style={{ color: '#444', fontSize: '12px', marginTop: '6px', fontFamily: font, fontWeight: 400 }}>
+        <p style={{ color: '#3a3a3a', fontSize: '12px', marginTop: '8px', fontFamily: font, fontWeight: 400 }}>
           {sub}
         </p>
       )}
@@ -96,26 +121,29 @@ function ScoreBadge({ score }: { score: number | 'gated' }) {
   if (score === 'gated') {
     return (
       <div style={{
-        width: '44px', height: '44px', borderRadius: '12px',
+        width: '46px', height: '46px', borderRadius: '13px',
         background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
       }}>
-        <span style={{ fontSize: '9px', color: '#444', fontFamily: font, fontWeight: 600, letterSpacing: '0.05em' }}>PRO</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
       </div>
     )
   }
   const isHot = score >= 8
   const isMid = score >= 6
   const color = isHot ? '#22C55E' : isMid ? '#F59E0B' : '#555'
-  const bg = isHot ? 'rgba(34,197,94,0.08)' : isMid ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.02)'
-  const border = isHot ? 'rgba(34,197,94,0.15)' : isMid ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.06)'
+  const bg = isHot ? 'rgba(34,197,94,0.1)' : isMid ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)'
+  const border = isHot ? 'rgba(34,197,94,0.2)' : isMid ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.06)'
   return (
     <div style={{
-      width: '44px', height: '44px', borderRadius: '12px',
+      width: '46px', height: '46px', borderRadius: '13px',
       background: bg, border: `1px solid ${border}`,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      boxShadow: isHot ? '0 0 12px rgba(34,197,94,0.08)' : 'none',
     }}>
-      <span style={{ fontSize: '16px', fontWeight: 700, fontFamily: font, color, letterSpacing: '-0.02em' }}>
+      <span style={{ fontSize: '17px', fontWeight: 700, fontFamily: font, color, letterSpacing: '-0.02em' }}>
         {score}
       </span>
     </div>
@@ -187,10 +215,10 @@ export default function Dashboard() {
   /* Loading state */
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#080808' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#060606' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '20px', height: '20px', border: '2px solid #1a1a1a', borderTop: '2px solid #22C55E', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 16px' }} />
-          <p style={{ color: '#444', fontSize: '13px', fontFamily: font, fontWeight: 500 }}>Loading...</p>
+          <div style={{ width: '24px', height: '24px', border: '2px solid #111', borderTop: '2px solid #22C55E', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 16px' }} />
+          <p style={{ color: '#333', fontSize: '13px', fontFamily: font, fontWeight: 500 }}>Loading dashboard...</p>
         </div>
         <style>{DASH_CSS}</style>
       </div>
@@ -200,7 +228,7 @@ export default function Dashboard() {
   /* Not authenticated */
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#080808' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#060606' }}>
         <div className="text-center">
           <p style={{ color: '#666', fontSize: '15px', fontFamily: font, marginBottom: '16px' }}>Sign in to continue.</p>
           <a href="/" style={{ color: '#22C55E', fontSize: '14px', fontFamily: font, fontWeight: 500 }}>&larr; flip-ly.net</a>
@@ -209,87 +237,96 @@ export default function Dashboard() {
     )
   }
 
-  const username = user.email.split('@')[0]
-  const joinDate = new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const displayName = formatDisplayName(user)
+  const joinDate = new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
   const dow = new Date().getDay()
   const daysUntilThursday = (4 - dow + 7) % 7 || 7
   const nextDigest = daysUntilThursday === 0 ? 'Today' : daysUntilThursday === 1 ? 'Tomorrow' : `${daysUntilThursday} days`
-  const dataAge = meta?.age_hours != null ? `${Math.round(meta.age_hours)}h ago` : ''
+  const nextDigestSub = daysUntilThursday === 0 ? 'Check your inbox' : 'Thursday 12 PM CDT'
+  const dataAge = meta?.age_hours != null ? formatTimeAgo(meta.age_hours) : ''
   const displayListings = activeTab === 'search' ? searchResults : (hotDeals.length > 0 ? hotDeals : listings)
   const displayTotal = activeTab === 'search' ? searchTotal : totalListings
+  const marketLabel = user.city && user.state ? `${user.city}, ${user.state}` : user.city || 'your area'
 
   return (
-    <div className="min-h-screen" style={{ background: '#080808', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: '#060606', color: '#fff' }}>
       <style>{DASH_CSS}</style>
 
       {/* ═══ HEADER ═══ */}
-      <header className="px-5 md:px-8 py-3.5 flex items-center justify-between" style={{
-        background: 'rgba(8,8,8,0.8)',
-        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      <header style={{
+        padding: '0 max(20px, calc((100% - 920px) / 2))',
+        background: 'rgba(6,6,6,0.85)',
+        backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
         position: 'sticky', top: 0, zIndex: 80,
       }}>
-        <div className="flex items-center gap-3">
-          <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: '#fff', fontSize: '17px', fontWeight: 700, fontFamily: font, letterSpacing: '-0.03em' }}>
-              FLIP-LY
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <rect width="24" height="24" rx="6" fill="#22C55E"/>
+                <path d="M7 8h10M7 12h7M7 16h4" stroke="#000" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <span style={{ color: '#fff', fontSize: '16px', fontWeight: 700, fontFamily: font, letterSpacing: '-0.03em' }}>
+                flip-ly
+              </span>
+            </a>
+            <span style={{ color: '#222', fontSize: '14px' }}>/</span>
+            <span style={{ color: '#444', fontSize: '13px', fontFamily: font, fontWeight: 500 }}>
+              Dashboard
             </span>
-          </a>
-          {user.is_premium && (
-            <span style={{
-              background: 'linear-gradient(135deg, #22C55E, #16A34A)',
-              color: '#000', padding: '3px 10px',
-              borderRadius: '6px', fontSize: '10px', fontWeight: 700,
-              fontFamily: font, letterSpacing: '0.04em',
-            }}>PRO</span>
-          )}
-          <span style={{
-            color: '#333', fontSize: '12px', fontFamily: font,
-            marginLeft: '4px',
-          }}>/</span>
-          <span style={{
-            color: '#555', fontSize: '13px', fontFamily: font, fontWeight: 500,
-          }}>Dashboard</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span style={{ color: '#444', fontSize: '12px', fontFamily: font, fontWeight: 500 }}>
-            {user.city || 'All Markets'}
-          </span>
-          <button onClick={handleLogout} style={{
-            background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
-            color: '#555', cursor: 'pointer', padding: '7px 14px', fontSize: '12px',
-            fontFamily: font, fontWeight: 500, transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#888' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#555' }}
-          >
-            Sign Out
-          </button>
+            {user.is_premium && (
+              <span style={{
+                background: 'linear-gradient(135deg, #22C55E, #16A34A)',
+                color: '#000', padding: '2px 8px',
+                borderRadius: '5px', fontSize: '10px', fontWeight: 700,
+                fontFamily: font, letterSpacing: '0.06em',
+              }}>PRO</span>
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span style={{ color: '#444', fontSize: '12px', fontFamily: font, fontWeight: 500 }}>
+                {marketLabel}
+              </span>
+            </div>
+            <button onClick={handleLogout} className="dash-btn-outline" style={{
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
+              color: '#444', cursor: 'pointer', padding: '6px 14px', fontSize: '12px',
+              fontFamily: font, fontWeight: 500, transition: 'all 0.2s',
+            }}>
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-5 md:px-8 py-10">
+      <main style={{ maxWidth: '920px', margin: '0 auto', padding: '40px 20px 60px' }}>
         {/* ═══ WELCOME ═══ */}
-        <div className="dash-fade mb-10">
-          <div className="flex items-start justify-between flex-wrap gap-3">
+        <div className="dash-fade" style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <h1 style={{
-                fontSize: '28px', fontWeight: 700, color: '#fff',
-                fontFamily: font, letterSpacing: '-0.03em', marginBottom: '6px',
+                fontSize: '26px', fontWeight: 700, color: '#fff',
+                fontFamily: font, letterSpacing: '-0.04em', marginBottom: '6px',
               }}>
-                Welcome back, {username}
+                Welcome back, {displayName}
               </h1>
-              <p style={{ color: '#555', fontSize: '14px', fontFamily: font, fontWeight: 400 }}>
-                Scanning {user.city || 'your area'} for deals{dataAge ? ` · Updated ${dataAge}` : ''}
+              <p style={{ color: '#444', fontSize: '14px', fontFamily: font, fontWeight: 400, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22C55E', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
+                Scanning {marketLabel} for deals{dataAge ? ` · ${dataAge}` : ''}
               </p>
             </div>
             {!user.is_premium && (
               <a href="/pro" style={{
                 background: 'linear-gradient(135deg, #22C55E, #16A34A)',
-                color: '#000', padding: '10px 20px',
+                color: '#000', padding: '10px 22px',
                 borderRadius: '10px', fontSize: '13px', fontWeight: 600,
                 fontFamily: font, textDecoration: 'none', whiteSpace: 'nowrap',
-                boxShadow: '0 2px 8px rgba(34,197,94,0.2)',
+                boxShadow: '0 2px 12px rgba(34,197,94,0.2)',
               }}>
                 Upgrade to Pro
               </a>
@@ -298,38 +335,57 @@ export default function Dashboard() {
         </div>
 
         {/* ═══ STATS ROW ═══ */}
-        <div className="flex gap-4 overflow-x-auto pb-2 mb-8" style={{ WebkitOverflowScrolling: 'touch' }}>
-          <div className="dash-fade dash-fade-d1" style={{ flex: 1, display: 'flex' }}>
-            <StatCard icon="&#9679;" label="Total Deals" value={totalListings > 0 ? totalListings.toLocaleString() : '—'} sub="in your market" />
-          </div>
-          <div className="dash-fade dash-fade-d2" style={{ flex: 1, display: 'flex' }}>
-            <StatCard icon="&#9650;" label="Hot Deals" value={hotDeals.length > 0 ? String(hotDeals.length) : '—'} sub="scored 8+" accent />
-          </div>
-          <div className="dash-fade dash-fade-d3" style={{ flex: 1, display: 'flex' }}>
-            <StatCard icon="&#9200;" label="Next Digest" value={nextDigest} sub="Thursday 12 PM CDT" />
-          </div>
-          <div className="dash-fade dash-fade-d4" style={{ flex: 1, display: 'flex' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '28px' }}>
+          <div className="dash-fade dash-fade-d1">
             <StatCard
-              icon="&#128270;"
+              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>}
+              label="Total Deals"
+              value={totalListings > 0 ? totalListings.toLocaleString() : '—'}
+              sub="in your market"
+              accentColor="#3B82F6"
+            />
+          </div>
+          <div className="dash-fade dash-fade-d2">
+            <StatCard
+              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>}
+              label="Hot Deals"
+              value={hotDeals.length > 0 ? String(hotDeals.length) : '—'}
+              sub="scored 8+"
+              accent
+            />
+          </div>
+          <div className="dash-fade dash-fade-d3">
+            <StatCard
+              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A855F7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
+              label="Next Digest"
+              value={nextDigest}
+              sub={nextDigestSub}
+              accentColor="#A855F7"
+            />
+          </div>
+          <div className="dash-fade dash-fade-d4">
+            <StatCard
+              icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={searchGate?.is_premium ? '#22C55E' : '#F59E0B'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>}
               label="Searches"
               value={searchGate?.is_premium ? '∞' : (searchGate?.searches_remaining != null ? `${searchGate.searches_remaining}` : '—')}
               sub={searchGate?.is_premium ? 'unlimited' : (searchGate ? `of ${searchGate.searches_max} today` : '')}
               accent={searchGate?.is_premium}
+              accentColor={searchGate?.is_premium ? '#22C55E' : '#F59E0B'}
             />
           </div>
         </div>
 
         {/* ═══ SEARCH BAR ═══ */}
-        <div className="dash-fade mb-8">
+        <div className="dash-fade" style={{ marginBottom: '28px' }}>
           <form onSubmit={handleSearch}>
             <div className="dash-search" style={{
-              background: 'rgba(255,255,255,0.03)',
+              background: 'rgba(255,255,255,0.025)',
               border: '1px solid rgba(255,255,255,0.06)',
               borderRadius: '14px',
-              padding: '5px', display: 'flex', gap: '4px',
-              transition: 'all 0.2s ease',
+              padding: '4px', display: 'flex', gap: '4px',
+              transition: 'all 0.25s cubic-bezier(0.16,1,0.3,1)',
             }}>
-              <div className="flex-1 flex items-center gap-3 px-4">
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px', padding: '0 16px' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
                 </svg>
@@ -337,9 +393,9 @@ export default function Dashboard() {
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search tools, vintage, furniture, electronics..."
+                  placeholder="Search deals — tools, vintage, furniture, electronics..."
                   style={{
-                    width: '100%', padding: '12px 0', border: 'none', outline: 'none',
+                    width: '100%', padding: '14px 0', border: 'none', outline: 'none',
                     fontFamily: font, fontSize: '14px', fontWeight: 400,
                     color: '#ddd', background: 'transparent',
                     letterSpacing: '-0.01em',
@@ -347,27 +403,27 @@ export default function Dashboard() {
                 />
               </div>
               <button type="submit" disabled={searching} style={{
-                padding: '12px 24px',
-                background: searching ? '#1a1a1a' : 'linear-gradient(135deg, #22C55E, #16A34A)',
+                padding: '12px 28px',
+                background: searching ? '#111' : 'linear-gradient(135deg, #22C55E, #16A34A)',
                 color: searching ? '#666' : '#000', border: 'none', borderRadius: '10px',
                 fontFamily: font, fontWeight: 600, fontSize: '13px',
                 cursor: searching ? 'wait' : 'pointer', whiteSpace: 'nowrap',
                 letterSpacing: '-0.01em',
-                boxShadow: searching ? 'none' : '0 2px 8px rgba(34,197,94,0.15)',
+                boxShadow: searching ? 'none' : '0 2px 12px rgba(34,197,94,0.2)',
                 transition: 'all 0.2s ease',
               }}>
                 {searching ? 'Searching...' : 'Search'}
               </button>
             </div>
           </form>
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ marginTop: '10px', display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', WebkitOverflowScrolling: 'touch' as any }}>
             {['tools', 'vintage', 'furniture', 'free', 'electronics', 'estate sale', 'collectibles'].map(tag => (
               <button key={tag} type="button" className="dash-tag" onClick={() => setSearchQuery(tag)} style={{
-                padding: '6px 14px',
+                padding: '5px 14px',
                 border: '1px solid rgba(255,255,255,0.06)', borderRadius: '20px',
                 fontFamily: font, fontSize: '12px', fontWeight: 500,
-                color: '#555', background: 'transparent', cursor: 'pointer', flexShrink: 0,
-                transition: 'all 0.15s ease',
+                color: '#444', background: 'transparent', cursor: 'pointer', flexShrink: 0,
+                transition: 'all 0.2s ease',
               }}>
                 {tag}
               </button>
@@ -377,15 +433,16 @@ export default function Dashboard() {
 
         {/* ═══ RATE LIMIT ═══ */}
         {searchGate?.limited && (
-          <div className="mb-8" style={{
-            background: 'rgba(255,68,68,0.04)', border: '1px solid rgba(255,68,68,0.15)', borderRadius: '14px',
+          <div style={{
+            marginBottom: '28px',
+            background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)', borderRadius: '14px',
             padding: '20px 24px', textAlign: 'center',
           }}>
             <p style={{ color: '#fff', fontSize: '15px', fontWeight: 600, fontFamily: font, marginBottom: '6px' }}>
               Daily search limit reached
             </p>
-            <p style={{ color: '#666', fontSize: '13px', fontFamily: font, marginBottom: '16px' }}>
-              Free accounts get 10 searches per day.
+            <p style={{ color: '#555', fontSize: '13px', fontFamily: font, marginBottom: '16px' }}>
+              Free accounts get {searchGate.searches_max} searches per day.
             </p>
             <a href="/pro" style={{
               display: 'inline-block', padding: '10px 24px',
@@ -398,118 +455,123 @@ export default function Dashboard() {
         )}
 
         {/* ═══ TAB SWITCHER ═══ */}
-        <div className="flex items-center gap-0 mb-5">
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', gap: '0px' }}>
           <button onClick={() => setActiveTab('deals')} style={{
-            padding: '10px 20px', background: 'transparent', border: 'none',
+            padding: '10px 18px', background: 'transparent', border: 'none',
             borderBottom: activeTab === 'deals' ? '2px solid #22C55E' : '2px solid transparent',
-            color: activeTab === 'deals' ? '#fff' : '#444',
+            color: activeTab === 'deals' ? '#fff' : '#333',
             fontFamily: font, fontSize: '13px', fontWeight: 600,
-            cursor: 'pointer', transition: 'all 0.15s', letterSpacing: '-0.01em',
+            cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '-0.01em',
           }}>
             Hot Deals
           </button>
           {searchResults.length > 0 && (
             <button onClick={() => setActiveTab('search')} style={{
-              padding: '10px 20px', background: 'transparent', border: 'none',
+              padding: '10px 18px', background: 'transparent', border: 'none',
               borderBottom: activeTab === 'search' ? '2px solid #22C55E' : '2px solid transparent',
-              color: activeTab === 'search' ? '#fff' : '#444',
+              color: activeTab === 'search' ? '#fff' : '#333',
               fontFamily: font, fontSize: '13px', fontWeight: 600,
-              cursor: 'pointer', transition: 'all 0.15s', letterSpacing: '-0.01em',
+              cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '-0.01em',
             }}>
               Results ({searchTotal})
             </button>
           )}
           <div style={{ flex: 1, borderBottom: '1px solid rgba(255,255,255,0.04)' }} />
-          {activeTab === 'deals' && (
-            <span style={{ color: '#F59E0B', fontSize: '11px', fontFamily: font, fontWeight: 500, paddingBottom: '10px' }}>
-              8+ = HOT
-            </span>
+          {activeTab === 'deals' && hotDeals.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '10px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#22C55E', display: 'inline-block' }} />
+              <span style={{ color: '#333', fontSize: '11px', fontFamily: font, fontWeight: 500 }}>
+                8+ = HOT
+              </span>
+            </div>
           )}
         </div>
 
         {/* ═══ LISTINGS FEED ═══ */}
-        <div className="mb-10">
-          <div className="flex justify-between items-center mb-3 px-1">
-            <span style={{ color: '#444', fontSize: '12px', fontFamily: font, fontWeight: 500 }}>
+        <div style={{ marginBottom: '36px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', padding: '0 2px' }}>
+            <span style={{ color: '#333', fontSize: '12px', fontFamily: font, fontWeight: 500 }}>
               {activeTab === 'search'
                 ? `${searchResults.length} of ${searchTotal} results`
-                : `${displayListings.length} top deals in ${user.city || 'your market'}`}
+                : `${displayListings.length} top deals in ${marketLabel}`}
             </span>
           </div>
 
           <div style={{
-            background: 'rgba(255,255,255,0.02)',
+            background: 'rgba(255,255,255,0.015)',
             borderRadius: '16px',
-            border: '1px solid rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.05)',
             overflow: 'hidden',
           }}>
             {displayListings.length === 0 ? (
-              <div style={{ padding: '48px 20px', textAlign: 'center' }}>
-                <p style={{ color: '#444', fontSize: '14px', fontFamily: font }}>
-                  {activeTab === 'search' ? 'No results. Try a different search.' : 'Loading deals...'}
+              <div style={{ padding: '56px 20px', textAlign: 'center' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 12px' }}>
+                  <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                </svg>
+                <p style={{ color: '#333', fontSize: '14px', fontFamily: font }}>
+                  {activeTab === 'search' ? 'No results found. Try a different search.' : 'Scanning for deals...'}
                 </p>
               </div>
             ) : displayListings.map((listing, i) => (
-              <div key={listing.id || i} className="dash-row flex items-center gap-4 px-5 py-4" style={{
-                borderBottom: i < displayListings.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+              <div key={listing.id || i} className="dash-row" style={{
+                display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px',
+                borderBottom: i < displayListings.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
                 cursor: listing.source_url ? 'pointer' : 'default',
               }}
               onClick={() => { if (listing.source_url) window.open(listing.source_url, '_blank') }}
               >
                 <ScoreBadge score={listing.deal_score} />
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                     {listing.hot && (
                       <span style={{
                         background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                        color: '#000', padding: '2px 8px',
-                        borderRadius: '5px', fontSize: '10px', fontWeight: 700,
-                        fontFamily: font, letterSpacing: '0.04em',
+                        color: '#000', padding: '2px 7px',
+                        borderRadius: '4px', fontSize: '9px', fontWeight: 700,
+                        fontFamily: font, letterSpacing: '0.06em', flexShrink: 0,
                       }}>HOT</span>
                     )}
-                    <span className="truncate" style={{
-                      color: '#e5e5e5', fontSize: '14px', fontWeight: 500,
+                    <span style={{
+                      color: '#e0e0e0', fontSize: '14px', fontWeight: 500,
                       fontFamily: font, letterSpacing: '-0.01em',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                     }}>
                       {listing.title}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {listing.city && (
-                      <span style={{ fontSize: '12px', color: '#555', fontFamily: font, fontWeight: 400 }}>{listing.city}</span>
+                      <span style={{ fontSize: '12px', color: '#444', fontFamily: font, fontWeight: 400 }}>{listing.city}</span>
                     )}
                     <span style={{
-                      textTransform: 'uppercase', fontSize: '10px', color: '#444',
+                      textTransform: 'uppercase', fontSize: '9px', color: '#3a3a3a',
                       background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      padding: '1px 6px', borderRadius: '4px',
-                      fontFamily: font, fontWeight: 500, letterSpacing: '0.04em',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      padding: '2px 6px', borderRadius: '4px',
+                      fontFamily: font, fontWeight: 600, letterSpacing: '0.06em',
                     }}>{listing.source}</span>
-                    {listing.date && (
-                      <span style={{ fontSize: '12px', color: '#444', fontFamily: font }}>{listing.date}</span>
-                    )}
                     {listing.description && (
-                      <span className="truncate hidden md:inline" style={{ color: '#333', fontSize: '12px', maxWidth: '220px', fontFamily: font }}>
+                      <span style={{ color: '#282828', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px', fontFamily: font }}>
                         {listing.description}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="text-right shrink-0">
+                <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
                   <div style={{
                     fontFamily: font, fontWeight: 700,
-                    fontSize: listing.price === 'FREE' ? '15px' : '14px',
-                    color: listing.price === 'FREE' ? '#22C55E' : listing.price === 'Not listed' ? '#333' : '#e5e5e5',
+                    fontSize: '14px',
+                    color: listing.price === 'FREE' ? '#22C55E' : listing.price === 'Not listed' ? '#222' : '#ccc',
                     letterSpacing: '-0.02em',
                   }}>
                     {listing.price === 'FREE' ? 'FREE' : listing.price === 'Not listed' ? '—' : listing.price || '—'}
                   </div>
                   {listing.source_url && (
-                    <span style={{ fontSize: '10px', color: '#333', fontFamily: font }}>
-                      &#8599;
-                    </span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M7 17L17 7M17 7H7M17 7v10"/>
+                    </svg>
                   )}
                 </div>
               </div>
@@ -517,11 +579,11 @@ export default function Dashboard() {
           </div>
 
           {displayTotal > displayListings.length && (
-            <div className="mt-4 text-center">
-              <p style={{ color: '#444', fontSize: '12px', fontFamily: font }}>
+            <div style={{ marginTop: '14px', textAlign: 'center' }}>
+              <p style={{ color: '#333', fontSize: '12px', fontFamily: font }}>
                 {displayTotal - displayListings.length} more deals available
                 {!user.is_premium && (
-                  <> &middot; <a href="/pro" style={{ color: '#22C55E', textDecoration: 'none', fontWeight: 500 }}>Unlock all</a></>
+                  <> &middot; <a href="/pro" style={{ color: '#22C55E', textDecoration: 'none', fontWeight: 600 }}>Unlock all</a></>
                 )}
               </p>
             </div>
@@ -529,36 +591,36 @@ export default function Dashboard() {
         </div>
 
         {/* ═══ BOTTOM CARDS ═══ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '36px' }}>
           {/* Digest */}
           <div style={{
-            background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '16px', padding: '24px',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0.01) 100%)',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: '16px', padding: '22px',
           }}>
-            <div className="flex items-center gap-2.5 mb-4">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
               <span style={{
                 width: '8px', height: '8px', borderRadius: '50%',
                 background: '#22C55E', boxShadow: '0 0 8px rgba(34,197,94,0.4)',
-                animation: 'pulse 2s ease-in-out infinite',
+                animation: 'pulse 2s ease-in-out infinite', flexShrink: 0,
               }} />
-              <h3 style={{ color: '#e5e5e5', fontSize: '14px', fontWeight: 600, fontFamily: font, letterSpacing: '-0.01em' }}>
+              <h3 style={{ color: '#ddd', fontSize: '14px', fontWeight: 600, fontFamily: font, letterSpacing: '-0.02em' }}>
                 Weekly Digest
               </h3>
             </div>
-            <p style={{ color: '#666', fontSize: '13px', fontFamily: font, marginBottom: '4px' }}>
-              Scanning near {user.city || 'your area'}
+            <p style={{ color: '#555', fontSize: '13px', fontFamily: font, marginBottom: '4px' }}>
+              Scanning {marketLabel}
             </p>
-            <p style={{ color: '#444', fontSize: '12px', fontFamily: font, marginBottom: '14px' }}>
+            <p style={{ color: '#333', fontSize: '12px', fontFamily: font, marginBottom: '14px' }}>
               Delivered every Thursday at 12:00 PM CDT
             </p>
             {user.is_premium ? (
               <div style={{
                 background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.1)',
-                borderRadius: '10px', padding: '12px 14px',
+                borderRadius: '10px', padding: '10px 14px',
               }}>
                 <p style={{ color: '#22C55E', fontSize: '12px', fontFamily: font, fontWeight: 500 }}>
-                  You get your digest 6 hours before free users.
+                  Your digest arrives 6 hours before free users.
                 </p>
               </div>
             ) : (
@@ -574,35 +636,32 @@ export default function Dashboard() {
 
           {/* Account */}
           <div style={{
-            background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '16px', padding: '24px',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0.01) 100%)',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: '16px', padding: '22px',
           }}>
-            <h3 style={{ color: '#e5e5e5', fontSize: '14px', fontWeight: 600, fontFamily: font, letterSpacing: '-0.01em', marginBottom: '16px' }}>
+            <h3 style={{ color: '#ddd', fontSize: '14px', fontWeight: 600, fontFamily: font, letterSpacing: '-0.02em', marginBottom: '14px' }}>
               Account
             </h3>
-            <div className="space-y-3" style={{ fontFamily: font }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontFamily: font }}>
               {[
                 { l: 'Email', v: user.email },
-                { l: 'Market', v: `${user.city || 'Not set'}${user.state ? `, ${user.state}` : ''}` },
+                { l: 'Market', v: marketLabel },
                 { l: 'Plan', v: user.is_premium ? 'Pro' : 'Free', accent: user.is_premium },
                 { l: 'Member since', v: joinDate },
               ].map(row => (
-                <div key={row.l} className="flex justify-between items-center">
-                  <span style={{ color: '#444', fontSize: '13px', fontWeight: 400 }}>{row.l}</span>
+                <div key={row.l} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#333', fontSize: '13px', fontWeight: 400 }}>{row.l}</span>
                   <span style={{
-                    color: row.accent ? '#22C55E' : '#888',
+                    color: row.accent ? '#22C55E' : '#666',
                     fontSize: '13px', fontWeight: row.accent ? 600 : 400,
                   }}>{row.v}</span>
                 </div>
               ))}
             </div>
             {user.is_premium && (
-              <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                <a href="/pro" style={{ color: '#444', fontSize: '12px', textDecoration: 'none', fontFamily: font, fontWeight: 500 }}
-                  onMouseEnter={e => { e.currentTarget.style.color = '#888' }}
-                  onMouseLeave={e => { e.currentTarget.style.color = '#444' }}
-                >
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                <a href="/pro" className="dash-btn-outline" style={{ color: '#333', fontSize: '12px', textDecoration: 'none', fontFamily: font, fontWeight: 500, transition: 'color 0.2s' }}>
                   Manage subscription &rarr;
                 </a>
               </div>
@@ -611,12 +670,14 @@ export default function Dashboard() {
         </div>
 
         {/* ═══ SHARE BAR ═══ */}
-        <div className="mb-10 flex items-center justify-between px-5 py-4" style={{
-          background: 'rgba(255,255,255,0.02)',
-          border: '1px solid rgba(255,255,255,0.06)',
+        <div style={{
+          marginBottom: '36px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px',
+          background: 'rgba(255,255,255,0.015)',
+          border: '1px solid rgba(255,255,255,0.05)',
           borderRadius: '14px',
         }}>
-          <p style={{ color: '#555', fontSize: '13px', fontFamily: font, fontWeight: 400 }}>
+          <p style={{ color: '#444', fontSize: '13px', fontFamily: font, fontWeight: 400 }}>
             Know someone who flips?
           </p>
           <button
@@ -625,24 +686,23 @@ export default function Dashboard() {
                 .then(() => alert('Copied!'))
                 .catch(() => alert('Could not copy.'))
             }}
+            className="dash-btn-outline"
             style={{
-              background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '8px', padding: '8px 16px', color: '#666', cursor: 'pointer',
+              background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '8px', padding: '7px 16px', color: '#444', cursor: 'pointer',
               fontSize: '12px', fontFamily: font, fontWeight: 500, whiteSpace: 'nowrap',
-              transition: 'all 0.15s',
+              transition: 'all 0.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#aaa' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#666' }}
           >
-            Share flip-ly
+            Copy invite link
           </button>
         </div>
 
         {/* ═══ FOOTER ═══ */}
-        <div className="text-center pb-10">
-          <a href="/" style={{ color: '#333', fontSize: '12px', fontFamily: font, textDecoration: 'none', fontWeight: 500 }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#666' }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#333' }}
+        <div style={{ textAlign: 'center', paddingBottom: '40px' }}>
+          <a href="/" style={{ color: '#222', fontSize: '12px', fontFamily: font, textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#555' }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#222' }}
           >
             &larr; flip-ly.net
           </a>
