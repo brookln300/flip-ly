@@ -555,33 +555,45 @@ export default function Home() {
           </motion.div>
 
           {/* Source trust bar */}
-          <div className="py-5 overflow-hidden" style={{ position: 'relative' }}>
-            <p className="text-center mb-3" style={{
-              color: '#444', fontSize: '11px', textTransform: 'uppercase',
+          <div className="py-6 overflow-hidden" style={{ position: 'relative' }}>
+            <p className="text-center mb-5" style={{
+              color: '#555', fontSize: '11px', textTransform: 'uppercase',
               fontFamily: 'system-ui, -apple-system, sans-serif',
-              letterSpacing: '1.5px',
+              letterSpacing: '2px', fontWeight: 600,
             }}>
-              We scan
+              Sources we scan daily
             </p>
-            <div className="flex justify-center items-center gap-10 flex-wrap">
-              {[
-                { src: '/assets/logo-craigslist.png', alt: 'Craigslist', w: 100 },
-                { src: '/assets/logo-eventbrite.png', alt: 'Eventbrite', w: 110 },
-                { src: '/assets/logo-facebook.jpg', alt: 'Facebook Marketplace', w: 100 },
-              ].map((logo, i) => (
-                <img key={i} src={logo.src} alt={logo.alt} width={logo.w} style={{
-                  filter: 'grayscale(100%) brightness(0.6)',
-                  opacity: 0.5,
-                  transition: 'opacity 0.2s',
-                }} />
-              ))}
-              <span style={{
-                color: '#555', fontSize: '13px',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                fontWeight: 500,
-              }}>
-                + Local Sources
-              </span>
+            <div className="flex justify-center items-center gap-8 md:gap-12 flex-wrap">
+              {/* Craigslist */}
+              <div className="flex items-center gap-2" style={{ opacity: 0.7 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C792EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <span style={{ color: '#C792EA', fontSize: '15px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', letterSpacing: '-0.02em' }}>craigslist</span>
+              </div>
+              {/* Eventbrite */}
+              <div className="flex items-center gap-2" style={{ opacity: 0.7 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F56040" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span style={{ color: '#F56040', fontSize: '15px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', letterSpacing: '-0.02em' }}>Eventbrite</span>
+              </div>
+              {/* Facebook Marketplace */}
+              <div className="flex items-center gap-2" style={{ opacity: 0.7 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#4A90D9"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <span style={{ color: '#4A90D9', fontSize: '15px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', letterSpacing: '-0.02em' }}>Marketplace</span>
+              </div>
+              {/* EstateSales.net */}
+              <div className="flex items-center gap-2" style={{ opacity: 0.7 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span style={{ color: '#EAB308', fontSize: '15px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', letterSpacing: '-0.02em' }}>EstateSales</span>
+              </div>
+              {/* + More */}
+              <div className="flex items-center gap-2" style={{ opacity: 0.5 }}>
+                <span style={{
+                  color: '#888', fontSize: '14px',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  fontWeight: 500,
+                }}>
+                  + 20 more sources
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -847,6 +859,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ═══ HOW IT WORKS ═══ */}
+      <div id="how-it-works">
+        <ValuePropsSection />
+      </div>
+
       {/* ═══ FEATURED DEALS ═══ */}
       {featuredDeals.length > 0 && (
         <section className="px-4 py-20" style={{ background: '#000', borderTop: '1px solid #1a1a1a' }}>
@@ -936,7 +953,7 @@ export default function Home() {
               <p style={{ fontSize: '12px', color: '#666', fontFamily: 'system-ui, sans-serif' }}>
                 {featuredDeals.length < 8
                   ? 'All top deals this week.'
-                  : 'Showing top 8 deals. Search below for more, or sign up for the weekly digest.'}
+                  : 'Showing top 8 deals. Search above for more, or sign up for the weekly digest.'}
               </p>
             </div>
             </motion.div>
@@ -953,8 +970,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* ═══ VALUE PROPS ═══ */}
-      <ValuePropsSection />
       {/* ═══ TESTIMONIALS ═══ */}
       <TestimonialsSection />
 
