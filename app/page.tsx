@@ -276,6 +276,7 @@ export default function Home() {
   const [realListings, setRealListings] = useState<any[]>([])
   const [totalResults, setTotalResults] = useState(0)
   const [showFeedback, setShowFeedback] = useState(false)
+  const [showMobileNav, setShowMobileNav] = useState(false)
   const [feedbackMsg, setFeedbackMsg] = useState('')
   const [feedbackCat, setFeedbackCat] = useState('general')
   const [feedbackSending, setFeedbackSending] = useState(false)
@@ -470,35 +471,55 @@ export default function Home() {
 
       {/* ═══ HEADER ═══ */}
       <header className="px-4 py-3 flex items-center justify-between" style={{
-        background: '#000', borderBottom: '1px solid #222',
+        background: 'rgba(0, 0, 0, 0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
         position: 'sticky', top: 0, zIndex: 80,
       }}>
-        <div className="flex items-center gap-3">
-          <h1 style={{
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            fontSize: '20px',
-            color: '#fff',
-            fontWeight: 700,
-          }}>
-            FLIP-LY
-          </h1>
-          <nav className="hidden md:flex items-center gap-5 ml-6">
+        <div className="flex items-center gap-2">
+          {/* Logo icon — Option A: Flip arrow (circular upward motion) */}
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+            <div style={{
+              width: '28px', height: '28px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M12 4l5 5h-3v4h-4V9H7l5-5z" fill="#22C55E"/>
+                <path d="M7 16a7 7 0 0 0 10 0" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" fill="none"/>
+              </svg>
+            </div>
+            <span style={{
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              fontSize: '18px',
+              color: '#fff',
+              fontWeight: 700,
+              letterSpacing: '-0.03em',
+            }}>
+              FLIP-LY
+            </span>
+          </a>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1 ml-6">
             {[
               { label: 'How It Works', href: '#how-it-works' },
               { label: 'Search', href: '#search' },
               { label: 'Pricing', href: '#pricing' },
             ].map(link => (
-              <a key={link.label} href={link.href} style={{
-                color: '#888', fontSize: '13px', textDecoration: 'none',
+              <a key={link.label} href={link.href} className="px-3 py-1.5" style={{
+                color: '#777', fontSize: '13px', textDecoration: 'none',
                 fontFamily: 'system-ui, -apple-system, sans-serif',
-                transition: 'color 0.15s',
-              }} onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                 onMouseLeave={e => (e.currentTarget.style.color = '#888')}>
+                transition: 'color 0.15s, background 0.15s',
+                borderRadius: '6px', fontWeight: 500,
+              }} onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
+                 onMouseLeave={e => { e.currentTarget.style.color = '#777'; e.currentTarget.style.background = 'transparent' }}>
                 {link.label}
               </a>
             ))}
           </nav>
         </div>
+
         <div className="flex gap-2 items-center">
           {loggedInUser ? (
             <div className="flex items-center gap-2">
@@ -512,23 +533,65 @@ export default function Home() {
                 </span>
               )}
               <a href="/dashboard" className="px-3 py-1.5 text-xs font-bold" style={{
-                background: '#1a1a1a', color: '#ccc', border: '1px solid #333',
+                background: 'rgba(255,255,255,0.06)', color: '#ccc', border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: '6px', fontFamily: 'system-ui, sans-serif',
                 textDecoration: 'none', cursor: 'pointer',
-              }}>
+                transition: 'background 0.15s',
+              }} onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
+                 onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}>
                 {loggedInUser.email.split('@')[0]}
               </a>
             </div>
           ) : (
-            <button onClick={() => setShowSignup(true)} className="px-3 py-1.5 text-xs font-bold" style={{
+            <button onClick={() => setShowSignup(true)} className="px-4 py-1.5 text-xs font-bold" style={{
               background: 'var(--clean-accent)', color: '#000', border: 'none',
               borderRadius: '6px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
-            }}>
+              transition: 'opacity 0.15s',
+            }} onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
+               onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
               Sign Up Free
             </button>
           )}
+
+          {/* Mobile hamburger */}
+          <button className="md:hidden flex flex-col gap-1 p-2 ml-1" onClick={() => setShowMobileNav(!showMobileNav)} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+          }}>
+            <span style={{ width: '18px', height: '2px', background: '#888', borderRadius: '1px', display: 'block', transition: 'all 0.2s', transform: showMobileNav ? 'rotate(45deg) translateY(6px)' : 'none' }} />
+            <span style={{ width: '18px', height: '2px', background: '#888', borderRadius: '1px', display: 'block', transition: 'all 0.2s', opacity: showMobileNav ? 0 : 1 }} />
+            <span style={{ width: '18px', height: '2px', background: '#888', borderRadius: '1px', display: 'block', transition: 'all 0.2s', transform: showMobileNav ? 'rotate(-45deg) translateY(-6px)' : 'none' }} />
+          </button>
         </div>
       </header>
+
+      {/* Mobile nav dropdown */}
+      {showMobileNav && (
+        <div className="md:hidden" style={{
+          position: 'sticky', top: '49px', zIndex: 79,
+          background: 'rgba(0, 0, 0, 0.95)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          padding: '8px 16px 12px',
+        }}>
+          {[
+            { label: 'How It Works', href: '#how-it-works' },
+            { label: 'Search', href: '#search' },
+            { label: 'Pricing', href: '#pricing' },
+          ].map(link => (
+            <a key={link.label} href={link.href} onClick={() => setShowMobileNav(false)} style={{
+              display: 'block', padding: '10px 12px',
+              color: '#999', fontSize: '14px', textDecoration: 'none',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+              borderRadius: '6px', fontWeight: 500,
+              transition: 'background 0.15s',
+            }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#fff' }}
+               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#999' }}>
+              {link.label}
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* ═══ HERO ═══ */}
       <section className="px-4 py-12 md:py-20 relative" style={{ background: '#000' }}>
