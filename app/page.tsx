@@ -524,9 +524,9 @@ export default function Home() {
                     poster="/assets/hero-mockup.png"
                     style={{ width: '100%', display: 'block', borderRadius: '12px' }}
                   >
-                    <source src="/assets/hero-scroll.webm" type="video/webm" />
+                    <source src="/assets/hero-dashboard.webm" type="video/webm" />
                     <source src="/assets/hero-mockup.mp4" type="video/mp4" />
-                    <img src="/assets/hero-mockup.png" alt="Flip-ly deal digest preview" style={{ width: '100%' }} />
+                    <img src="/assets/hero-mockup.png" alt="Flip-ly dashboard preview" style={{ width: '100%' }} />
                   </video>
                 </div>
               </div>
