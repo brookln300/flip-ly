@@ -1,106 +1,87 @@
 # Flip-ly Project Status
 
 **Last Updated:** 2026-04-04
-**Status:** Production — Live at flip-ly.net
-**Next Milestone:** Monday 4/6 — Polished SaaS landing page
+**Status:** Mid-Pivot — Planning COMPLETE, Build Phase NEXT
+**Current Branch:** `polish/monday-deadline` (Vercel preview active)
 
 ---
 
-## What Shipped This Session (2026-04-04)
+## PICK UP HERE
 
-### Dashboard Redesign v2
-- Full aesthetic overhaul of `/dashboard`
-- SVG icons with per-card accent colors (blue/green/purple/amber)
-- CSS grid layout for stat cards, cubic-bezier animations
-- Smarter display name formatting (cleans email prefix)
-- Market label deduplication (no more "Bowling Green, Ky, KY")
-- Glassmorphic header, hover micro-interactions, deeper black (#060606)
-- ScoreBadge with lock icon for gated scores, box shadows on hot deals
+**The planning phase is done.** 10 documents locked in `docs/planning/`. All strategic decisions made. No more debating.
 
-### Landing Page Changes
-- Reordered sections: Hero -> Search -> How It Works -> Featured Deals -> Testimonials -> Pricing
-- Replaced dark grayscale source logos with colorful inline SVG trust bar (Craigslist, Eventbrite, FB Marketplace, EstateSales + "20 more")
-- Swapped hero video to new dashboard shots.so mockup (`hero-dashboard.webm`)
+**Next action: Build the landing page rework.**
+- Build spec: `docs/planning/LANDING-PAGE-SPEC.md`
+- Design system: `docs/planning/DESIGN-SYSTEM.md`
+- Branch: `polish/monday-deadline` (pushes auto-deploy to Vercel preview)
+- Build order: Hero → Proof bar → Score card → Search → Deals → Pricing → CTA → Footer
 
-### Hero Image
-- Dashboard screenshot captured via shots.so
-- WebM animation at `/public/assets/hero-dashboard.webm` (3.7MB)
-- Replaces old `hero-scroll.webm`
+**Keith may need to provide:**
+- Dashboard screenshot for hero (scored deal with breakdown visible)
+- Decision on hero headline wording
+- Stripe Price ID creation for new tiers
 
 ---
 
-## Page Inventory & Status
+## What Shipped This Session (2026-04-04, Afternoon)
 
-| Page | Route | Status | Notes |
-|------|-------|--------|-------|
-| Landing | `/` | Polished | Hero video, search, trust bar, testimonials, pricing, CTAs |
-| Dashboard | `/dashboard` | Polished | Redesigned 4/4. Stat cards, deal feed, search, account |
-| Pro Upgrade | `/pro` | Polished | Stripe checkout, early adopter $5/mo messaging |
-| About | `/about` | Polished | Mission, features, team, social links |
-| Why | `/why` | Polished | Problem/solution narrative, target audiences |
-| Terms | `/terms` | Polished | 15 sections, AI disclaimer, Texas governing law |
-| Privacy | `/privacy` | Polished | GDPR/CCPA compliant, transparent third-party disclosure |
-| Garage Sales | `/garage-sales` | Polished | Google Ads landing page with UTM/gclid tracking |
-| Lobster Hunt | `/lobster-hunt` | Polished | Easter egg ARG contest with leaderboard |
-| Links | `/links` | Polished | Retro 90s linktree for social bios |
-| Contest Rules | `/contest-rules` | Exists | Supporting page for lobster hunt |
-| Data Deletion | `/data-deletion` | Exists | Privacy compliance |
-| Donated | `/donated` | Exists | Needs review |
+### Landing Page Polish (Before Pivot)
+- [x] Testimonials redesign — 2-col grid, 6 personas, stars, role badges
+- [x] Header overhaul — backdrop blur, SVG icon mark, mobile hamburger menu
+- [x] Vercel preview branch setup — env vars configured for preview deployments
 
----
+### Strategic Pivot (The Big Shift)
+- [x] **PRODUCT-PIVOT.md** — Garage sale aggregator → local deal discovery platform
+- [x] **PRICING-MODEL.md** — 3 tiers (Free/Pro $9/Power $29) + founding member program (14 days)
+- [x] **UNIT-ECONOMICS.md** — Full pipeline cost analysis, 87-96% margins, breakeven at ~20 subscribers
+- [x] **COMPETITIVE-LANDSCAPE.md** — No competitor does multi-source + AI scoring (whitespace confirmed)
+- [x] **SOURCE-STRATEGY.md** — Tier 1-3 source priority, FB pointer/directory model, legal framework
+- [x] **FEATURE-ROADMAP.md** — 4-phase plan (Phase 0: polish → Phase 4: growth)
+- [x] **DESIGN-SYSTEM.md** — Visual bible (typography, colors, components, banned patterns)
+- [x] **PLATFORM-ARCHITECTURE.md** — Full sitemap, 3 user journeys, dashboard wireframe
+- [x] **LANDING-PAGE-SPEC.md** — 8-section build blueprint, zero fabrication, build order
+- [x] **OPEN-QUESTIONS.md** — 10 tracked questions, FB Group API lead noted
 
-## Remaining Polish Tasks (Monday 4/6 Deadline)
-
-### Priority 1 — Landing Page
-- [ ] **Testimonials rewrite** — match professional tone, add more variety, rotate quotes
-- [ ] **Header polish** — cleaner look while keeping sticky behavior
-- [ ] **Pricing section** — evaluate structure, ensure CTA clarity
-- [ ] **Stats bar verification** — confirm "480+ Listings" and "12 Active Markets" are accurate against DB
-- [ ] **Overall polish pass** — spacing, typography, CTA consistency, mobile responsiveness
-
-### Priority 2 — Functional
-- [ ] **Filter market dropdown** — only show markets with active data in DB
-- [ ] **Dashboard mobile test** — verify responsiveness on small screens
-- [ ] **Review /contest-rules, /donated pages** — ensure completeness
-
-### Priority 3 — Growth
-- [ ] Strategic deep dive (PingMyCustomers-style rigor) — see SESSION-PLAYBOOK.md
-- [ ] Google Ads campaign optimization (current: $8.74 spent, 0% engagement before /garage-sales fix)
-- [ ] Social content pipeline (Buffer integration exists)
+### CLAUDE.md Overhaul
+- [x] Updated for pivot positioning, planning doc references, design philosophy, creative direction
 
 ---
 
-## Technical Stack
+## What's Next (Tonight's Build Session)
 
-| Layer | Technology | Notes |
-|-------|-----------|-------|
-| Framework | Next.js 14 (App Router) | TypeScript, deployed on Vercel |
-| Database | Supabase | Project: krjbjdaeoluzfsgkheen |
-| Auth | NextAuth v4 | X/Twitter + Google OAuth |
-| Payments | Stripe | Pro tier $5/mo |
-| Email | Resend | Weekly digest Thursdays 12 PM CDT |
-| AI | Claude Haiku 4.5 | Deal scoring 1-10, enrichment |
-| Alerts | Telegram | @fliplyalert_bot |
-| Analytics | GA4 | + custom server-side events |
-| Scraping | Custom | Craigslist (sapi JSON), Eventbrite (LD+JSON), AI universal |
+### Priority 1 — Landing Page Rework
+- [ ] Set up CSS custom properties from DESIGN-SYSTEM.md
+- [ ] Section 1: Hero (headline, subhead, one CTA, product screenshot)
+- [ ] Section 2: Social proof bar (real DB numbers + source logos)
+- [ ] Section 3: Score breakdown card (real deal, full AI breakdown)
+- [ ] Section 4: Live search (simplified, 3 anonymous results)
+- [ ] Section 5: Featured deals (clean, no badges)
+- [ ] Section 6: Pricing (3-tier cards, founding counter)
+- [ ] Section 7: Final CTA (one line, one button)
+- [ ] Section 8: Footer (updated tagline, category links)
+- [ ] Mobile test (375px, 768px, 1024px)
+- [ ] Push to preview, verify on Vercel
+
+### Priority 2 — Pricing Page (if time)
+- [ ] Dedicated /pricing route with full feature matrix
+- [ ] Founding countdown
+- [ ] FAQ section
+
+### Priority 3 — Stripe Setup
+- [ ] Create new Price IDs (pro_founding, pro_regular, power_founding, power_regular)
+- [ ] Update checkout flow for 3-tier model
 
 ---
 
-## Deployment
+## Key Architecture Decisions (This Session)
 
-- **Production**: `git push origin master` -> Vercel auto-deploy
-- **Domain**: flip-ly.net
-- **Env vars**: Configured in Vercel project settings (not in preview branches)
-- **Preview branches**: Will fail without manually adding env vars (Supabase URL required)
-- **Build**: `npx next build` — last verified clean 2026-04-04
-
----
-
-## Key Architecture Decisions
-
-1. **No chaos mode** — Fully removed as of 4/2. Clean professional design only.
-2. **Inline styles over Tailwind for dashboard** — Dashboard uses inline React styles for precise control. Landing page uses mix of Tailwind + inline.
-3. **Scrape frequency**: 6x/day (every 4 hours) with 300s Vercel Pro timeout
-4. **Source discovery**: Hourly cron auto-discovers + auto-approves sources (ai_confidence >= 7 after 24h)
-5. **Free tier**: 10 searches/day, weekly digest, partial scores. Pro: unlimited everything + 6hr early digest.
-6. **Pre-seeded sources**: 825 sources across 414 markets (CL + Eventbrite), activate on user signup.
+1. **Pivot from garage-sale-only to local deal discovery** — engine stays, positioning changes
+2. **3-tier pricing** — Free ($0) / Pro ($9, founding $5) / Power ($29, founding $19)
+3. **Founding member program** — 14 days, locked for life, DB flag + badge
+4. **FB Marketplace = pointer model, not scraping** — curate group directories, don't touch their data
+5. **FB Group API** — promising lead for legitimate FB data access (Phase 3-4)
+6. **Design philosophy** — product sells itself, show don't tell, Stripe-level polish, zero fabrication
+7. **No testimonials section** — social proof lives in the product (real data, real scores)
+8. **15 searches/day free tier** — generous enough to form habit, other gates drive conversion
+9. **AI score breakdown** — number visible to all, breakdown for Pro, trends for Power
+10. **Market gating** — 1 free / 3 Pro (metro cluster) / unlimited Power
