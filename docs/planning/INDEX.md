@@ -24,9 +24,9 @@ This folder contains the analytical foundation for that pivot. Every decision ge
 | 2 | [PRICING-MODEL.md](PRICING-MODEL.md) | Pending | Tiers, features, gating, annual options |
 | 3 | [UNIT-ECONOMICS.md](UNIT-ECONOMICS.md) | Pending | Cost per user, margins by tier, breakeven |
 | 4 | [COMPETITIVE-LANDSCAPE.md](COMPETITIVE-LANDSCAPE.md) | Pending | Who we compete with post-pivot |
-| 5 | [SOURCE-STRATEGY.md](SOURCE-STRATEGY.md) | Pending | All data sources, priority, legal, difficulty |
-| 6 | [FEATURE-ROADMAP.md](FEATURE-ROADMAP.md) | Pending | What ships when, by tier |
-| 7 | [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | Pending | Unresolved decisions |
+| 5 | [SOURCE-STRATEGY.md](SOURCE-STRATEGY.md) | Locked | All data sources, priority, legal, difficulty |
+| 6 | [FEATURE-ROADMAP.md](FEATURE-ROADMAP.md) | Locked | What ships when, by tier |
+| 7 | [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md) | Active | Unresolved decisions |
 
 ---
 
