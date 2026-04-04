@@ -9,7 +9,7 @@
 
 | # | Question | Raised | Depends On | Notes |
 |---|----------|--------|------------|-------|
-| 1 | FB Marketplace scraping — legal approach? Server-side vs browser extension? | 2026-04-04 | SOURCE-STRATEGY.md | Largest potential source. Technical and legal research needed. |
+| 1 | FB Marketplace scraping — legal approach? Server-side vs browser extension? | 2026-04-04 | SOURCE-STRATEGY.md | Largest potential source. Technical and legal research needed. **PROMISING LEAD:** Facebook Graph API allows reading posts from FB Groups that your Page/App is a member of. If Flip-ly's FB Page joins public buy/sell groups with permission, we could read posts via API — legitimately. This is NOT Marketplace scraping — it's Group API access, which FB explicitly supports. Research: Graph API `/{group-id}/feed` endpoint, App Review requirements, rate limits. Could turn the directory model into a live feed — legally. Come back to this Phase 3-4. |
 | 2 | Annual pricing — offer it? What discount (15%? 20%?)? | 2026-04-04 | PRICING-MODEL.md | Pro: better LTV, lower churn. Con: slower initial revenue. |
 | 3 | Should free tier see AI scores (number only, no breakdown)? | 2026-04-04 | PRICING-MODEL.md | Showing the score hooks them. Hiding the "why" drives upgrades. |
 | 4 | Referral program mechanics — what does the referrer get? | 2026-04-04 | FEATURE-ROADMAP.md | Free month of Pro? Credit toward Power? |
