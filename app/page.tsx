@@ -6,231 +6,119 @@ import { motion } from 'framer-motion'
 import { trackGoogleAdsConversion, trackGA4Event } from './components/GoogleAnalytics'
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' as const } }
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } }
 }
 
-/* ── VALUE PROPS ──────────────────────────────────────── */
-function ValuePropsSection() {
-  const cleanCards = [
-    {
-      iconSrc: '/assets/icon-scan.svg', label: 'We Scan', title: 'We Scan',
-      desc: 'We crawl Craigslist, EstateSales.net, Facebook Marketplace, and 20+ local sources in your area every day so you never miss a listing.',
-      color: 'var(--clean-accent)',
-    },
-    {
-      iconSrc: '/assets/icon-score.svg', label: 'AI Scores', title: 'AI Scores',
-      desc: 'Our AI evaluates every listing for flip potential, pricing anomalies, and deal quality. You see the score; we do the homework.',
-      color: 'var(--clean-accent)',
-    },
-    {
-      iconSrc: '/assets/icon-deliver.svg', label: 'You Get Deals', title: 'You Get Deals',
-      desc: 'Every Thursday at noon you get one curated email digest with the best garage sales near your zip. No spam. No app. Just deals.',
-      color: 'var(--clean-accent)',
-    },
-  ]
+/* ══════════════════════════════════════════════════════════
+   SECTION 2: Social Proof Bar
+   Real numbers from API. No fabrication.
+   ══════════════════════════════════════════════════════════ */
+function SocialProofBar() {
+  const [stats, setStats] = useState({ listings: 0, sources: 0, markets: 413 })
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          setStats({
+            listings: data.total_listings || 0,
+            sources: data.total_sources || 0,
+            markets: data.total_markets || 413,
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   return (
-    <section className="px-4 py-20" style={{ background: '#0a0a0a' }}>
-      <h3 className="text-center mb-12" style={{
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        fontSize: '34px',
-        color: 'var(--clean-accent)',
-        letterSpacing: '-0.02em',
-        fontWeight: 700,
+    <div style={{
+      borderTop: '1px solid var(--border-subtle)',
+      borderBottom: '1px solid var(--border-subtle)',
+      padding: 'var(--space-4) 0',
+      background: 'var(--bg-primary)',
+    }}>
+      <div style={{
+        maxWidth: '70rem',
+        margin: '0 auto',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '32px',
+        flexWrap: 'wrap',
+        padding: '0 var(--space-4)',
       }}>
-        How It Works
-      </h3>
-      <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {cleanCards.map((card, i) => (
-            <div key={i} className="text-center" style={{
-              background: '#111', border: '1px solid #222', borderRadius: '12px', padding: '32px 24px',
-            }}>
-              <div className="mx-auto mb-5 flex items-center justify-center" style={{
-                width: '48px', height: '48px', borderRadius: '12px',
-                background: 'rgba(34, 197, 94, 0.1)',
-              }}>
-                <img src={card.iconSrc} alt={card.label} width={24} height={24} style={{ filter: 'brightness(0) invert(1)' }} />
-              </div>
-              <h4 className="text-lg font-bold mb-3" style={{
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                color: '#fff', letterSpacing: '-0.01em',
-              }}>
-                {card.title}
-              </h4>
-              <p className="text-sm" style={{ color: '#999', lineHeight: 1.7 }}>
-                {card.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-    </section>
-  )
-}
-
-/* ── TESTIMONIALS ─────────────────────────────────────── */
-function TestimonialsSection() {
-  const testimonials = [
-    {
-      name: 'Tyler in Fort Worth',
-      role: 'Weekend Flipper',
-      msg: 'Picked up a solid wood dresser for $15 at a garage sale the digest flagged. Listed it for $180 that afternoon. This is the only tool I open on Thursdays now.',
-      date: 'Feb 2026',
-      color: '#22C55E',
-      stars: 5,
-    },
-    {
-      name: 'Rachel',
-      role: 'Estate Sale Hunter',
-      msg: 'I used to spend an hour every morning checking four different sites. Now I just wait for my digest. The AI scoring is scary accurate — if it says 8+, I go.',
-      date: 'Mar 2026',
-      color: '#EC4899',
-      stars: 5,
-    },
-    {
-      name: 'Marcus',
-      role: 'Pro Member',
-      msg: 'The 6-hour early access is worth it alone. By the time free users see the Thursday digest, I\'ve already hit two estate sales. $5/mo is a no-brainer.',
-      date: 'Mar 2026',
-      color: '#3B82F6',
-      stars: 5,
-    },
-    {
-      name: 'Jenny & Sam',
-      role: 'Bargain Couple',
-      msg: 'We turned our Saturday mornings into a treasure hunt. Last week we furnished half our nursery from one estate sale Flip-ly found. Total spent: $45.',
-      date: 'Feb 2026',
-      color: '#EAB308',
-      stars: 5,
-    },
-    {
-      name: 'Dan',
-      role: 'Skeptic Turned Convert',
-      msg: 'Signed up thinking it was another junk aggregator. First digest had 30+ scored listings across Craigslist and EstateSales I never would have found manually. Okay, I get it now.',
-      date: 'Mar 2026',
-      color: '#A78BFA',
-      stars: 5,
-    },
-    {
-      name: 'Priya in Dallas',
-      role: 'Vintage Collector',
-      msg: 'Found a mid-century lamp the AI scored a 9. Drove 20 minutes, paid $8. It\'s now my favorite thing in the apartment. The source coverage across DFW is unreal.',
-      date: 'Mar 2026',
-      color: '#F97316',
-      stars: 5,
-    },
-  ]
-
-  return (
-    <section className="px-4 py-20" style={{ background: '#0a0a0a' }}>
-      <div className="max-w-5xl mx-auto">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-          <h3 className="text-center mb-2" style={{
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            fontSize: '34px',
-            color: '#fff',
-            fontWeight: 700,
-            letterSpacing: '-0.02em',
-          }}>
-            Real finds. Real people.
-          </h3>
-          <p className="text-center mb-10" style={{
-            color: '#666', fontSize: '14px',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-          }}>
-            Join hundreds of deal hunters getting the Thursday digest.
-          </p>
-        </motion.div>
-
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {testimonials.map((t, i) => (
-              <div key={i} style={{
-                background: '#111',
-                border: '1px solid #1a1a1a',
-                borderRadius: '12px',
-                padding: '24px',
-                position: 'relative',
-                overflow: 'hidden',
-              }}>
-                {/* Decorative quote mark */}
-                <span style={{
-                  position: 'absolute', top: '12px', right: '16px',
-                  fontSize: '64px', lineHeight: 1, color: t.color,
-                  opacity: 0.06, fontFamily: 'Georgia, serif', fontWeight: 700,
-                  pointerEvents: 'none', userSelect: 'none',
-                }}>&ldquo;</span>
-
-                {/* Stars */}
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: t.stars }).map((_, s) => (
-                    <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill={t.color} stroke="none">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                  ))}
-                </div>
-
-                {/* Quote */}
-                <p style={{
-                  color: '#ccc', fontSize: '14px', lineHeight: 1.7,
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  marginBottom: '16px', position: 'relative',
-                }}>
-                  &ldquo;{t.msg}&rdquo;
-                </p>
-
-                {/* Attribution */}
-                <div className="flex items-center gap-3">
-                  <div style={{
-                    width: '32px', height: '32px', borderRadius: '50%',
-                    background: `${t.color}15`, border: `1px solid ${t.color}30`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                    fontSize: '13px', fontWeight: 700, color: t.color,
-                    flexShrink: 0,
-                  }}>
-                    {t.name.charAt(0)}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span style={{
-                        color: '#eee', fontWeight: 600, fontSize: '13px',
-                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                      }}>{t.name}</span>
-                      <span style={{
-                        fontSize: '10px', color: t.color, fontWeight: 600,
-                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                        background: `${t.color}12`, padding: '1px 8px',
-                        borderRadius: '10px', letterSpacing: '0.02em',
-                        textTransform: 'uppercase',
-                      }}>{t.role}</span>
-                    </div>
-                    <span style={{
-                      color: '#555', fontSize: '11px',
-                      fontFamily: 'system-ui, -apple-system, sans-serif',
-                    }}>{t.date}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+        <span style={{
+          color: 'var(--text-muted)',
+          fontSize: '13px',
+          letterSpacing: '0.02em',
+          fontFamily: 'var(--font-primary)',
+        }}>
+          20+ sources scanned
+        </span>
+        <span style={{ color: 'var(--border-active)', fontSize: '13px' }}>&middot;</span>
+        <span style={{
+          color: 'var(--text-muted)',
+          fontSize: '13px',
+          letterSpacing: '0.02em',
+          fontFamily: 'var(--font-primary)',
+        }}>
+          {stats.listings > 0 ? `${stats.listings.toLocaleString()} deals scored` : 'Deals scored daily'}
+        </span>
+        <span style={{ color: 'var(--border-active)', fontSize: '13px' }}>&middot;</span>
+        <span style={{
+          color: 'var(--text-muted)',
+          fontSize: '13px',
+          letterSpacing: '0.02em',
+          fontFamily: 'var(--font-primary)',
+        }}>
+          {stats.markets} US markets
+        </span>
       </div>
-    </section>
+
+      {/* Source logos — muted, compact */}
+      <div style={{
+        maxWidth: '70rem',
+        margin: 'var(--space-3) auto 0',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '24px',
+        flexWrap: 'wrap',
+        padding: '0 var(--space-4)',
+        opacity: 0.6,
+      }}>
+        {/* Craigslist */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 500 }}>Craigslist</span>
+        </div>
+        {/* EstateSales */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 500 }}>EstateSales</span>
+        </div>
+        {/* Eventbrite */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontWeight: 500 }}>Eventbrite</span>
+        </div>
+        {/* + more */}
+        <span style={{ color: 'var(--text-dim)', fontSize: '13px' }}>+ 20 more</span>
+      </div>
+    </div>
   )
 }
 
-/* ══════════════════════════════════════════════════════════ */
-/* MAIN PAGE                                                  */
-/* ══════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   MAIN PAGE — 8-section landing page per LANDING-PAGE-SPEC
+   ══════════════════════════════════════════════════════════ */
 
 export default function Home() {
   const [showSignup, setShowSignup] = useState(false)
   const [utmSource, setUtmSource] = useState<string | null>(null)
 
-  // Capture UTM source on page load (persists in sessionStorage for signup)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const source = params.get('utm_source')
@@ -243,13 +131,12 @@ export default function Home() {
       const saved = sessionStorage.getItem('fliply_utm_source')
       if (saved) setUtmSource(saved)
     }
-    // Auto-open signup if redirected from /pro
     if (params.get('signup') === 'pro') {
       setShowSignup(true)
     }
   }, [])
 
-  // Check if user is logged in
+  const [loggedInUser, setLoggedInUser] = useState<any>(null)
   useEffect(() => {
     fetch('/api/auth/me')
       .then(res => res.ok ? res.json() : null)
@@ -265,7 +152,6 @@ export default function Home() {
   const [signupError, setSignupError] = useState('')
   const [signingUp, setSigningUp] = useState(false)
   const [isLoginMode, setIsLoginMode] = useState(false)
-  const [loggedInUser, setLoggedInUser] = useState<any>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchMarket, setSearchMarket] = useState('')
   const [marketsData, setMarketsData] = useState<Record<string, { id: string; slug: string; name: string }[]>>({})
@@ -285,7 +171,7 @@ export default function Home() {
   const [featuredDeals, setFeaturedDeals] = useState<any[]>([])
   const [featuredLoading, setFeaturedLoading] = useState(true)
 
-  // Fetch featured/hot deals — use logged-in user's market, fallback to DFW
+  // Fetch featured deals
   useEffect(() => {
     let marketSlug = 'dfw'
     if (loggedInUser?.market_id && Object.keys(marketsData).length > 0) {
@@ -298,14 +184,14 @@ export default function Home() {
         }
       }
     }
-    fetch(`/api/listings?hot=true&limit=8&market=${marketSlug}`)
+    fetch(`/api/listings?hot=true&limit=6&market=${marketSlug}`)
       .then(res => res.json())
       .then(data => { if (data.results?.length) setFeaturedDeals(data.results) })
       .catch(() => {})
       .finally(() => setFeaturedLoading(false))
   }, [loggedInUser, marketsData])
 
-  // Fetch market list for dropdowns (signup + search)
+  // Fetch markets
   useEffect(() => {
     fetch('/api/markets')
       .then(res => res.json())
@@ -326,15 +212,12 @@ export default function Home() {
       const data = await res.json()
       const gate = data._gate || null
       setSearchGate(gate)
-
       if (gate?.limited) {
-        // Rate limited
         setRealListings([])
         setTotalResults(0)
         setShowResults(false)
         return
       }
-
       setRealListings(data.results || [])
       setTotalResults(data.total || 0)
       setShowResults(true)
@@ -355,9 +238,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          password,
-          market_id: signupMarketId,
+          email, password, market_id: signupMarketId,
           utm_source: sessionStorage.getItem('fliply_utm_source') || undefined,
           utm_medium: sessionStorage.getItem('fliply_utm_medium') || undefined,
           utm_campaign: sessionStorage.getItem('fliply_utm_campaign') || undefined,
@@ -372,12 +253,9 @@ export default function Home() {
         return
       }
       setSubmitted(true)
-      // Fire conversion events for ad platforms
       trackGA4Event('sign_up', { method: 'email' })
       trackGoogleAdsConversion('YYhjCIqC4pQcENWFh4MD')
-      setTimeout(() => {
-        window.location.href = '/dashboard'
-      }, 2000)
+      setTimeout(() => { window.location.href = '/dashboard' }, 2000)
     } catch {
       setSignupError('Something went wrong. Please try again.')
       setSigningUp(false)
@@ -402,29 +280,33 @@ export default function Home() {
         return
       }
       setSubmitted(true)
-      setTimeout(() => {
-        window.location.href = '/dashboard'
-      }, 1500)
+      setTimeout(() => { window.location.href = '/dashboard' }, 1500)
     } catch {
       setSignupError('Something went wrong. Please try again.')
       setSigningUp(false)
     }
   }
 
+  // Score color helper
+  const scoreColor = (score: number) => {
+    if (score >= 9) return 'var(--score-excellent)'
+    if (score >= 7) return 'var(--score-good)'
+    if (score >= 5) return 'var(--score-average)'
+    return 'var(--score-low)'
+  }
+
   return (
     <div className="min-h-screen relative">
 
-      {/* Search rate limit indicator (clean pill) */}
+      {/* Search rate limit pill */}
       {searchGate && !searchGate.is_premium && searchGate.searches_used !== undefined && (
         <div className="fixed bottom-4 right-4 z-[60]" style={{
-          background: searchGate.searches_remaining <= 2 ? '#1a0000' : '#111',
-          border: `1px solid ${searchGate.searches_remaining <= 2 ? '#ff4444' : '#333'}`,
-          borderRadius: '8px',
-          padding: '8px 14px',
-          fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '12px',
-          transition: 'all 0.3s',
+          background: searchGate.searches_remaining <= 2 ? '#1a0000' : 'var(--bg-surface)',
+          border: `1px solid ${searchGate.searches_remaining <= 2 ? 'var(--accent-red)' : 'var(--border-active)'}`,
+          borderRadius: '8px', padding: '8px 14px', fontSize: '12px',
+          fontFamily: 'var(--font-primary)',
         }}>
-          <span style={{ color: searchGate.searches_remaining <= 2 ? '#ff4444' : 'var(--clean-accent)' }}>
+          <span style={{ color: searchGate.searches_remaining <= 2 ? 'var(--accent-red)' : 'var(--accent-green)' }}>
             {searchGate.searches_remaining <= 0
               ? 'Daily searches used'
               : `${searchGate.searches_remaining}/${searchGate.searches_max} searches left`}
@@ -432,9 +314,9 @@ export default function Home() {
           {searchGate.searches_remaining <= 3 && searchGate.searches_remaining > 0 && (
             <a href="/pro" style={{
               display: 'block', marginTop: '4px',
-              color: '#ff6600', fontSize: '11px', textDecoration: 'underline',
+              color: 'var(--accent-amber)', fontSize: '11px', textDecoration: 'underline',
             }}>
-              Go unlimited — $5/mo for life
+              Go unlimited
             </a>
           )}
         </div>
@@ -443,934 +325,865 @@ export default function Home() {
       {/* Rate limit banner */}
       {searchGate?.limited && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[90] max-w-md w-full mx-4" style={{
-          background: '#111', border: '1px solid #ff4444', borderRadius: '12px',
+          background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: '12px',
           padding: '20px 24px', textAlign: 'center',
           boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
         }}>
-          <p style={{ color: '#fff', fontSize: '16px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', marginBottom: '8px' }}>
+          <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>
             Daily search limit reached
           </p>
-          <p style={{ color: '#999', fontSize: '13px', fontFamily: 'system-ui, sans-serif', marginBottom: '16px' }}>
-            Free accounts get 10 searches per day. Upgrade to Pro for unlimited searches.
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '16px' }}>
+            Free accounts get 15 searches per day. Upgrade for unlimited.
           </p>
-          <div className="flex gap-3 justify-center">
-            <a href="/pro" style={{
-              display: 'inline-block', padding: '10px 24px',
-              background: 'var(--clean-accent)', color: '#000',
-              fontFamily: 'system-ui, sans-serif', fontWeight: 600,
-              fontSize: '14px', textDecoration: 'none', borderRadius: '8px',
-            }}>
-              Upgrade to Pro — $5/mo
-            </a>
-          </div>
-          <p style={{ color: '#555', fontSize: '11px', marginTop: '8px', fontFamily: 'system-ui, sans-serif' }}>
+          <a href="/pro" style={{
+            display: 'inline-block', padding: '10px 24px',
+            background: 'var(--accent-green)', color: '#000',
+            fontWeight: 600, fontSize: '14px', textDecoration: 'none', borderRadius: '8px',
+          }}>
+            Upgrade to Pro
+          </a>
+          <p style={{ color: 'var(--text-dim)', fontSize: '11px', marginTop: '8px' }}>
             Searches reset daily at midnight.
           </p>
         </div>
       )}
 
-      {/* ═══ HEADER ═══ */}
-      <header className="px-4 py-3 flex items-center justify-between" style={{
+      {/* ═══════════════════════════════════════════════════════
+          HEADER
+          ═══════════════════════════════════════════════════════ */}
+      <header style={{
+        padding: 'var(--space-3) var(--space-4)',
         background: 'rgba(0, 0, 0, 0.85)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
         position: 'sticky', top: 0, zIndex: 80,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <div className="flex items-center gap-2">
-          {/* Logo icon — Option A: Flip arrow (circular upward motion) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-            <div style={{
-              width: '28px', height: '28px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M12 4l5 5h-3v4h-4V9H7l5-5z" fill="#22C55E"/>
-                <path d="M7 16a7 7 0 0 0 10 0" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" fill="none"/>
-              </svg>
-            </div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 4l5 5h-3v4h-4V9H7l5-5z" fill="var(--accent-green)"/>
+              <path d="M7 16a7 7 0 0 0 10 0" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" fill="none"/>
+            </svg>
             <span style={{
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              fontSize: '18px',
-              color: '#fff',
-              fontWeight: 700,
+              fontSize: '18px', color: 'var(--text-primary)', fontWeight: 700,
               letterSpacing: '-0.03em',
             }}>
               FLIP-LY
             </span>
           </a>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1 ml-6">
+          <nav className="hidden md:flex" style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '24px' }}>
             {[
-              { label: 'How It Works', href: '#how-it-works' },
               { label: 'Search', href: '#search' },
               { label: 'Pricing', href: '#pricing' },
             ].map(link => (
-              <a key={link.label} href={link.href} className="px-3 py-1.5" style={{
-                color: '#777', fontSize: '13px', textDecoration: 'none',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                transition: 'color 0.15s, background 0.15s',
-                borderRadius: '6px', fontWeight: 500,
-              }} onMouseEnter={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-                 onMouseLeave={e => { e.currentTarget.style.color = '#777'; e.currentTarget.style.background = 'transparent' }}>
+              <a key={link.label} href={link.href} style={{
+                color: 'var(--text-muted)', fontSize: '13px', textDecoration: 'none',
+                padding: '6px 12px', borderRadius: '6px', fontWeight: 500,
+                transition: 'color 0.15s',
+              }}>
                 {link.label}
               </a>
             ))}
           </nav>
         </div>
 
-        <div className="flex gap-2 items-center">
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {loggedInUser ? (
-            <div className="flex items-center gap-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {loggedInUser.is_premium && (
-                <span className="px-2 py-0.5 text-[10px] font-bold hidden sm:inline" style={{
-                  background: '#22C55E',
-                  color: '#000', fontFamily: 'system-ui, sans-serif',
-                  borderRadius: '4px',
-                }}>
-                  PRO
-                </span>
+                <span className="hidden sm:inline" style={{
+                  background: 'var(--accent-green)', color: '#000',
+                  padding: '2px 8px', borderRadius: '4px',
+                  fontSize: '10px', fontWeight: 700,
+                }}>PRO</span>
               )}
-              <a href="/dashboard" className="px-3 py-1.5 text-xs font-bold" style={{
-                background: 'rgba(255,255,255,0.06)', color: '#ccc', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '6px', fontFamily: 'system-ui, sans-serif',
-                textDecoration: 'none', cursor: 'pointer',
-                transition: 'background 0.15s',
-              }} onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-                 onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}>
+              <a href="/dashboard" style={{
+                padding: '6px 12px', fontSize: '12px', fontWeight: 700,
+                background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)',
+                border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px',
+                textDecoration: 'none',
+              }}>
                 {loggedInUser.email.split('@')[0]}
               </a>
             </div>
           ) : (
-            <button onClick={() => setShowSignup(true)} className="px-4 py-1.5 text-xs font-bold" style={{
-              background: 'var(--clean-accent)', color: '#000', border: 'none',
-              borderRadius: '6px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
-              transition: 'opacity 0.15s',
-            }} onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
-               onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+            <button onClick={() => setShowSignup(true)} style={{
+              padding: '6px 16px', fontSize: '12px', fontWeight: 700,
+              background: 'var(--accent-green)', color: '#000', border: 'none',
+              borderRadius: '6px', cursor: 'pointer',
+            }}>
               Sign Up Free
             </button>
           )}
 
           {/* Mobile hamburger */}
-          <button className="md:hidden flex flex-col gap-1 p-2 ml-1" onClick={() => setShowMobileNav(!showMobileNav)} style={{
+          <button className="md:hidden" onClick={() => setShowMobileNav(!showMobileNav)} style={{
             background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px', marginLeft: '4px',
           }}>
-            <span style={{ width: '18px', height: '2px', background: '#888', borderRadius: '1px', display: 'block', transition: 'all 0.2s', transform: showMobileNav ? 'rotate(45deg) translateY(6px)' : 'none' }} />
-            <span style={{ width: '18px', height: '2px', background: '#888', borderRadius: '1px', display: 'block', transition: 'all 0.2s', opacity: showMobileNav ? 0 : 1 }} />
-            <span style={{ width: '18px', height: '2px', background: '#888', borderRadius: '1px', display: 'block', transition: 'all 0.2s', transform: showMobileNav ? 'rotate(-45deg) translateY(-6px)' : 'none' }} />
+            <span style={{ width: '18px', height: '2px', background: 'var(--text-muted)', borderRadius: '1px', display: 'block', transition: 'all 0.2s', transform: showMobileNav ? 'rotate(45deg) translateY(6px)' : 'none' }} />
+            <span style={{ width: '18px', height: '2px', background: 'var(--text-muted)', borderRadius: '1px', display: 'block', transition: 'all 0.2s', opacity: showMobileNav ? 0 : 1 }} />
+            <span style={{ width: '18px', height: '2px', background: 'var(--text-muted)', borderRadius: '1px', display: 'block', transition: 'all 0.2s', transform: showMobileNav ? 'rotate(-45deg) translateY(-6px)' : 'none' }} />
           </button>
         </div>
       </header>
 
-      {/* Mobile nav dropdown */}
+      {/* Mobile nav */}
       {showMobileNav && (
         <div className="md:hidden" style={{
           position: 'sticky', top: '49px', zIndex: 79,
           background: 'rgba(0, 0, 0, 0.95)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           padding: '8px 16px 12px',
         }}>
           {[
-            { label: 'How It Works', href: '#how-it-works' },
             { label: 'Search', href: '#search' },
             { label: 'Pricing', href: '#pricing' },
           ].map(link => (
             <a key={link.label} href={link.href} onClick={() => setShowMobileNav(false)} style={{
               display: 'block', padding: '10px 12px',
-              color: '#999', fontSize: '14px', textDecoration: 'none',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
+              color: 'var(--text-muted)', fontSize: '14px', textDecoration: 'none',
               borderRadius: '6px', fontWeight: 500,
-              transition: 'background 0.15s',
-            }} onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#fff' }}
-               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#999' }}>
+            }}>
               {link.label}
             </a>
           ))}
         </div>
       )}
 
-      {/* ═══ HERO ═══ */}
-      <section className="px-4 py-12 md:py-20 relative" style={{ background: '#000' }}>
-        <div className="max-w-5xl mx-auto">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center py-8 md:py-16">
-              {/* Left: Copy + CTAs */}
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 1: HERO
+          Split layout — left copy, right screenshot placeholder
+          ═══════════════════════════════════════════════════════ */}
+      <section style={{ background: 'var(--bg-primary)', padding: 'var(--space-16) var(--space-4)' }}>
+        <div style={{ maxWidth: '70rem', margin: '0 auto' }}>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" style={{ padding: 'var(--space-8) 0' }}>
+              {/* Left: Copy */}
               <div>
-                <h2 className="mb-5" style={{
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  fontSize: 'clamp(32px, 8vw, 56px)',
-                  color: '#fff',
-                  lineHeight: 1.08,
+                <h1 style={{
+                  fontSize: 'clamp(36px, 6vw, 56px)',
                   fontWeight: 700,
-                  letterSpacing: '-0.02em',
+                  color: 'var(--text-primary)',
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.03em',
+                  marginBottom: 'var(--space-6)',
                 }}>
-                  Every garage sale near you.
-                </h2>
-                <p className="text-base md:text-lg mb-6" style={{
-                  color: '#999', lineHeight: 1.7,
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  Every deal near you. Scored before you see it.
+                </h1>
+                <p style={{
+                  fontSize: '15px',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.7,
                   maxWidth: '480px',
+                  marginBottom: 'var(--space-8)',
                 }}>
-                  We scan Craigslist, EstateSales.net &amp; 20+ sources in your area. You get one curated digest every Thursday at noon. No app. No algorithm.
+                  We scan Craigslist, estate sales, OfferUp, and 20+ local sources. AI scores every listing for flip potential. You see what&apos;s worth your time.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 items-start">
-                  <button onClick={() => setShowSignup(true)} className="px-8 py-3.5 text-base font-bold" style={{
-                    background: 'var(--clean-accent)', color: '#000',
-                    border: 'none', borderRadius: '8px',
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                    cursor: 'pointer', width: '100%', maxWidth: '240px',
-                  }}>
-                    Get Started — Free
-                  </button>
-                  <a href="#search" className="px-8 py-3.5 text-base font-bold text-center" style={{
-                    background: 'transparent', color: '#888',
-                    border: '1px solid #333', borderRadius: '8px',
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                    cursor: 'pointer', textDecoration: 'none',
-                    width: '100%', maxWidth: '240px',
-                  }}>
-                    Try a Search
-                  </a>
-                </div>
-                <p className="text-xs mt-4" style={{ color: '#555' }}>
-                  Free forever &middot; No credit card &middot; Unsubscribe anytime
+                <button onClick={() => setShowSignup(true)} style={{
+                  padding: '12px 24px',
+                  background: 'var(--accent-green)',
+                  color: '#000',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.15s',
+                }}>
+                  Start finding deals
+                </button>
+                <p style={{
+                  fontSize: '12px',
+                  color: 'var(--text-dim)',
+                  marginTop: 'var(--space-3)',
+                }}>
+                  Free &middot; 15 searches/day &middot; No credit card
                 </p>
               </div>
-              {/* Right: Product mockup */}
+
+              {/* Right: Product screenshot placeholder */}
               <div className="hidden md:flex justify-center">
                 <div style={{
-                  maxWidth: '100%', width: '420px', borderRadius: '12px', overflow: 'hidden',
-                  boxShadow: '0 24px 60px rgba(0,0,0,0.5), 0 0 40px rgba(34,197,94,0.06)',
+                  width: '100%',
+                  maxWidth: '480px',
+                  aspectRatio: '4/3',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
                 }}>
-                  <video
-                    autoPlay muted loop playsInline preload="metadata"
-                    poster="/assets/hero-mockup.png"
-                    style={{ width: '100%', display: 'block', borderRadius: '12px' }}
-                  >
-                    <source src="/assets/hero-dashboard.webm" type="video/webm" />
-                    <source src="/assets/hero-mockup.mp4" type="video/mp4" />
-                    <img src="/assets/hero-mockup.png" alt="Flip-ly dashboard preview" style={{ width: '100%' }} />
-                  </video>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Stats bar */}
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-            <div className="flex flex-wrap justify-center gap-6 md:gap-10 py-6 mt-2" style={{
-              borderTop: '1px solid #1a1a1a', borderBottom: '1px solid #1a1a1a',
-            }}>
-              {[
-                '480+ Listings Scored',
-                '12 Active Markets',
-                'Updated Weekly',
-              ].map((stat, i) => (
-                <span key={i} style={{
-                  color: '#666', fontSize: '13px',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  letterSpacing: '0.02em',
-                }}>
-                  {stat}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Source trust bar */}
-          <div className="py-6 overflow-hidden" style={{ position: 'relative' }}>
-            <p className="text-center mb-5" style={{
-              color: '#555', fontSize: '11px', textTransform: 'uppercase',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              letterSpacing: '2px', fontWeight: 600,
-            }}>
-              Sources we scan daily
-            </p>
-            <div className="flex justify-center items-center gap-8 md:gap-12 flex-wrap">
-              {/* Craigslist */}
-              <div className="flex items-center gap-2" style={{ opacity: 0.7 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C792EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                <span style={{ color: '#C792EA', fontSize: '15px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', letterSpacing: '-0.02em' }}>craigslist</span>
-              </div>
-              {/* Eventbrite */}
-              <div className="flex items-center gap-2" style={{ opacity: 0.7 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F56040" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span style={{ color: '#F56040', fontSize: '15px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', letterSpacing: '-0.02em' }}>Eventbrite</span>
-              </div>
-              {/* Facebook Marketplace */}
-              <div className="flex items-center gap-2" style={{ opacity: 0.7 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="#4A90D9"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                <span style={{ color: '#4A90D9', fontSize: '15px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', letterSpacing: '-0.02em' }}>Marketplace</span>
-              </div>
-              {/* EstateSales.net */}
-              <div className="flex items-center gap-2" style={{ opacity: 0.7 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EAB308" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                <span style={{ color: '#EAB308', fontSize: '15px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', letterSpacing: '-0.02em' }}>EstateSales</span>
-              </div>
-              {/* + More */}
-              <div className="flex items-center gap-2" style={{ opacity: 0.5 }}>
-                <span style={{
-                  color: '#888', fontSize: '14px',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  fontWeight: 500,
-                }}>
-                  + 20 more sources
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ SEARCH ═══ */}
-      <section id="search" className="px-4 py-20" style={{
-        background: '#0a0a0a',
-        borderTop: '1px solid #222',
-        borderBottom: '1px solid #222',
-        position: 'relative',
-      }}>
-        <div className="max-w-3xl mx-auto relative">
-          {/* Search header */}
-          <div className="mb-6 text-center">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-              <h3 style={{
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                fontSize: '32px', fontWeight: 700,
-                color: '#fff', marginBottom: '4px',
-                letterSpacing: '-0.02em',
-              }}>
-                Search Deals
-              </h3>
-              <p style={{
-                fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '14px',
-                color: '#888',
-              }}>
-                Real-time results from Craigslist, EstateSales.net &amp; local sources
-              </p>
-            </motion.div>
-          </div>
-
-          {/* Search form */}
-          <form onSubmit={handleSearch}>
-            <div style={{ marginBottom: '8px' }}>
-              <div className="flex flex-col gap-3">
-                <div style={{
-                  background: '#111', border: '1px solid #333', borderRadius: '8px',
-                  padding: '4px',
-                }}>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="flex-1 flex items-center gap-2 px-3">
-                      <span style={{ fontSize: '18px', opacity: 0.5 }}>&#128269;</span>
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        placeholder="Search tools, vintage, furniture, free stuff..."
-                        style={{
-                          width: '100%', padding: '12px 4px', border: 'none', outline: 'none',
-                          fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '16px',
-                          color: '#eee', background: 'transparent',
-                        }}
-                      />
+                  {/* Placeholder — will be replaced with real dashboard screenshot */}
+                  <div style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
+                    <div style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '48px',
+                      fontWeight: 700,
+                      color: 'var(--score-excellent)',
+                      marginBottom: 'var(--space-2)',
+                    }}>
+                      8.7
                     </div>
-                    <div className="flex gap-2 px-2 pb-2 sm:pb-0 sm:px-0 sm:pr-2">
-                      <select
-                        value={searchMarket}
-                        onChange={e => setSearchMarket(e.target.value)}
-                        className="flex-1 sm:flex-none"
-                        style={{
-                          padding: '10px 12px', border: '1px solid #333', borderRadius: '6px',
-                          fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '13px',
-                          color: '#ccc', background: '#1a1a1a', cursor: 'pointer',
-                        }}
-                      >
-                        <option value="">All Areas</option>
-                        {Object.keys(marketsData).sort().map(st =>
-                          (marketsData[st] || []).map(m => (
-                            <option key={m.id} value={m.slug}>{m.name}, {st}</option>
-                          ))
-                        )}
-                      </select>
-                      <button type="submit" disabled={searching} style={{
-                        padding: '10px 24px',
-                        background: searching ? '#333' : 'var(--clean-accent)',
-                        color: searching ? '#888' : '#000',
-                        border: 'none', borderRadius: '6px',
-                        fontFamily: 'system-ui, -apple-system, sans-serif', fontWeight: 600,
-                        fontSize: '14px', cursor: searching ? 'wait' : 'pointer',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {searching ? 'Searching...' : 'Search'}
-                      </button>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+                      KitchenAid Artisan &middot; $45
+                    </p>
+                    <div style={{
+                      marginTop: 'var(--space-6)',
+                      textAlign: 'left',
+                      fontSize: '12px',
+                      color: 'var(--text-dim)',
+                      lineHeight: 2,
+                    }}>
+                      <div>Price — 62% below market avg</div>
+                      <div>Seller — Motivated, estate sale</div>
+                      <div>Brand — KitchenAid, strong resale</div>
+                      <div>Quality — 6 photos, excellent condition</div>
+                      <div>Freshness — Posted 2 hours ago</div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </motion.div>
+        </div>
+      </section>
 
-            {/* Quick search tags */}
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 2: SOCIAL PROOF BAR
+          ═══════════════════════════════════════════════════════ */}
+      <SocialProofBar />
+
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 3: SCORE BREAKDOWN CARD
+          Show the product, don't describe it. (Day 2 build)
+          ═══════════════════════════════════════════════════════ */}
+      <section id="score-breakdown" style={{
+        background: 'var(--bg-elevated)',
+        padding: 'var(--space-20) var(--space-4)',
+      }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+            {/* Score card — hardcoded with real-looking data */}
+            <div style={{
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '12px',
+              padding: 'var(--space-6)',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                    Vintage KitchenAid Artisan Mixer
+                  </h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                    $45 &middot; EstateSales &middot; Arlington, TX &middot; 2h ago
+                  </p>
+                </div>
+                <span style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: 'var(--score-excellent)',
+                }}>
+                  8.7
+                </span>
+              </div>
+
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 2.2 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Price</span>
+                  <span style={{ color: 'var(--text-muted)' }}>62% below market avg for mixers in DFW</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Seller</span>
+                  <span style={{ color: 'var(--text-muted)' }}>Estate sale — high motivation signal</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Brand</span>
+                  <span style={{ color: 'var(--text-muted)' }}>KitchenAid — $180-220 avg resale</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Quality</span>
+                  <span style={{ color: 'var(--text-muted)' }}>6 photos, excellent condition noted</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Freshness</span>
+                  <span style={{ color: 'var(--text-muted)' }}>Posted 2 hours ago</span>
+                </div>
+              </div>
+            </div>
+
+            <p style={{
+              textAlign: 'center',
+              color: 'var(--text-dim)',
+              fontSize: '13px',
+              marginTop: 'var(--space-6)',
+            }}>
+              Every listing, scored like this.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 4: LIVE SEARCH
+          ═══════════════════════════════════════════════════════ */}
+      <section id="search" style={{
+        background: 'var(--bg-elevated)',
+        borderTop: '1px solid var(--border-default)',
+        padding: 'var(--space-20) var(--space-4)',
+      }}>
+        <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+          <p style={{
+            textAlign: 'center',
+            color: 'var(--text-dim)',
+            fontSize: '13px',
+            marginBottom: 'var(--space-6)',
+          }}>
+            Try it — no signup needed
+          </p>
+
+          <form onSubmit={handleSearch}>
+            <div style={{
+              background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
+              borderRadius: '8px', padding: '4px',
+            }}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex-1 flex items-center gap-2 px-3">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search tools, vintage, furniture, free stuff..."
+                    style={{
+                      width: '100%', padding: '12px 4px', border: 'none', outline: 'none',
+                      fontSize: '16px', color: 'var(--text-primary)', background: 'transparent',
+                    }}
+                  />
+                </div>
+                <div className="flex gap-2 px-2 pb-2 sm:pb-0 sm:px-0 sm:pr-2">
+                  <select
+                    value={searchMarket}
+                    onChange={e => setSearchMarket(e.target.value)}
+                    className="flex-1 sm:flex-none"
+                    style={{
+                      padding: '10px 12px', border: '1px solid var(--border-active)', borderRadius: '6px',
+                      fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-surface-hover)', cursor: 'pointer',
+                    }}
+                  >
+                    <option value="">All Areas</option>
+                    {Object.keys(marketsData).sort().map(st =>
+                      (marketsData[st] || []).map(m => (
+                        <option key={m.id} value={m.slug}>{m.name}, {st}</option>
+                      ))
+                    )}
+                  </select>
+                  <button type="submit" disabled={searching} style={{
+                    padding: '10px 24px',
+                    background: searching ? 'var(--border-active)' : 'var(--accent-green)',
+                    color: searching ? 'var(--text-muted)' : '#000',
+                    border: 'none', borderRadius: '6px', fontWeight: 600,
+                    fontSize: '14px', cursor: searching ? 'wait' : 'pointer',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {searching ? 'Searching...' : 'Search'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick tags */}
             <div className="mt-3 flex gap-2 justify-center overflow-x-auto sm:flex-wrap sm:overflow-visible pb-2 sm:pb-0" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {[
-                { tag: 'tools', emoji: '' },
-                { tag: 'vintage', emoji: '' },
-                { tag: 'furniture', emoji: '' },
-                { tag: 'free', emoji: '' },
-                { tag: 'electronics', emoji: '' },
-                { tag: 'estate sale', emoji: '' },
-                { tag: 'kids', emoji: '' },
-                { tag: 'collectibles', emoji: '' },
-              ].map(({ tag }) => (
-                <button key={tag} type="button" onClick={() => { setSearchQuery(tag); }} style={{
+              {['tools', 'vintage', 'furniture', 'free', 'electronics', 'estate sale', 'kids', 'collectibles'].map(tag => (
+                <button key={tag} type="button" onClick={() => setSearchQuery(tag)} style={{
                   padding: '6px 14px',
-                  border: '1px solid #333', borderRadius: '16px',
-                  fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '13px',
-                  color: '#ccc', background: '#1a1a1a',
-                  cursor: 'pointer',
-                  flexShrink: 0,
+                  border: '1px solid var(--border-active)', borderRadius: '16px',
+                  fontSize: '13px', color: 'var(--text-secondary)',
+                  background: 'var(--bg-surface-hover)', cursor: 'pointer', flexShrink: 0,
                 }}>
                   {tag}
                 </button>
               ))}
             </div>
-
-            {/* Disclaimer */}
-            <p className="text-center mt-2" style={{
-              fontSize: '9px', color: '#555',
-              fontFamily: 'system-ui, sans-serif',
-              fontStyle: 'italic',
-            }}>
-              Real-time results from Craigslist, EstateSales.net, and local sources across your market.
-            </p>
           </form>
 
           {/* Results */}
           {showResults && (
-            <div className="mt-8">
-              {/* Results header bar */}
-              <div className="flex justify-between items-center px-3 py-2 mb-3" style={{
-                background: '#111', color: '#999', borderRadius: '6px',
-                fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '12px',
-                border: '1px solid #333',
+            <div style={{ marginTop: 'var(--space-8)' }}>
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '8px 12px', marginBottom: '12px',
+                background: 'var(--bg-surface)', borderRadius: '6px',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '12px', color: 'var(--text-muted)',
               }}>
                 <span>
                   Showing {realListings.length} of {totalResults} results
                   {searchQuery ? ` for "${searchQuery}"` : ''}
                 </span>
-                <span style={{ color: '#ff6600' }}>
-                  HOT = Score 8+
-                </span>
               </div>
 
-              {/* Results list */}
-              <div className="space-y-2">
-                {realListings.map((listing, i) => (
-                  <div key={listing.id || i} className="flex items-center gap-4 px-4 py-3" style={{
-                    background: i % 2 === 0 ? '#111' : '#0d0d0d',
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {realListings.slice(0, loggedInUser ? realListings.length : 3).map((listing, i) => (
+                  <div key={listing.id || i} style={{
+                    display: 'flex', alignItems: 'center', gap: '16px',
+                    padding: '12px 16px',
+                    background: i % 2 === 0 ? 'var(--bg-surface)' : 'var(--bg-elevated)',
                     borderRadius: '6px',
-                    border: listing.hot ? '1px solid rgba(255,102,0,0.3)' : '1px solid transparent',
                   }}>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        {listing.hot && <span style={{
-                          background: '#ff6600', color: '#fff', padding: '1px 6px',
-                          borderRadius: '3px', fontSize: '10px', fontWeight: 600,
-                          fontFamily: 'system-ui, sans-serif',
-                        }}>HOT</span>}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
                         {listing.deal_score && listing.deal_score !== 'gated' && (
                           <span style={{
-                            fontSize: '10px', fontFamily: 'monospace',
-                            color: listing.deal_score >= 8 ? '#22C55E' : listing.deal_score >= 6 ? '#ff6600' : '#888',
-                          }}>{listing.deal_score}/10</span>
+                            fontSize: '12px', fontFamily: 'var(--font-mono)', fontWeight: 700,
+                            color: scoreColor(listing.deal_score),
+                          }}>{listing.deal_score}</span>
                         )}
                         {listing.deal_score === 'gated' && (
-                          <a href="/pro" style={{
-                            fontSize: '10px', color: '#555', fontFamily: 'monospace',
-                            textDecoration: 'none',
-                          }}>Score: Pro only</a>
+                          <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>--</span>
                         )}
                         {listing.source_url ? (
                           <a href={listing.source_url} target="_blank" rel="noopener noreferrer" className="truncate" style={{
-                            color: '#eee', fontSize: '14px', fontWeight: 500,
-                            fontFamily: 'system-ui, -apple-system, sans-serif',
-                            textDecoration: 'none',
+                            color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500, textDecoration: 'none',
                           }}>
                             {listing.title}
                           </a>
                         ) : (
-                          <span className="truncate" style={{
-                            color: '#eee', fontSize: '14px', fontWeight: 500,
-                            fontFamily: 'system-ui, -apple-system, sans-serif',
-                          }}>
+                          <span className="truncate" style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>
                             {listing.title}
-                            <a href="/pro" style={{
-                              fontSize: '9px', color: '#555', marginLeft: '6px',
-                              fontFamily: 'monospace', textDecoration: 'none',
-                            }}>Pro only</a>
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3" style={{ fontSize: '12px', color: '#888' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
                         {listing.city && <span>{listing.city}</span>}
                         <span style={{
                           textTransform: 'uppercase', fontSize: '10px',
-                          color: '#666', border: '1px solid #333',
+                          color: 'var(--text-dim)', border: '1px solid var(--border-active)',
                           padding: '0 4px', borderRadius: '2px',
                         }}>{listing.source}</span>
-                        {listing.description && (
-                          <span className="truncate hidden sm:inline" style={{ color: '#666', maxWidth: '250px' }}>
-                            {listing.description}
-                          </span>
-                        )}
                       </div>
-                      {listing.tags?.length > 0 && (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {listing.tags.slice(0, 4).map((tag: string) => (
-                            <span key={tag} style={{
-                              padding: '0 6px', borderRadius: '3px',
-                              fontSize: '9px', color: '#666',
-                              fontFamily: 'system-ui, sans-serif',
-                              background: '#1a1a1a', border: '1px solid #333',
-                            }}>#{tag}</span>
-                          ))}
-                        </div>
-                      )}
                     </div>
-                    <div className="text-right flex-shrink-0">
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{
-                        fontFamily: 'system-ui, sans-serif', fontWeight: 700,
-                        fontSize: listing.price === 'FREE' ? '15px' : '13px',
-                        color: listing.price === 'FREE' ? '#22C55E' : listing.price === 'Not listed' ? '#666' : '#ff6600',
+                        fontWeight: 700, fontSize: '13px',
+                        color: listing.price === 'FREE' ? 'var(--accent-green)' : listing.price === 'Not listed' ? 'var(--text-dim)' : 'var(--accent-amber)',
                       }}>
                         {listing.price === 'FREE' ? 'FREE' : listing.price === 'Not listed' ? 'Garage Sale' : listing.price || 'Ask'}
                       </div>
-                      {listing.date && (
-                        <div style={{ fontSize: '10px', color: '#555', fontFamily: 'monospace' }}>
-                          {listing.date}
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* More results + CTA */}
-              <div className="text-center mt-8 space-y-4">
-                {totalResults > realListings.length && (
-                  <div style={{
-                    background: '#111', border: '1px solid #333', borderRadius: '6px',
-                    padding: '8px', fontFamily: 'system-ui, sans-serif', fontSize: '13px',
+              {/* Anonymous upgrade CTA */}
+              {!loggedInUser && realListings.length > 3 && (
+                <div style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: 'var(--space-4)' }}>
+                    Sign up free for 15 searches/day and full results.
+                  </p>
+                  <button onClick={() => setShowSignup(true)} style={{
+                    padding: '12px 24px', background: 'var(--accent-green)', color: '#000',
+                    border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
                   }}>
-                    <span style={{ color: '#ff6600' }}>
-                      {totalResults - realListings.length} more deals in the database
-                    </span>
-                    <span style={{ color: '#555' }}> — sign up for full access</span>
-                  </div>
-                )}
-                <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-semibold" style={{
-                  background: '#ff6600', color: '#fff', border: 'none', borderRadius: '8px',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  cursor: 'pointer', letterSpacing: '0.5px',
+                    Start finding deals
+                  </button>
+                </div>
+              )}
+
+              {loggedInUser && totalResults > realListings.length && (
+                <div style={{
+                  textAlign: 'center', marginTop: 'var(--space-6)',
+                  padding: '8px', background: 'var(--bg-surface)', borderRadius: '6px',
+                  fontSize: '13px', color: 'var(--text-muted)',
+                  border: '1px solid var(--border-subtle)',
                 }}>
-                  Sign Up Free — Get Weekly Deals
-                </button>
-                <p style={{ fontSize: '11px', color: '#555', fontFamily: 'system-ui, sans-serif' }}>
-                  No spam. Weekly deals delivered to your inbox.
-                </p>
-              </div>
+                  {totalResults - realListings.length} more deals in the database
+                </div>
+              )}
             </div>
           )}
         </div>
       </section>
 
-      {/* ═══ HOW IT WORKS ═══ */}
-      <div id="how-it-works">
-        <ValuePropsSection />
-      </div>
 
-      {/* ═══ FEATURED DEALS ═══ */}
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 5: FEATURED DEALS
+          ═══════════════════════════════════════════════════════ */}
       {featuredDeals.length > 0 && (
-        <section className="px-4 py-20" style={{ background: '#000', borderTop: '1px solid #1a1a1a' }}>
-          <div className="max-w-3xl mx-auto">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-            <div className="flex items-center justify-between mb-6 gap-2">
-              <div className="flex items-center gap-3">
-                <h3 style={{
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  fontSize: '26px', fontWeight: 700, color: '#fff',
-                  letterSpacing: '-0.02em',
-                }}>
-                  {featuredMarketName} Hot Deals
-                </h3>
-                <span style={{
-                  background: 'rgba(34,197,94,0.1)', color: 'var(--clean-accent)',
-                  padding: '2px 8px', borderRadius: '4px',
-                  fontSize: '10px', fontWeight: 600,
-                  fontFamily: 'system-ui, sans-serif',
-                }}>Powered by AI</span>
-              </div>
-              <span className="hidden sm:inline" style={{
-                fontSize: '12px', color: '#888',
-                fontFamily: 'system-ui, sans-serif',
-                flexShrink: 0,
+        <section style={{
+          background: 'var(--bg-primary)',
+          borderTop: '1px solid var(--border-subtle)',
+          padding: 'var(--space-20) var(--space-4)',
+        }}>
+          <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <h2 style={{
+                fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)',
+                letterSpacing: '-0.02em', marginBottom: 'var(--space-6)',
               }}>
-                Real data &middot; Updated weekly
-              </span>
-            </div>
-            <div className="space-y-2" style={{ background: '#0a0a0a', borderRadius: '12px', padding: '4px', border: '1px solid #1a1a1a' }}>
-              {featuredDeals.map((deal, i) => (
-                <div key={deal.id || i} className="flex items-center gap-4 px-4 py-3" style={{
-                  background: i % 2 === 0 ? '#111' : '#0d0d0d',
-                  borderRadius: '8px',
-                  border: deal.hot ? '1px solid rgba(255,102,0,0.3)' : '1px solid transparent',
-                }}>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      {deal.hot && <span style={{
-                        background: '#ff6600', color: '#fff', padding: '1px 6px',
-                        borderRadius: '3px', fontSize: '10px', fontWeight: 600,
-                        fontFamily: 'system-ui, sans-serif',
-                      }}>HOT</span>}
-                      <span className="truncate" style={{
-                        color: '#eee', fontSize: '14px', fontWeight: 500,
-                        fontFamily: 'system-ui, -apple-system, sans-serif',
-                      }}>
-                        {deal.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3" style={{ fontSize: '12px', color: '#888' }}>
-                      {deal.city && <span>{deal.city}</span>}
-                      <span style={{
-                        textTransform: 'uppercase', fontSize: '10px',
-                        color: '#666', border: '1px solid #333',
-                        padding: '0 4px', borderRadius: '2px',
-                      }}>{deal.source}</span>
-                      {deal.description && (
-                        <span className="truncate hidden sm:inline" style={{ color: '#666', maxWidth: '200px' }}>
-                          {deal.description}
+                {featuredMarketName}
+              </h2>
+
+              <div style={{
+                background: 'var(--bg-elevated)', borderRadius: '12px',
+                padding: '4px', border: '1px solid var(--border-subtle)',
+              }}>
+                {featuredDeals.map((deal, i) => (
+                  <div key={deal.id || i} style={{
+                    display: 'flex', alignItems: 'center', gap: '16px',
+                    padding: '12px 16px',
+                    background: i % 2 === 0 ? 'var(--bg-surface)' : 'var(--bg-elevated)',
+                    borderRadius: '8px',
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        {deal.deal_score && deal.deal_score !== 'gated' && (
+                          <span style={{
+                            fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 700,
+                            color: scoreColor(deal.deal_score),
+                          }}>{deal.deal_score}</span>
+                        )}
+                        <span className="truncate" style={{
+                          color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500,
+                        }}>
+                          {deal.title}
                         </span>
-                      )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                        {deal.city && <span>{deal.city}</span>}
+                        <span style={{
+                          textTransform: 'uppercase', fontSize: '10px',
+                          color: 'var(--text-dim)', border: '1px solid var(--border-active)',
+                          padding: '0 4px', borderRadius: '2px',
+                        }}>{deal.source}</span>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{
+                        fontWeight: 700, fontSize: '13px',
+                        color: deal.price === 'FREE' ? 'var(--accent-green)' : deal.price === 'Not listed' ? 'var(--text-dim)' : 'var(--accent-amber)',
+                      }}>
+                        {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? 'Garage Sale' : deal.price || 'Ask'}
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div style={{
-                      fontFamily: 'system-ui, sans-serif', fontWeight: 700,
-                      fontSize: deal.price === 'FREE' ? '15px' : '13px',
-                      color: deal.price === 'FREE' ? '#22C55E' : deal.price === 'Not listed' ? '#666' : '#ff6600',
-                    }}>
-                      {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? 'Garage Sale' : deal.price || 'Ask'}
-                    </div>
-                    {deal.deal_score && deal.deal_score !== 'gated' ? (
-                      <div style={{ fontSize: '10px', color: '#22C55E', fontFamily: 'monospace' }}>
-                        Score: {deal.deal_score}/10
-                      </div>
-                    ) : deal.deal_score === 'gated' ? (
-                      <div style={{ fontSize: '10px', color: '#555', fontFamily: 'monospace' }}>
-                        Score: Pro only
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 text-center">
-              <p style={{ fontSize: '12px', color: '#666', fontFamily: 'system-ui, sans-serif' }}>
-                {featuredDeals.length < 8
-                  ? 'All top deals this week.'
-                  : 'Showing top 8 deals. Search above for more, or sign up for the weekly digest.'}
+                ))}
+              </div>
+
+              <p style={{
+                textAlign: 'center', fontSize: '13px', color: 'var(--text-dim)',
+                marginTop: 'var(--space-4)',
+              }}>
+                Sign up to see all deals in your market.
               </p>
-            </div>
             </motion.div>
           </div>
         </section>
       )}
       {featuredLoading && (
-        <section className="px-4 py-8" style={{ background: '#0a0a0a', borderTop: '1px solid #222' }}>
-          <div className="max-w-3xl mx-auto text-center">
-            <p style={{ color: '#555', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
-              Loading deals...
-            </p>
+        <section style={{ background: 'var(--bg-elevated)', borderTop: '1px solid var(--border-default)', padding: 'var(--space-8) var(--space-4)' }}>
+          <div style={{ maxWidth: '48rem', margin: '0 auto', textAlign: 'center' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Loading deals...</p>
           </div>
         </section>
       )}
 
-      {/* ═══ TESTIMONIALS ═══ */}
-      <TestimonialsSection />
 
-      {/* ═══ PRICING ═══ */}
-      <section id="pricing" className="px-4 py-20" style={{ background: '#000', borderTop: '1px solid #1a1a1a' }}>
-        <div className="max-w-3xl mx-auto">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-            <h3 className="text-center mb-2" style={{
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              fontSize: '34px', fontWeight: 700,
-              color: '#fff', letterSpacing: '-0.02em',
-            }}>
-              Simple Pricing
-            </h3>
-            <p className="text-center mb-10" style={{ color: '#666', fontSize: '14px', fontFamily: 'system-ui, sans-serif' }}>
-              Free gets you in the door. Pro gets you there first. Early adopters lock in $5/mo for life.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
-              {/* Free tier */}
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 6: PRICING (3-tier per spec — Day 3 full build)
+          ═══════════════════════════════════════════════════════ */}
+      <section id="pricing" style={{
+        background: 'var(--bg-primary)',
+        borderTop: '1px solid var(--border-subtle)',
+        padding: 'var(--space-20) var(--space-4)',
+      }}>
+        <div style={{ maxWidth: '56rem', margin: '0 auto' }}>
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ maxWidth: '900px', margin: '0 auto' }}>
+              {/* Free */}
               <div style={{
-                background: '#111', border: '1px solid #222', borderRadius: '12px',
-                padding: '28px', textAlign: 'center',
+                background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
               }}>
-                <div style={{ fontSize: '13px', color: '#888', fontFamily: 'system-ui, sans-serif', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Free</div>
-                <div style={{ fontSize: '40px', fontWeight: 700, color: '#fff', fontFamily: 'system-ui, sans-serif', marginBottom: '20px' }}>$0<span style={{ fontSize: '14px', color: '#666' }}>/mo</span></div>
-                <ul style={{ textAlign: 'left', fontSize: '13px', color: '#999', fontFamily: 'system-ui, sans-serif', lineHeight: 2.2, listStyle: 'none', padding: 0 }}>
-                  <li>10 searches per day</li>
-                  <li>Weekly digest (Thursday noon)</li>
-                  <li>Basic deal info</li>
-                  <li>All 413 US markets</li>
+                <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Free</div>
+                <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-6)' }}>
+                  $0<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+                </div>
+                <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0 }}>
+                  <li>15 searches/day</li>
+                  <li>1 market</li>
+                  <li>Score number only</li>
+                  <li>Weekly digest</li>
                 </ul>
-                <button onClick={() => setShowSignup(true)} className="w-full mt-6 py-3 text-sm font-bold" style={{
-                  background: 'transparent', color: '#ccc', border: '1px solid #333',
-                  borderRadius: '8px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
+                <button onClick={() => setShowSignup(true)} style={{
+                  width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
+                  background: 'transparent', color: 'var(--text-muted)',
+                  border: '1px solid var(--border-active)', borderRadius: '8px',
+                  fontSize: '14px', fontWeight: 600, cursor: 'pointer',
                 }}>
-                  Get Started Free
+                  Get Started
                 </button>
               </div>
-              {/* Pro tier */}
+
+              {/* Pro — highlighted */}
               <div style={{
-                background: '#111', border: '1px solid var(--clean-accent)', borderRadius: '12px',
-                padding: '28px', textAlign: 'center', position: 'relative',
-                boxShadow: '0 0 30px rgba(34,197,94,0.06)',
+                background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
+                borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
+                position: 'relative',
               }}>
                 <div style={{
-                  position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)',
-                  background: 'var(--clean-accent)', color: '#000', padding: '2px 12px',
-                  borderRadius: '10px', fontSize: '11px', fontWeight: 700,
-                  fontFamily: 'system-ui, sans-serif',
-                }}>EARLY ADOPTER PRICING</div>
-                <div style={{ fontSize: '13px', color: 'var(--clean-accent)', fontFamily: 'system-ui, sans-serif', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Pro</div>
-                <div style={{ fontSize: '40px', fontWeight: 700, color: '#fff', fontFamily: 'system-ui, sans-serif', marginBottom: '4px' }}>$5<span style={{ fontSize: '14px', color: '#666' }}>/mo</span></div>
-                <div style={{ fontSize: '12px', color: '#22C55E', fontFamily: 'system-ui, sans-serif', marginBottom: '16px', fontWeight: 600 }}>Locked in for life</div>
-                <ul style={{ textAlign: 'left', fontSize: '13px', color: '#999', fontFamily: 'system-ui, sans-serif', lineHeight: 2.2, listStyle: 'none', padding: 0 }}>
-                  <li style={{ color: 'var(--clean-accent)' }}>Unlimited searches</li>
-                  <li style={{ color: 'var(--clean-accent)' }}>Early digest (6hrs before free)</li>
-                  <li style={{ color: 'var(--clean-accent)' }}>Full AI scores + direct links</li>
-                  <li style={{ color: 'var(--clean-accent)' }}>Hot deal alerts</li>
+                  fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px',
+                }}>Most Popular</div>
+                <div style={{ fontSize: '13px', color: 'var(--accent-green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Pro</div>
+                <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  $5<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>
+                  Founding price &middot; Locks in for life
+                </div>
+                <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0 }}>
+                  <li>Unlimited searches</li>
+                  <li>3 markets</li>
+                  <li>Full score breakdown</li>
+                  <li>Daily + weekly digest</li>
+                  <li>3 saved searches</li>
                 </ul>
-                <a href="/pro" className="block w-full mt-6 py-3 text-sm font-bold text-center" style={{
-                  background: 'var(--clean-accent)', color: '#000', border: 'none',
-                  borderRadius: '8px', fontFamily: 'system-ui, sans-serif', cursor: 'pointer',
-                  textDecoration: 'none',
+                <a href="/pro" style={{
+                  display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
+                  background: 'var(--accent-green)', color: '#000',
+                  borderRadius: '8px', fontSize: '14px', fontWeight: 600,
+                  textDecoration: 'none', textAlign: 'center',
                 }}>
-                  Upgrade to Pro
+                  Start Pro
                 </a>
               </div>
+
+              {/* Power */}
+              <div style={{
+                background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '13px', color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Power</div>
+                <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  $19<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>
+                  Founding price &middot; Locks in for life
+                </div>
+                <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0 }}>
+                  <li>Unlimited searches</li>
+                  <li>Unlimited markets</li>
+                  <li>Breakdown + trends</li>
+                  <li>Daily + instant alerts</li>
+                  <li>Unlimited saved searches</li>
+                </ul>
+                <button onClick={() => setShowSignup(true)} style={{
+                  width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
+                  background: 'transparent', color: 'var(--text-muted)',
+                  border: '1px solid var(--border-active)', borderRadius: '8px',
+                  fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+                }}>
+                  Go Power
+                </button>
+              </div>
             </div>
-            <p className="text-center mt-6" style={{ fontSize: '13px', color: '#555', fontFamily: 'system-ui, sans-serif' }}>
-              No contracts. Cancel anytime. Early adopters keep this price forever.
+
+            <p style={{
+              textAlign: 'center', color: 'var(--text-dim)', fontSize: '13px',
+              marginTop: 'var(--space-6)',
+            }}>
+              All plans include 20+ source coverage and AI scoring.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* ═══ FINAL CTA ═══ */}
-      <section className="px-4 py-20 text-center" style={{ background: '#0a0a0a' }}>
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={fadeUp}>
-          <h3 className="mb-3" style={{
-            fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '34px',
-            color: '#fff', fontWeight: 700, letterSpacing: '-0.02em',
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 7: FINAL CTA
+          ═══════════════════════════════════════════════════════ */}
+      <section style={{
+        background: 'var(--bg-elevated)',
+        padding: 'var(--space-20) var(--space-4)',
+        textAlign: 'center',
+      }}>
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+          <h2 style={{
+            fontSize: '34px', fontWeight: 700, color: 'var(--text-primary)',
+            letterSpacing: '-0.02em', marginBottom: 'var(--space-8)',
           }}>
-            Stop missing deals.
-          </h3>
-          <p className="mb-8 text-base" style={{ color: '#888', fontFamily: 'system-ui, sans-serif', maxWidth: '400px', margin: '0 auto 32px' }}>
-            One email. Every Thursday. The best garage sales near you, scored and sorted.
-          </p>
-          <button onClick={() => setShowSignup(true)} className="px-8 py-3 text-base font-bold" style={{
-            background: 'var(--clean-accent)', color: '#000',
-            border: 'none', borderRadius: '8px',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            cursor: 'pointer',
+            Every deal in your area. Scored.
+          </h2>
+          <button onClick={() => setShowSignup(true)} style={{
+            padding: '12px 24px', background: 'var(--accent-green)', color: '#000',
+            border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
           }}>
-            Get Started — It&apos;s Free
+            Start finding deals
           </button>
         </motion.div>
       </section>
 
-      {/* ═══ FOOTER ═══ */}
-      <footer className="px-4 py-10" style={{
-        background: '#0a0a0a',
-        borderTop: '1px solid #222',
-        textAlign: 'left',
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 8: FOOTER
+          ═══════════════════════════════════════════════════════ */}
+      <footer style={{
+        background: 'var(--bg-elevated)',
+        borderTop: '1px solid var(--border-default)',
+        padding: 'var(--space-12) var(--space-4) var(--space-8)',
       }}>
-        <div className="max-w-3xl mx-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-8">
+        <div style={{ maxWidth: '70rem', margin: '0 auto' }}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8" style={{ marginBottom: 'var(--space-8)' }}>
             <div>
-              <h4 style={{ color: '#fff', fontSize: '13px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', marginBottom: '12px' }}>Product</h4>
-              <div className="flex flex-col gap-2">
-                <a href="#how-it-works" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>How It Works</a>
-                <a href="#pricing" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Pricing</a>
-                <a href="#search" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Search</a>
-                <a href="/pro" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Upgrade to Pro</a>
+              <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Product</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <a href="#search" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Search</a>
+                <a href="#pricing" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Pricing</a>
+                <a href="#score-breakdown" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>How Scoring Works</a>
               </div>
             </div>
             <div>
-              <h4 style={{ color: '#fff', fontSize: '13px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', marginBottom: '12px' }}>Company</h4>
-              <div className="flex flex-col gap-2">
-                <a href="/about" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>About</a>
-                <a href="/why" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Why Flip-ly?</a>
-                <a href="mailto:hello@flip-ly.net" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Contact</a>
+              <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Company</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <a href="/about" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>About</a>
+                <a href="mailto:hello@flip-ly.net" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Contact</a>
               </div>
             </div>
             <div>
-              <h4 style={{ color: '#fff', fontSize: '13px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', marginBottom: '12px' }}>Legal</h4>
-              <div className="flex flex-col gap-2">
-                <a href="/privacy" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Privacy Policy</a>
-                <a href="/terms" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Terms of Service</a>
-                <a href="/data-deletion" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Data Deletion</a>
+              <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Legal</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <a href="/privacy" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Privacy Policy</a>
+                <a href="/terms" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Terms of Service</a>
+                <a href="/data-deletion" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Data Deletion</a>
               </div>
             </div>
             <div>
-              <h4 style={{ color: '#fff', fontSize: '13px', fontWeight: 600, fontFamily: 'system-ui, sans-serif', marginBottom: '12px' }}>Social</h4>
-              <div className="flex flex-col gap-2">
-                <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>X / Twitter</a>
-                <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>Instagram</a>
-                <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>TikTok</a>
-                <a href="https://www.youtube.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: '#666', fontSize: '13px', textDecoration: 'none', fontFamily: 'system-ui, sans-serif' }}>YouTube</a>
+              <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Social</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>X / Twitter</a>
+                <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Instagram</a>
+                <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>TikTok</a>
+                <a href="https://www.youtube.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>YouTube</a>
               </div>
             </div>
           </div>
-          <div style={{ borderTop: '1px solid #222', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-            <p style={{ color: '#444', fontSize: '12px', fontFamily: 'system-ui, sans-serif' }}>
-              &copy; 2026 Flip-ly.net &middot; AetherCoreAI
-            </p>
-            <p style={{ color: '#444', fontSize: '11px', fontFamily: 'system-ui, sans-serif' }}>
-              Built in DFW &middot; Powered by Supabase &amp; Stripe
+
+          <div style={{
+            borderTop: '1px solid var(--border-default)', paddingTop: '16px',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px',
+          }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '12px' }}>
+              &copy; 2026 Flip-ly &middot; Deal intelligence for resellers and bargain hunters
             </p>
           </div>
         </div>
-        {/* ═══ THE PIXEL — hidden tap target that navigates to /lobster-hunt ═══ */}
+
+        {/* The lobster pixel */}
         <div style={{ position: 'relative', height: '12px', marginTop: '4px' }}>
-          <a
-            href="/lobster-hunt"
-            onClick={(e) => { e.stopPropagation() }}
-            style={{
-              width: '16px', height: '16px',
-              background: 'transparent',
-              cursor: 'default',
-              position: 'absolute',
-              right: '23%',
-              top: '0',
-              zIndex: 60,
-              display: 'block',
-            }}
-          >
+          <a href="/lobster-hunt" onClick={e => e.stopPropagation()} style={{
+            width: '16px', height: '16px', background: 'transparent', cursor: 'default',
+            position: 'absolute', right: '23%', top: '0', zIndex: 60, display: 'block',
+          }}>
             <div style={{
-              width: '5px', height: '5px', borderRadius: '50%',
-              background: '#0a0a0a',
-              position: 'absolute',
-              top: '50%', left: '50%',
+              width: '5px', height: '5px', borderRadius: '50%', background: 'var(--bg-elevated)',
+              position: 'absolute', top: '50%', left: '50%',
             }} />
           </a>
         </div>
       </footer>
 
-      {/* ═══ SIGNUP MODAL ═══ */}
+
+      {/* ═══════════════════════════════════════════════════════
+          SIGNUP / LOGIN MODAL
+          ═══════════════════════════════════════════════════════ */}
       {showSignup && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4"
           onClick={() => setShowSignup(false)}
           style={{ background: 'rgba(0,0,0,0.85)', cursor: 'pointer' }}>
           <div className="w-full max-w-md relative" onClick={e => e.stopPropagation()} style={{
-            background: '#111', border: '1px solid #333', borderRadius: '12px',
-            cursor: 'default', overflow: 'hidden',
+            background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
+            borderRadius: '12px', cursor: 'default', overflow: 'hidden',
           }}>
-            {/* Close button */}
             <button onClick={() => { setShowSignup(false); setSubmitted(false); setSignupError('') }}
               className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-sm font-bold"
-              style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: '6px', cursor: 'pointer', color: '#888' }}>
+              style={{ background: 'var(--bg-surface-hover)', border: '1px solid var(--border-active)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text-muted)' }}>
               &#10005;
             </button>
 
-            <div style={{ padding: '24px' }}>
+            <div style={{ padding: 'var(--space-6)' }}>
               {submitted ? (
-                <div className="text-center py-6">
-                  <h3 className="text-2xl font-bold mb-3" style={{
-                    fontFamily: 'system-ui, -apple-system, sans-serif', color: 'var(--clean-accent)',
-                  }}>
-                    {isLoginMode ? 'Welcome Back!' : 'You\'re In!'}
+                <div style={{ textAlign: 'center', padding: 'var(--space-6) 0' }}>
+                  <h3 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent-green)', marginBottom: '12px' }}>
+                    {isLoginMode ? 'Welcome Back' : 'You\'re In'}
                   </h3>
-                  <p className="text-sm mb-2" style={{ color: '#ccc' }}>
-                    {isLoginMode ? 'Redirecting to your dashboard...' : 'Welcome! Check your email for confirmation.'}
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '8px' }}>
+                    {isLoginMode ? 'Redirecting to your dashboard...' : 'Welcome. Check your email for confirmation.'}
                   </p>
                   {!isLoginMode && (
-                    <p className="text-xs" style={{ color: '#666' }}>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '12px' }}>
                       (check spam too if you don&apos;t see it)
                     </p>
                   )}
-                  <button onClick={() => { setShowSignup(false); setSubmitted(false) }}
-                    className="mt-6 px-6 py-2 text-sm font-bold" style={{
-                      background: 'var(--clean-accent)', color: '#000', border: 'none',
-                      borderRadius: '6px',
-                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
-                    }}>
+                  <button onClick={() => { setShowSignup(false); setSubmitted(false) }} style={{
+                    marginTop: 'var(--space-6)', padding: '8px 24px',
+                    background: 'var(--accent-green)', color: '#000', border: 'none',
+                    borderRadius: '6px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+                  }}>
                     Continue
                   </button>
                 </div>
               ) : isLoginMode ? (
                 <>
-                  <h3 className="text-xl font-bold mb-1" style={{
-                    fontFamily: 'system-ui, -apple-system, sans-serif', color: '#fff',
-                  }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
                     Welcome Back
                   </h3>
-                  <p className="text-xs mb-6" style={{ color: '#777' }}>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
                     Log in to your account.
                   </p>
-                  <button onClick={() => signIn('google')} type="button" className="w-full py-3 font-bold text-sm flex items-center justify-center gap-3" style={{
-                      background: '#fff', color: '#333', border: '1px solid #ddd',
-                      borderRadius: '6px', fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
-                    }}>
-                      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                      Continue with Google
-                    </button>
-                    <div className="flex items-center gap-3 my-1">
-                      <div style={{ flex: 1, height: '1px', background: '#333' }} />
-                      <span className="text-xs" style={{ color: '#555' }}>or</span>
-                      <div style={{ flex: 1, height: '1px', background: '#333' }} />
-                    </div>
-                  <form onSubmit={handleLogin} className="space-y-3">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="your@email.com"
-                      required
-                      className="cl-input"
-                    />
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      placeholder="password"
-                      required
-                      className="cl-input"
-                    />
-                    {signupError && (
-                      <p className="text-xs" style={{ color: '#ff4444' }}>
-                        {signupError}
-                      </p>
-                    )}
-                    <button type="submit" disabled={signingUp} className="w-full py-3 font-bold text-base" style={{
-                      background: signingUp ? '#333' : 'var(--clean-accent)', color: '#000',
-                      border: 'none', borderRadius: '6px',
-                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: signingUp ? 'wait' : 'pointer',
+                  <button onClick={() => signIn('google')} type="button" style={{
+                    width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
+                    background: '#fff', color: '#333', border: '1px solid #ddd',
+                    borderRadius: '6px', cursor: 'pointer',
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Continue with Google
+                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-active)' }} />
+                    <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>or</span>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-active)' }} />
+                  </div>
+                  <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                      placeholder="your@email.com" required className="cl-input" />
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                      placeholder="password" required className="cl-input" />
+                    {signupError && <p style={{ fontSize: '12px', color: 'var(--accent-red)' }}>{signupError}</p>}
+                    <button type="submit" disabled={signingUp} style={{
+                      width: '100%', padding: '12px', fontWeight: 700, fontSize: '16px',
+                      background: signingUp ? 'var(--border-active)' : 'var(--accent-green)', color: '#000',
+                      border: 'none', borderRadius: '6px', cursor: signingUp ? 'wait' : 'pointer',
                     }}>
                       {signingUp ? 'Logging in...' : 'Log In'}
                     </button>
                   </form>
-                  <p className="text-xs mt-4 text-center">
+                  <p style={{ textAlign: 'center', marginTop: 'var(--space-4)' }}>
                     <button onClick={() => { setIsLoginMode(false); setSignupError('') }} style={{
-                      background: 'none', border: 'none', color: 'var(--clean-accent)',
-                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
-                      textDecoration: 'underline', fontSize: '12px',
+                      background: 'none', border: 'none', color: 'var(--accent-green)',
+                      cursor: 'pointer', textDecoration: 'underline', fontSize: '12px',
                     }}>
                       Don&apos;t have an account? Sign up
                     </button>
@@ -1378,89 +1191,60 @@ export default function Home() {
                 </>
               ) : (
                 <>
-                  <h3 className="text-xl font-bold mb-1" style={{
-                    fontFamily: 'system-ui, -apple-system, sans-serif', color: '#fff',
-                  }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
                     Create Your Account
                   </h3>
-                  <p className="text-xs mb-6" style={{ color: '#777' }}>
-                    Free forever. Weekly deals delivered to your inbox.
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
+                    Free. 15 searches/day. No credit card.
                   </p>
-                  <button onClick={() => signIn('google')} type="button" className="w-full py-3 font-bold text-sm flex items-center justify-center gap-3" style={{
-                      background: '#fff', color: '#333', border: '1px solid #ddd',
-                      borderRadius: '6px', fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
-                    }}>
-                      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                      Sign up with Google
-                    </button>
-                    <div className="flex items-center gap-3 my-1">
-                      <div style={{ flex: 1, height: '1px', background: '#333' }} />
-                      <span className="text-xs" style={{ color: '#555' }}>or sign up with email</span>
-                      <div style={{ flex: 1, height: '1px', background: '#333' }} />
-                    </div>
-                  <form onSubmit={handleSignup} className="space-y-3">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="your@email.com"
-                      required
-                      className="cl-input"
-                    />
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      placeholder="password (6+ chars)"
-                      required
-                      minLength={6}
-                      className="cl-input"
-                    />
-                    <div className="flex gap-2">
-                      <select
-                        value={signupState}
-                        onChange={e => { setSignupState(e.target.value); setSignupMarketId('') }}
-                        required
-                        className="cl-input flex-1"
-                        style={{ cursor: 'pointer' }}
-                      >
+                  <button onClick={() => signIn('google')} type="button" style={{
+                    width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
+                    background: '#fff', color: '#333', border: '1px solid #ddd',
+                    borderRadius: '6px', cursor: 'pointer',
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Sign up with Google
+                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-active)' }} />
+                    <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>or sign up with email</span>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border-active)' }} />
+                  </div>
+                  <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                      placeholder="your@email.com" required className="cl-input" />
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                      placeholder="password (6+ chars)" required minLength={6} className="cl-input" />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <select value={signupState} onChange={e => { setSignupState(e.target.value); setSignupMarketId('') }}
+                        required className="cl-input" style={{ flex: 1, cursor: 'pointer' }}>
                         <option value="">State *</option>
                         {Object.keys(marketsData).sort().map(st => (
                           <option key={st} value={st}>{st}</option>
                         ))}
                       </select>
-                      <select
-                        value={signupMarketId}
-                        onChange={e => setSignupMarketId(e.target.value)}
-                        required
-                        className="cl-input flex-1"
-                        style={{ cursor: 'pointer' }}
-                        disabled={!signupState}
-                      >
+                      <select value={signupMarketId} onChange={e => setSignupMarketId(e.target.value)}
+                        required className="cl-input" style={{ flex: 1, cursor: 'pointer' }} disabled={!signupState}>
                         <option value="">Area *</option>
                         {(marketsData[signupState] || []).map(m => (
                           <option key={m.id} value={m.id}>{m.name}</option>
                         ))}
                       </select>
                     </div>
-                    {signupError && (
-                      <p className="text-xs" style={{ color: '#ff4444' }}>
-                        {signupError}
-                      </p>
-                    )}
-                    <button type="submit" disabled={signingUp} className="w-full py-3 font-bold text-base" style={{
-                      background: signingUp ? '#333' : 'var(--clean-accent)', color: '#000',
-                      border: 'none', borderRadius: '6px',
-                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: signingUp ? 'wait' : 'pointer',
+                    {signupError && <p style={{ fontSize: '12px', color: 'var(--accent-red)' }}>{signupError}</p>}
+                    <button type="submit" disabled={signingUp} style={{
+                      width: '100%', padding: '12px', fontWeight: 700, fontSize: '16px',
+                      background: signingUp ? 'var(--border-active)' : 'var(--accent-green)', color: '#000',
+                      border: 'none', borderRadius: '6px', cursor: signingUp ? 'wait' : 'pointer',
                     }}>
                       {signingUp ? 'Creating account...' : 'Get Started Free'}
                     </button>
                   </form>
-                  <p className="text-xs mt-4 text-center">
+                  <p style={{ textAlign: 'center', marginTop: 'var(--space-4)' }}>
                     <button onClick={() => { setIsLoginMode(true); setSignupError('') }} style={{
-                      background: 'none', border: 'none', color: 'var(--clean-accent)',
-                      fontFamily: 'system-ui, -apple-system, sans-serif', cursor: 'pointer',
-                      textDecoration: 'underline', fontSize: '12px',
+                      background: 'none', border: 'none', color: 'var(--accent-green)',
+                      cursor: 'pointer', textDecoration: 'underline', fontSize: '12px',
                     }}>
                       Already have an account? Log in
                     </button>
@@ -1472,17 +1256,15 @@ export default function Home() {
         </div>
       )}
 
-      {/* ═══ FEEDBACK WIDGET ═══ */}
+
+      {/* Feedback widget */}
       <button onClick={() => { setShowFeedback(true); setFeedbackSent(false); setFeedbackMsg(''); setFeedbackCat('general') }}
         className="fixed z-[50]"
         style={{
           bottom: '16px', left: '16px',
-          background: '#1a1a1a',
-          border: '1px solid #333',
-          borderRadius: '8px',
-          padding: '8px 14px', cursor: 'pointer',
-          fontFamily: 'system-ui, sans-serif',
-          fontSize: '12px', color: '#888',
+          background: 'var(--bg-surface-hover)', border: '1px solid var(--border-active)',
+          borderRadius: '8px', padding: '8px 14px', cursor: 'pointer',
+          fontSize: '12px', color: 'var(--text-muted)',
         }}>
         Feedback
       </button>
@@ -1493,30 +1275,24 @@ export default function Home() {
           style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}>
           <div onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: '420px',
-            background: '#111',
-            border: '1px solid #333',
-            borderRadius: '12px',
-            padding: '24px',
+            background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
+            borderRadius: '12px', padding: 'var(--space-6)',
           }}>
-            <div className="flex items-center justify-between mb-4">
-              <h4 style={{
-                fontFamily: 'system-ui, sans-serif',
-                fontSize: '18px', fontWeight: 700,
-                color: '#fff',
-              }}>
-                {feedbackSent ? 'Thanks!' : 'Send Feedback'}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
+              <h4 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {feedbackSent ? 'Thanks' : 'Send Feedback'}
               </h4>
               <button onClick={() => setShowFeedback(false)} style={{
-                background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '18px',
+                background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: '18px',
               }}>&#10005;</button>
             </div>
 
             {feedbackSent ? (
               <div>
-                <p style={{ color: '#ccc', fontSize: '14px', fontFamily: 'system-ui, sans-serif', marginBottom: '8px' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '8px' }}>
                   Your feedback has been recorded. We read every submission.
                 </p>
-                <p style={{ color: 'var(--clean-accent)', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
+                <p style={{ color: 'var(--accent-green)', fontSize: '13px' }}>
                   If we implement your idea, you get a free month of Pro.
                 </p>
               </div>
@@ -1535,14 +1311,11 @@ export default function Home() {
                 } catch {}
                 setFeedbackSending(false)
               }}>
-                <div className="mb-3">
+                <div style={{ marginBottom: '12px' }}>
                   <select value={feedbackCat} onChange={e => setFeedbackCat(e.target.value)} style={{
                     width: '100%', padding: '8px 12px',
-                    background: '#1a1a1a',
-                    border: '1px solid #333',
-                    borderRadius: '6px',
-                    color: '#ccc', fontSize: '13px',
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    background: 'var(--bg-surface-hover)', border: '1px solid var(--border-active)',
+                    borderRadius: '6px', color: 'var(--text-secondary)', fontSize: '13px',
                   }}>
                     <option value="general">General</option>
                     <option value="bug">Bug Report</option>
@@ -1550,38 +1323,31 @@ export default function Home() {
                     <option value="ux">Design / UX</option>
                   </select>
                 </div>
-                <div className="mb-3">
+                <div style={{ marginBottom: '12px' }}>
                   <textarea
                     value={feedbackMsg}
                     onChange={e => setFeedbackMsg(e.target.value)}
                     placeholder="What could be better? We read every message."
-                    rows={4}
-                    maxLength={2000}
-                    required
+                    rows={4} maxLength={2000} required
                     style={{
                       width: '100%', padding: '12px',
-                      background: '#1a1a1a',
-                      border: '1px solid #333',
-                      borderRadius: '6px',
-                      color: '#eee', fontSize: '14px', resize: 'vertical',
-                      fontFamily: 'system-ui, -apple-system, sans-serif',
-                      outline: 'none',
+                      background: 'var(--bg-surface-hover)', border: '1px solid var(--border-active)',
+                      borderRadius: '6px', color: 'var(--text-primary)', fontSize: '14px',
+                      resize: 'vertical', outline: 'none',
                     }}
                   />
-                  <div className="flex justify-between mt-1">
-                    <span style={{ fontSize: '11px', color: '#555' }}>{feedbackMsg.length}/2000</span>
-                    <span style={{ fontSize: '11px', color: 'var(--clean-accent)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{feedbackMsg.length}/2000</span>
+                    <span style={{ fontSize: '11px', color: 'var(--accent-green)' }}>
                       Implemented ideas = 1 free month of Pro
                     </span>
                   </div>
                 </div>
                 <button type="submit" disabled={feedbackSending || feedbackMsg.trim().length < 5} style={{
                   width: '100%', padding: '12px',
-                  background: feedbackSending ? '#333' : 'var(--clean-accent)',
-                  color: feedbackSending ? '#888' : '#000',
-                  border: 'none', borderRadius: '6px',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  fontWeight: 600, fontSize: '14px',
+                  background: feedbackSending ? 'var(--border-active)' : 'var(--accent-green)',
+                  color: feedbackSending ? 'var(--text-muted)' : '#000',
+                  border: 'none', borderRadius: '6px', fontWeight: 600, fontSize: '14px',
                   cursor: feedbackSending ? 'wait' : 'pointer',
                 }}>
                   {feedbackSending ? 'Sending...' : 'Send Feedback'}

@@ -7,16 +7,62 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
+  /* ── Legacy alias ── */
   --clean-accent: #22C55E;
+
+  /* ── Typography ── */
+  --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+
+  /* ── Backgrounds ── */
+  --bg-primary: #000000;
+  --bg-elevated: #0a0a0a;
+  --bg-surface: #111111;
+  --bg-surface-hover: #1a1a1a;
+
+  /* ── Borders ── */
+  --border-subtle: #1a1a1a;
+  --border-default: #222222;
+  --border-active: #333333;
+
+  /* ── Text ── */
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-muted: #888888;
+  --text-dim: #555555;
+
+  /* ── Accents ── */
+  --accent-green: #22C55E;
+  --accent-amber: #F59E0B;
+  --accent-blue: #3B82F6;
+  --accent-purple: #A78BFA;
+  --accent-red: #EF4444;
+
+  /* ── Score colors ── */
+  --score-excellent: #22C55E;
+  --score-good: #F59E0B;
+  --score-average: #888888;
+  --score-low: #555555;
+
+  /* ── Spacing (4px base) ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
 }
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
 body {
-  background: #000;
-  color: #ffffff;
-  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-primary), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
 
@@ -27,35 +73,35 @@ body {
 
 /* ── FORM INPUTS ───────────────────────────────────────── */
 .cl-input {
-  background: #1a1a1a;
-  border: 1px solid #333;
-  color: #eee;
-  padding: 10px 12px;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 14px;
-  border-radius: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  font-family: var(--font-primary);
+  font-size: 15px;
+  border-radius: 8px;
   outline: none;
   width: 100%;
   transition: border-color 0.15s;
 }
 
 .cl-input:focus {
-  border-color: #22C55E;
+  border-color: var(--accent-green);
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
 }
 
 .cl-input::placeholder {
-  color: #666;
+  color: var(--text-dim);
 }
 
 /* ── SCROLLBAR ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-track { background: var(--bg-elevated); }
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: var(--border-active);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover { background: #555; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
 /* ── RESPONSIVE ────────────────────────────────────────── */
 @media (max-width: 768px) {
