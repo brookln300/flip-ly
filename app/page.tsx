@@ -507,48 +507,24 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Right: Product screenshot placeholder */}
+              {/* Right: Real product video — shots.so browser-framed dashboard recording */}
               <div className="hidden md:flex justify-center">
                 <div style={{
-                  width: '100%',
-                  maxWidth: '480px',
-                  aspectRatio: '4/3',
-                  background: 'var(--bg-surface)',
-                  border: '1px solid var(--border-subtle)',
+                  width: '100%', maxWidth: '480px',
                   borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   overflow: 'hidden',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+                  border: '1px solid var(--border-subtle)',
                 }}>
-                  {/* Placeholder — will be replaced with real dashboard screenshot */}
-                  <div style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
-                    <div style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '48px',
-                      fontWeight: 700,
-                      color: 'var(--score-excellent)',
-                      marginBottom: 'var(--space-2)',
-                    }}>
-                      8.7
-                    </div>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-                      KitchenAid Artisan &middot; $45
-                    </p>
-                    <div style={{
-                      marginTop: 'var(--space-6)',
-                      textAlign: 'left',
-                      fontSize: '12px',
-                      color: 'var(--text-dim)',
-                      lineHeight: 2,
-                    }}>
-                      <div>Price — 62% below market avg</div>
-                      <div>Seller — Motivated, estate sale</div>
-                      <div>Brand — KitchenAid, strong resale</div>
-                      <div>Quality — 6 photos, excellent condition</div>
-                      <div>Freshness — Posted 2 hours ago</div>
-                    </div>
-                  </div>
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    style={{ width: '100%', display: 'block' }}
+                  >
+                    <source src="/assets/hero-dashboard.webm" type="video/webm" />
+                  </video>
                 </div>
               </div>
             </div>
@@ -565,7 +541,7 @@ export default function Home() {
 
       {/* ═══════════════════════════════════════════════════════
           SECTION 3: SCORE BREAKDOWN CARD
-          Show the product, don't describe it. (Day 2 build)
+          Show the product, don't describe it.
           ═══════════════════════════════════════════════════════ */}
       <section id="score-breakdown" style={{
         background: 'var(--bg-elevated)',
@@ -573,14 +549,22 @@ export default function Home() {
       }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-            {/* Score card — hardcoded with real-looking data */}
+            <p style={{
+              textAlign: 'center', color: 'var(--text-dim)', fontSize: '12px',
+              textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 'var(--space-6)',
+            }}>
+              How scoring works
+            </p>
+
+            {/* Score card with factor bars */}
             <div style={{
               background: 'var(--bg-surface)',
               border: '1px solid var(--border-subtle)',
               borderRadius: '12px',
               padding: 'var(--space-6)',
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
+              {/* Header row: title + big score badge */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
                 <div>
                   <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                     Vintage KitchenAid Artisan Mixer
@@ -589,47 +573,71 @@ export default function Home() {
                     $45 &middot; EstateSales &middot; Arlington, TX &middot; 2h ago
                   </p>
                 </div>
-                <span style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  color: 'var(--score-excellent)',
+                {/* Score badge — 46x46 rounded square */}
+                <div style={{
+                  width: '46px', height: '46px', borderRadius: '10px',
+                  background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  8.7
-                </span>
+                  <span style={{
+                    fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700,
+                    color: 'var(--score-excellent)',
+                  }}>8.7</span>
+                </div>
               </div>
 
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 2.2 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Price</span>
-                  <span style={{ color: 'var(--text-muted)' }}>62% below market avg for mixers in DFW</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Seller</span>
-                  <span style={{ color: 'var(--text-muted)' }}>Estate sale — high motivation signal</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Brand</span>
-                  <span style={{ color: 'var(--text-muted)' }}>KitchenAid — $180-220 avg resale</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Quality</span>
-                  <span style={{ color: 'var(--text-muted)' }}>6 photos, excellent condition noted</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Freshness</span>
-                  <span style={{ color: 'var(--text-muted)' }}>Posted 2 hours ago</span>
-                </div>
+              {/* Factor breakdown with colored bars */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {[
+                  { label: 'Price', value: 95, desc: '62% below market avg', color: 'var(--score-excellent)' },
+                  { label: 'Brand', value: 88, desc: '$180–220 avg resale', color: 'var(--score-excellent)' },
+                  { label: 'Seller', value: 82, desc: 'Estate sale — motivated', color: 'var(--score-good)' },
+                  { label: 'Quality', value: 78, desc: '6 photos, excellent condition', color: 'var(--score-good)' },
+                  { label: 'Freshness', value: 90, desc: 'Posted 2 hours ago', color: 'var(--score-excellent)' },
+                ].map(f => (
+                  <div key={f.label}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>{f.label}</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{f.desc}</span>
+                    </div>
+                    {/* Factor bar — thin colored bar showing relative strength */}
+                    <div style={{
+                      width: '100%', height: '3px', borderRadius: '2px',
+                      background: 'var(--border-subtle)', overflow: 'hidden',
+                    }}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${f.value}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                        style={{
+                          height: '100%', borderRadius: '2px',
+                          background: f.color,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Estimated flip profit */}
+              <div style={{
+                marginTop: 'var(--space-6)', paddingTop: 'var(--space-4)',
+                borderTop: '1px solid var(--border-subtle)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Est. flip profit</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '16px', fontWeight: 700, color: 'var(--accent-green)' }}>
+                  +$135–175
+                </span>
               </div>
             </div>
 
             <p style={{
-              textAlign: 'center',
-              color: 'var(--text-dim)',
-              fontSize: '13px',
+              textAlign: 'center', color: 'var(--text-dim)', fontSize: '13px',
               marginTop: 'var(--space-6)',
             }}>
-              Every listing, scored like this.
+              Every listing gets this breakdown. Pro sees it all.
             </p>
           </motion.div>
         </div>
@@ -648,42 +656,54 @@ export default function Home() {
           <p style={{
             textAlign: 'center',
             color: 'var(--text-dim)',
-            fontSize: '13px',
+            fontSize: '12px',
+            textTransform: 'uppercase',
+            letterSpacing: '1.5px',
             marginBottom: 'var(--space-6)',
           }}>
             Try it — no signup needed
           </p>
 
           <form onSubmit={handleSearch}>
+            {/* Pill-shaped search bar — app-native feel */}
             <div style={{
-              background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
-              borderRadius: '8px', padding: '4px',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-active)',
+              borderRadius: '50px',
+              padding: '6px 6px 6px 20px',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
             }}>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="flex-1 flex items-center gap-2 px-3">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <div className="flex flex-col sm:flex-row items-center gap-2">
+                <div className="flex-1 flex items-center gap-3 w-full sm:w-auto">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search tools, vintage, furniture, free stuff..."
+                    placeholder="Search tools, vintage, furniture..."
                     style={{
-                      width: '100%', padding: '12px 4px', border: 'none', outline: 'none',
-                      fontSize: '16px', color: 'var(--text-primary)', background: 'transparent',
+                      width: '100%', padding: '10px 0', border: 'none', outline: 'none',
+                      fontSize: '15px', color: 'var(--text-primary)', background: 'transparent',
                     }}
                   />
                 </div>
-                <div className="flex gap-2 px-2 pb-2 sm:pb-0 sm:px-0 sm:pr-2">
+                <div className="flex gap-2 w-full sm:w-auto pb-2 sm:pb-0 px-2 sm:px-0">
                   <select
                     value={searchMarket}
                     onChange={e => setSearchMarket(e.target.value)}
                     className="flex-1 sm:flex-none"
                     style={{
-                      padding: '10px 12px', border: '1px solid var(--border-active)', borderRadius: '6px',
-                      fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-surface-hover)', cursor: 'pointer',
+                      padding: '10px 12px', border: '1px solid var(--border-subtle)', borderRadius: '20px',
+                      fontSize: '12px', color: 'var(--text-secondary)', background: 'var(--bg-surface-hover)',
+                      cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none',
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 10px center',
+                      paddingRight: '28px',
                     }}
                   >
-                    <option value="">All Areas</option>
+                    <option value="">All areas</option>
                     {Object.keys(marketsData).sort().map(st =>
                       (marketsData[st] || []).map(m => (
                         <option key={m.id} value={m.slug}>{m.name}, {st}</option>
@@ -694,9 +714,10 @@ export default function Home() {
                     padding: '10px 24px',
                     background: searching ? 'var(--border-active)' : 'var(--accent-green)',
                     color: searching ? 'var(--text-muted)' : '#000',
-                    border: 'none', borderRadius: '6px', fontWeight: 600,
+                    border: 'none', borderRadius: '20px', fontWeight: 600,
                     fontSize: '14px', cursor: searching ? 'wait' : 'pointer',
                     whiteSpace: 'nowrap',
+                    transition: 'background 0.15s',
                   }}>
                     {searching ? 'Searching...' : 'Search'}
                   </button>
@@ -704,14 +725,15 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Quick tags */}
-            <div className="mt-3 flex gap-2 justify-center overflow-x-auto sm:flex-wrap sm:overflow-visible pb-2 sm:pb-0" style={{ WebkitOverflowScrolling: 'touch' }}>
+            {/* Quick tags — compact pills */}
+            <div className="mt-4 flex gap-2 justify-center overflow-x-auto sm:flex-wrap sm:overflow-visible pb-2 sm:pb-0" style={{ WebkitOverflowScrolling: 'touch' }}>
               {['tools', 'vintage', 'furniture', 'free', 'electronics', 'estate sale', 'kids', 'collectibles'].map(tag => (
                 <button key={tag} type="button" onClick={() => setSearchQuery(tag)} style={{
-                  padding: '6px 14px',
-                  border: '1px solid var(--border-active)', borderRadius: '16px',
-                  fontSize: '13px', color: 'var(--text-secondary)',
-                  background: 'var(--bg-surface-hover)', cursor: 'pointer', flexShrink: 0,
+                  padding: '5px 14px',
+                  border: '1px solid var(--border-subtle)', borderRadius: '20px',
+                  fontSize: '12px', color: 'var(--text-muted)',
+                  background: 'transparent', cursor: 'pointer', flexShrink: 0,
+                  transition: 'border-color 0.15s, color 0.15s',
                 }}>
                   {tag}
                 </button>
@@ -819,7 +841,7 @@ export default function Home() {
 
 
       {/* ═══════════════════════════════════════════════════════
-          SECTION 5: FEATURED DEALS
+          SECTION 5: FEATURED DEALS — Live feed with ScoreBadges
           ═══════════════════════════════════════════════════════ */}
       {featuredDeals.length > 0 && (
         <section style={{
@@ -829,65 +851,93 @@ export default function Home() {
         }}>
           <div style={{ maxWidth: '48rem', margin: '0 auto' }}>
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-              <h2 style={{
-                fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)',
-                letterSpacing: '-0.02em', marginBottom: 'var(--space-6)',
-              }}>
-                {featuredMarketName}
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 'var(--space-6)' }}>
+                <h2 style={{
+                  fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)',
+                  letterSpacing: '-0.02em',
+                }}>
+                  Live in {featuredMarketName}
+                </h2>
+                <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                  Updated just now
+                </span>
+              </div>
 
               <div style={{
                 background: 'var(--bg-elevated)', borderRadius: '12px',
-                padding: '4px', border: '1px solid var(--border-subtle)',
+                border: '1px solid var(--border-subtle)', overflow: 'hidden',
               }}>
                 {featuredDeals.map((deal, i) => (
                   <div key={deal.id || i} style={{
-                    display: 'flex', alignItems: 'center', gap: '16px',
-                    padding: '12px 16px',
-                    background: i % 2 === 0 ? 'var(--bg-surface)' : 'var(--bg-elevated)',
-                    borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', gap: '14px',
+                    padding: '14px 16px',
+                    borderBottom: i < featuredDeals.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+                    background: 'var(--bg-elevated)',
+                    transition: 'background 0.15s',
                   }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        {deal.deal_score && deal.deal_score !== 'gated' && (
-                          <span style={{
-                            fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 700,
-                            color: scoreColor(deal.deal_score),
-                          }}>{deal.deal_score}</span>
-                        )}
-                        <span className="truncate" style={{
-                          color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500,
-                        }}>
-                          {deal.title}
-                        </span>
+                    {/* ScoreBadge — 40x40 rounded square */}
+                    {deal.deal_score && deal.deal_score !== 'gated' ? (
+                      <div style={{
+                        width: '40px', height: '40px', borderRadius: '8px', flexShrink: 0,
+                        background: `${scoreColor(deal.deal_score)}10`,
+                        border: `1px solid ${scoreColor(deal.deal_score)}30`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <span style={{
+                          fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 700,
+                          color: scoreColor(deal.deal_score),
+                        }}>{deal.deal_score}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    ) : (
+                      <div style={{
+                        width: '40px', height: '40px', borderRadius: '8px', flexShrink: 0,
+                        background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-dim)' }}>--</span>
+                      </div>
+                    )}
+
+                    {/* Deal info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span className="truncate" style={{
+                        display: 'block', color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500,
+                        marginBottom: '3px',
+                      }}>
+                        {deal.title}
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
                         {deal.city && <span>{deal.city}</span>}
                         <span style={{
-                          textTransform: 'uppercase', fontSize: '10px',
-                          color: 'var(--text-dim)', border: '1px solid var(--border-active)',
-                          padding: '0 4px', borderRadius: '2px',
+                          textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.5px',
+                          color: 'var(--text-dim)', background: 'var(--bg-surface)',
+                          padding: '1px 6px', borderRadius: '3px',
                         }}>{deal.source}</span>
                       </div>
                     </div>
+
+                    {/* Price */}
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{
-                        fontWeight: 700, fontSize: '13px',
-                        color: deal.price === 'FREE' ? 'var(--accent-green)' : deal.price === 'Not listed' ? 'var(--text-dim)' : 'var(--accent-amber)',
+                        fontWeight: 700, fontSize: '14px', fontFamily: 'var(--font-mono)',
+                        color: deal.price === 'FREE' ? 'var(--accent-green)' : deal.price === 'Not listed' ? 'var(--text-dim)' : 'var(--text-primary)',
                       }}>
-                        {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? 'Garage Sale' : deal.price || 'Ask'}
+                        {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? '--' : deal.price || '--'}
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <p style={{
-                textAlign: 'center', fontSize: '13px', color: 'var(--text-dim)',
-                marginTop: 'var(--space-4)',
-              }}>
-                Sign up to see all deals in your market.
-              </p>
+              <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
+                <button onClick={() => setShowSignup(true)} style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--accent-green)', fontSize: '13px', fontWeight: 500,
+                  textDecoration: 'underline', textUnderlineOffset: '3px',
+                }}>
+                  See all deals in your market &rarr;
+                </button>
+              </div>
             </motion.div>
           </div>
         </section>
