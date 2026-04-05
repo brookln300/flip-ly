@@ -1,29 +1,47 @@
 # Flip-ly Project Status
 
-**Last Updated:** 2026-04-04
-**Status:** Mid-Pivot — Planning COMPLETE, Build Phase NEXT
+**Last Updated:** 2026-04-04 (evening)
+**Status:** BUILD PHASE — 2-week sprint to launch (deadline: April 18)
 **Current Branch:** `polish/monday-deadline` (Vercel preview active)
+**Orchestrator:** `docs/ORCHESTRATOR.md` — daily execution plan
 
 ---
 
 ## PICK UP HERE
 
-**The planning phase is done.** 10 documents locked in `docs/planning/`. All strategic decisions made. No more debating.
+**Read `docs/ORCHESTRATOR.md` first.** It has the day-by-day plan through April 18.
 
-**Next action: Build the landing page rework.**
-- Build spec: `docs/planning/LANDING-PAGE-SPEC.md`
-- Design system: `docs/planning/DESIGN-SYSTEM.md`
-- Branch: `polish/monday-deadline` (pushes auto-deploy to Vercel preview)
-- Build order: Hero → Proof bar → Score card → Search → Deals → Pricing → CTA → Footer
+**Day 1 (April 5) — COMPLETE.** Next up: Day 2 (April 6) — Score card polish, search simplification, deals cleanup.
 
-**Keith may need to provide:**
-- Dashboard screenshot for hero (scored deal with breakdown visible)
-- Decision on hero headline wording
-- Stripe Price ID creation for new tiers
+**Keith needs to provide (not blocking Day 2):**
+- Dashboard screenshot for hero (scored deal with breakdown visible) — currently using placeholder score card
+- Stripe Price IDs for new tiers (needed by Day 4)
+- Confirm hero headline: "Every deal near you. Scored before you see it."
 
 ---
 
-## What Shipped This Session (2026-04-04, Afternoon)
+## What Shipped (2026-04-05, Day 1 Sprint)
+
+### Landing Page Rewrite
+- [x] Full design system CSS tokens in globals.css (backgrounds, borders, text, accents, scores, spacing)
+- [x] Inter + JetBrains Mono loaded via next/font/google
+- [x] 8-section landing page scaffold (replaces 1600-line old page)
+- [x] Section 1: Hero — new headline, single CTA, score card placeholder (replacing video + dual CTA)
+- [x] Section 2: Social Proof Bar — real DB stats via new /api/stats endpoint
+- [x] Section 3: Score Breakdown Card — hardcoded with real-looking data
+- [x] Section 4: Live Search — simplified, anonymous limited to 3 results
+- [x] Section 5: Featured Deals — clean, no HOT badges, score color only
+- [x] Section 6: Pricing — 3-tier (Free/Pro $5/Power $19), founding prices
+- [x] Section 7: Final CTA — minimal
+- [x] Section 8: Footer — 4-column, updated tagline, lobster pixel preserved
+- [x] Removed: testimonials, How It Works cards, HOT badges, video, "free forever", dual CTAs
+- [x] Build passes clean, pushed to polish/monday-deadline, Vercel preview deploying
+
+**Bonus:** Also built score breakdown card (Section 3) and full 3-tier pricing (Section 6) ahead of schedule.
+
+---
+
+## What Shipped (2026-04-04, Afternoon)
 
 ### Landing Page Polish (Before Pivot)
 - [x] Testimonials redesign — 2-col grid, 6 personas, stars, role badges
@@ -47,29 +65,26 @@
 
 ---
 
-## What's Next (Tonight's Build Session)
+## 2-Week Sprint Overview (April 5–18)
 
-### Priority 1 — Landing Page Rework
-- [ ] Set up CSS custom properties from DESIGN-SYSTEM.md
-- [ ] Section 1: Hero (headline, subhead, one CTA, product screenshot)
-- [ ] Section 2: Social proof bar (real DB numbers + source logos)
-- [ ] Section 3: Score breakdown card (real deal, full AI breakdown)
-- [ ] Section 4: Live search (simplified, 3 anonymous results)
-- [ ] Section 5: Featured deals (clean, no badges)
-- [ ] Section 6: Pricing (3-tier cards, founding counter)
-- [ ] Section 7: Final CTA (one line, one button)
-- [ ] Section 8: Footer (updated tagline, category links)
-- [ ] Mobile test (375px, 768px, 1024px)
-- [ ] Push to preview, verify on Vercel
+| Day | Date | Focus | Status |
+|-----|------|-------|--------|
+| 1 | Apr 5 (Sat) | Landing page skeleton + design tokens + hero + proof bar | DONE |
+| 2 | Apr 6 (Sun) | Score card + search simplification + deals cleanup | Pending |
+| 3 | Apr 7 (Mon) | Pricing section + CTA + footer — full landing page complete | Pending |
+| 4 | Apr 8 (Tue) | Stripe setup + DB schema changes | Pending |
+| 5 | Apr 9 (Wed) | AI score breakdown (prompt restructure + storage) | Pending |
+| 6 | Apr 10 (Thu) | Score breakdown UI + tier gating | Pending |
+| 7 | Apr 11 (Fri) | EstateSales.net integration + daily digest | Pending |
+| 8 | Apr 12 (Sat) | GarageSaleFinder + ShopGoodwill integrations | Pending |
+| 9 | Apr 13 (Sun) | Saved searches + upgrade prompts | Pending |
+| 10 | Apr 14 (Mon) | Founding member program + dashboard polish | Pending |
+| 11 | Apr 15 (Tue) | FB group directory + content/SEO updates | Pending |
+| 12 | Apr 16 (Wed) | Full QA + bug fixes | Pending |
+| 13 | Apr 17 (Thu) | Production deploy prep + merge to master | Pending |
+| 14 | Apr 18 (Fri) | LAUNCH — founding member program goes live | Pending |
 
-### Priority 2 — Pricing Page (if time)
-- [ ] Dedicated /pricing route with full feature matrix
-- [ ] Founding countdown
-- [ ] FAQ section
-
-### Priority 3 — Stripe Setup
-- [ ] Create new Price IDs (pro_founding, pro_regular, power_founding, power_regular)
-- [ ] Update checkout flow for 3-tier model
+**Full daily breakdown:** `docs/ORCHESTRATOR.md`
 
 ---
 
