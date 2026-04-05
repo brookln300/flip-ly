@@ -60,7 +60,7 @@ const DASH_CSS = `
   .dash-btn-outline:hover { border-color: rgba(255,255,255,0.2) !important; color: #aaa !important; background: rgba(255,255,255,0.03) !important }
 `
 
-const font = 'Inter, system-ui, -apple-system, sans-serif'
+const font = 'var(--font-primary), system-ui, -apple-system, sans-serif'
 
 /* ── HELPERS ───────────────────────────────────────────── */
 function formatDisplayName(user: User): string {
@@ -132,19 +132,20 @@ function ScoreBadge({ score }: { score: number | 'gated' }) {
       </div>
     )
   }
-  const isHot = score >= 8
-  const isMid = score >= 6
-  const color = isHot ? '#22C55E' : isMid ? '#F59E0B' : '#555'
-  const bg = isHot ? 'rgba(34,197,94,0.1)' : isMid ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)'
-  const border = isHot ? 'rgba(34,197,94,0.2)' : isMid ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.06)'
+  const isExcellent = score >= 9
+  const isGood = score >= 7
+  const isMid = score >= 5
+  const color = isExcellent ? 'var(--score-excellent)' : isGood ? 'var(--score-good)' : isMid ? 'var(--score-average)' : 'var(--score-low)'
+  const bg = isExcellent ? 'rgba(34,197,94,0.1)' : isGood ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.02)'
+  const border = isExcellent ? 'rgba(34,197,94,0.2)' : isGood ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.06)'
   return (
     <div style={{
       width: '46px', height: '46px', borderRadius: '13px',
       background: bg, border: `1px solid ${border}`,
       display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-      boxShadow: isHot ? '0 0 12px rgba(34,197,94,0.08)' : 'none',
+      boxShadow: isExcellent ? '0 0 12px rgba(34,197,94,0.08)' : 'none',
     }}>
-      <span style={{ fontSize: '17px', fontWeight: 700, fontFamily: font, color, letterSpacing: '-0.02em' }}>
+      <span style={{ fontSize: '17px', fontWeight: 700, fontFamily: 'var(--font-mono), monospace', color, letterSpacing: '-0.02em' }}>
         {score}
       </span>
     </div>
@@ -216,9 +217,9 @@ export default function Dashboard() {
   /* Loading state */
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#060606' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '24px', height: '24px', border: '2px solid #111', borderTop: '2px solid #22C55E', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 16px' }} />
+          <div style={{ width: '24px', height: '24px', border: '2px solid #111', borderTop: '2px solid var(--accent-green)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 16px' }} />
           <p style={{ color: '#333', fontSize: '13px', fontFamily: font, fontWeight: 500 }}>Loading dashboard...</p>
         </div>
         <style>{DASH_CSS}</style>
@@ -229,10 +230,10 @@ export default function Dashboard() {
   /* Not authenticated */
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#060606' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
         <div className="text-center">
           <p style={{ color: '#666', fontSize: '15px', fontFamily: font, marginBottom: '16px' }}>Sign in to continue.</p>
-          <a href="/" style={{ color: '#22C55E', fontSize: '14px', fontFamily: font, fontWeight: 500 }}>&larr; flip-ly.net</a>
+          <a href="/" style={{ color: 'var(--accent-green)', fontSize: '14px', fontFamily: font, fontWeight: 500 }}>&larr; flip-ly.net</a>
         </div>
       </div>
     )
@@ -252,7 +253,7 @@ export default function Dashboard() {
   const marketLabel = cityAlreadyHasState ? user.city : (user.city && user.state ? `${user.city}, ${user.state}` : user.city || 'your area')
 
   return (
-    <div className="min-h-screen" style={{ background: '#060606', color: '#fff' }}>
+    <div className="min-h-screen" style={{ background: 'var(--bg-primary)', color: '#fff' }}>
       <style>{DASH_CSS}</style>
 
       {/* ═══ HEADER ═══ */}
@@ -280,7 +281,7 @@ export default function Dashboard() {
             </span>
             {user.is_premium && (
               <span style={{
-                background: 'linear-gradient(135deg, #22C55E, #16A34A)',
+                background: 'var(--accent-green)',
                 color: '#000', padding: '2px 8px',
                 borderRadius: '5px', fontSize: '10px', fontWeight: 700,
                 fontFamily: font, letterSpacing: '0.06em',
@@ -325,7 +326,7 @@ export default function Dashboard() {
             </div>
             {!user.is_premium && (
               <a href="/pro" style={{
-                background: 'linear-gradient(135deg, #22C55E, #16A34A)',
+                background: 'var(--accent-green)',
                 color: '#000', padding: '10px 22px',
                 borderRadius: '10px', fontSize: '13px', fontWeight: 600,
                 fontFamily: font, textDecoration: 'none', whiteSpace: 'nowrap',
@@ -370,7 +371,7 @@ export default function Dashboard() {
             <StatCard
               icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={searchGate?.is_premium ? '#22C55E' : '#F59E0B'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>}
               label="Searches"
-              value={searchGate?.is_premium ? '∞' : (searchGate?.searches_remaining != null ? `${searchGate.searches_remaining}` : (searchGate?.searches_max != null ? `${searchGate.searches_max}` : '10'))}
+              value={searchGate?.is_premium ? '∞' : (searchGate?.searches_remaining != null ? `${searchGate.searches_remaining}` : (searchGate?.searches_max != null ? `${searchGate.searches_max}` : '15'))}
               sub={searchGate?.is_premium ? 'unlimited' : (searchGate ? `of ${searchGate.searches_max} today` : '')}
               accent={searchGate?.is_premium}
               accentColor={searchGate?.is_premium ? '#22C55E' : '#F59E0B'}
@@ -449,10 +450,10 @@ export default function Dashboard() {
             </p>
             <a href="/pro" style={{
               display: 'inline-block', padding: '10px 24px',
-              background: 'linear-gradient(135deg, #22C55E, #16A34A)', color: '#000',
+              background: 'var(--accent-green)', color: '#000',
               borderRadius: '10px', fontWeight: 600, fontSize: '13px', textDecoration: 'none', fontFamily: font,
             }}>
-              Upgrade to Pro &mdash; $5/mo
+              Upgrade to Pro
             </a>
           </div>
         )}
@@ -482,9 +483,9 @@ export default function Dashboard() {
           <div style={{ flex: 1, borderBottom: '1px solid rgba(255,255,255,0.04)' }} />
           {activeTab === 'deals' && hotDeals.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingBottom: '10px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#22C55E', display: 'inline-block' }} />
+              <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'var(--score-excellent)', display: 'inline-block' }} />
               <span style={{ color: '#333', fontSize: '11px', fontFamily: font, fontWeight: 500 }}>
-                8+ = HOT
+                Score color = deal quality
               </span>
             </div>
           )}
@@ -527,14 +528,6 @@ export default function Dashboard() {
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    {listing.hot && (
-                      <span style={{
-                        background: 'linear-gradient(135deg, #F59E0B, #D97706)',
-                        color: '#000', padding: '2px 7px',
-                        borderRadius: '4px', fontSize: '9px', fontWeight: 700,
-                        fontFamily: font, letterSpacing: '0.06em', flexShrink: 0,
-                      }}>HOT</span>
-                    )}
                     <span style={{
                       color: '#e0e0e0', fontSize: '14px', fontWeight: 500,
                       fontFamily: font, letterSpacing: '-0.01em',
@@ -566,7 +559,7 @@ export default function Dashboard() {
                   <div style={{
                     fontFamily: font, fontWeight: 700,
                     fontSize: '14px',
-                    color: listing.price === 'FREE' ? '#22C55E' : listing.price === 'Not listed' ? '#222' : '#ccc',
+                    color: listing.price === 'FREE' ? 'var(--accent-green)' : listing.price === 'Not listed' ? 'var(--text-dim)' : 'var(--text-secondary)',
                     letterSpacing: '-0.02em',
                   }}>
                     {listing.price === 'FREE' ? 'FREE' : listing.price === 'Not listed' ? '—' : listing.price || '—'}
@@ -586,7 +579,7 @@ export default function Dashboard() {
               <p style={{ color: '#333', fontSize: '12px', fontFamily: font }}>
                 {displayTotal - displayListings.length} more deals available
                 {!user.is_premium && (
-                  <> &middot; <a href="/pro" style={{ color: '#22C55E', textDecoration: 'none', fontWeight: 600 }}>Unlock all</a></>
+                  <> &middot; <a href="/pro" style={{ color: 'var(--accent-green)', textDecoration: 'none', fontWeight: 600 }}>Unlock all</a></>
                 )}
               </p>
             </div>
@@ -622,14 +615,14 @@ export default function Dashboard() {
                 background: 'rgba(34,197,94,0.04)', border: '1px solid rgba(34,197,94,0.1)',
                 borderRadius: '10px', padding: '10px 14px',
               }}>
-                <p style={{ color: '#22C55E', fontSize: '12px', fontFamily: font, fontWeight: 500 }}>
+                <p style={{ color: 'var(--accent-green)', fontSize: '12px', fontFamily: font, fontWeight: 500 }}>
                   Your digest arrives 6 hours before free users.
                 </p>
               </div>
             ) : (
               <a href="/pro" style={{
                 display: 'inline-flex', alignItems: 'center', gap: '4px',
-                color: '#F59E0B', fontSize: '13px', textDecoration: 'none',
+                color: 'var(--accent-amber)', fontSize: '13px', textDecoration: 'none',
                 fontFamily: font, fontWeight: 500,
               }}>
                 Get your digest 6 hours early <span style={{ fontSize: '12px' }}>&rarr;</span>

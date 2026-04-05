@@ -11,7 +11,7 @@ function ProContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (tier: 'pro' | 'power') => {
     if (authStatus !== 'authenticated') {
       window.location.href = '/?signup=pro'
       return
@@ -19,7 +19,11 @@ function ProContent() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/stripe/checkout', { method: 'POST' })
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier }),
+      })
       const data = await res.json()
       if (data.url) {
         window.location.href = data.url
@@ -62,46 +66,32 @@ function ProContent() {
   // POST-CHECKOUT SUCCESS
   if (status === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#000' }}>
-        <div className="text-center px-8 max-w-lg">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+        <div style={{ textAlign: 'center', padding: '0 32px', maxWidth: '32rem' }}>
           <div style={{
             width: '64px', height: '64px', borderRadius: '50%',
-            background: 'rgba(34,197,94,0.1)', border: '2px solid #22C55E',
+            background: 'rgba(34,197,94,0.1)', border: '2px solid var(--accent-green)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 24px', fontSize: '28px',
+            margin: '0 auto 24px', fontSize: '28px', color: 'var(--accent-green)',
           }}>
             &#x2713;
           </div>
-          <h1 className="text-3xl font-bold mb-4" style={{
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-            color: '#fff',
+          <h1 style={{
+            fontSize: '30px', fontWeight: 700, color: 'var(--text-primary)',
+            marginBottom: '16px',
           }}>
-            Welcome to Pro
+            You're in.
           </h1>
-          <p className="text-base mb-6" style={{ color: '#999', fontFamily: 'system-ui, sans-serif', lineHeight: 1.7 }}>
-            You're now a Pro member. Your weekly digest arrives 6 hours before everyone else, and you have unlimited searches.
+          <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
+            Your founding price is locked for life. Full score breakdowns, unlimited searches, and daily digests are now active.
           </p>
-          <div className="mb-6 p-4 inline-block" style={{
-            background: '#111', border: '1px solid #22C55E',
-            borderRadius: '12px', padding: '20px 32px',
+          <a href="/dashboard" style={{
+            display: 'inline-block', padding: '12px 24px',
+            background: 'var(--accent-green)', color: '#000',
+            borderRadius: '8px', fontSize: '14px', fontWeight: 600,
+            textDecoration: 'none',
           }}>
-            <p style={{ fontFamily: 'system-ui, sans-serif', color: '#22C55E', fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>
-              PRO MEMBER
-            </p>
-            <p style={{ fontFamily: 'system-ui, sans-serif', color: '#666', fontSize: '12px' }}>
-              $5/mo &middot; early adopter pricing locked for life
-            </p>
-          </div>
-          <div className="mb-6">
-            <p style={{ color: '#888', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
-              &#x2705; Digest 6hrs early &middot; &#x2705; Unlimited search &middot; &#x2705; Full deal data &middot; &#x2705; Hot deal alerts
-            </p>
-          </div>
-          <a href="/" style={{
-            color: '#22C55E', fontFamily: 'system-ui, sans-serif',
-            textDecoration: 'underline', fontSize: '14px',
-          }}>
-            &larr; Go to dashboard
+            Go to Dashboard
           </a>
         </div>
       </div>
@@ -111,164 +101,215 @@ function ProContent() {
   // POST-CHECKOUT CANCEL
   if (status === 'cancelled') {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#000' }}>
-        <div className="text-center px-8 max-w-lg">
-          <h1 className="text-2xl font-bold mb-4" style={{
-            fontFamily: 'system-ui, -apple-system, sans-serif', color: '#fff',
-          }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+        <div style={{ textAlign: 'center', padding: '0 32px', maxWidth: '32rem' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px' }}>
             No worries
           </h1>
-          <p className="text-base mb-6" style={{ color: '#888', fontFamily: 'system-ui, sans-serif', lineHeight: 1.7 }}>
-            You can always upgrade later. The free tier still gives you a weekly digest and 10 searches per day.
-          </p>
-          <p className="text-sm mb-6" style={{ color: '#555', fontFamily: 'system-ui, sans-serif' }}>
-            Early adopter pricing ($5/mo locked for life) is available while we're in this phase.
+          <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
+            The free tier still gives you 15 searches/day and a weekly digest. Founding pricing is available while spots last.
           </p>
           <a href="/" style={{
-            color: '#22C55E', fontFamily: 'system-ui, sans-serif',
-            textDecoration: 'underline', fontSize: '14px',
+            color: 'var(--accent-green)', textDecoration: 'underline', fontSize: '14px',
           }}>
-            &larr; Back to flip-ly
+            &larr; Back to Flip-ly
           </a>
         </div>
       </div>
     )
   }
 
-  // DEFAULT: PRO UPGRADE PAGE
+  // DEFAULT: 3-TIER PRICING PAGE
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#000' }}>
-      <div className="text-center px-8 max-w-xl">
+    <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+      {/* Header */}
+      <header style={{
+        padding: 'var(--space-3) var(--space-4)',
+        borderBottom: '1px solid var(--border-subtle)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4l5 5h-3v4h-4V9H7l5-5z" fill="var(--accent-green)"/>
+            <path d="M7 16a7 7 0 0 0 10 0" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" fill="none"/>
+          </svg>
+          <span style={{ fontSize: '18px', color: 'var(--text-primary)', fontWeight: 700, letterSpacing: '-0.03em' }}>
+            FLIP-LY
+          </span>
+        </a>
+        <button onClick={handleManage} style={{
+          background: 'none', border: '1px solid var(--border-active)',
+          borderRadius: '6px', color: 'var(--text-dim)', fontSize: '12px',
+          padding: '6px 14px', cursor: 'pointer',
+        }}>
+          Manage subscription
+        </button>
+      </header>
 
-        {/* Early adopter badge */}
-        <div style={{
-          display: 'inline-block', background: 'rgba(34,197,94,0.1)',
-          border: '1px solid rgba(34,197,94,0.3)', borderRadius: '20px',
-          padding: '4px 14px', marginBottom: '24px',
-          fontSize: '12px', color: '#22C55E', fontFamily: 'system-ui, sans-serif',
-          fontWeight: 600, letterSpacing: '0.5px',
-        }}>
-          EARLY ADOPTER PRICING
-        </div>
-
-        <h1 className="text-3xl font-bold mb-2" style={{
-          fontFamily: 'system-ui, -apple-system, sans-serif', color: '#fff',
-        }}>
-          Flip-ly Pro
-        </h1>
-        <p className="text-lg mb-2" style={{
-          color: '#fff', fontFamily: 'system-ui, sans-serif', fontWeight: 700,
-          fontSize: '40px',
-        }}>
-          $5<span style={{ fontSize: '16px', color: '#666', fontWeight: 400 }}>/month</span>
-        </p>
-        <p className="mb-8" style={{
-          color: '#22C55E', fontFamily: 'system-ui, sans-serif',
-          fontSize: '14px', fontWeight: 600,
-        }}>
-          Lock this price in for life. Even when the price goes up.
-        </p>
-
-        <div className="mb-8 text-left inline-block" style={{
-          background: '#111', border: '1px solid #222', borderRadius: '12px',
-          padding: '24px 28px', maxWidth: '400px', width: '100%',
-        }}>
-          <p style={{ fontFamily: 'system-ui, sans-serif', color: '#fff', fontSize: '14px', fontWeight: 600, marginBottom: '16px' }}>
-            What you get:
-          </p>
-          <ul style={{ fontFamily: 'system-ui, sans-serif', color: '#999', fontSize: '14px', listStyle: 'none', padding: 0, margin: 0 }}>
-            <li style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
-              <span style={{ color: '#22C55E' }}>&#x2713;</span>
-              <span><strong style={{ color: '#fff' }}>Digest 6 hours early</strong> — get deals before free users see them</span>
-            </li>
-            <li style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
-              <span style={{ color: '#22C55E' }}>&#x2713;</span>
-              <span><strong style={{ color: '#fff' }}>Unlimited searches</strong> — free tier is limited to 10/day</span>
-            </li>
-            <li style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
-              <span style={{ color: '#22C55E' }}>&#x2713;</span>
-              <span><strong style={{ color: '#fff' }}>Full AI scores + direct links</strong> — know exactly what's worth your time</span>
-            </li>
-            <li style={{ marginBottom: '12px', display: 'flex', gap: '10px' }}>
-              <span style={{ color: '#22C55E' }}>&#x2713;</span>
-              <span><strong style={{ color: '#fff' }}>Hot deal alerts</strong> — get notified when a 9+/10 deal drops</span>
-            </li>
-            <li style={{ display: 'flex', gap: '10px' }}>
-              <span style={{ color: '#22C55E' }}>&#x2713;</span>
-              <span><strong style={{ color: '#fff' }}>Custom saved searches</strong> — alerts for what you care about</span>
-            </li>
-          </ul>
-        </div>
-
-        <div className="mb-4">
-          <p style={{ color: '#555', fontSize: '12px', fontFamily: 'system-ui, sans-serif' }}>
-            One good find pays for a year of Pro. Cancel anytime.
+      <div style={{ maxWidth: '56rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-12)' }}>
+          <h1 style={{
+            fontSize: '34px', fontWeight: 700, color: 'var(--text-primary)',
+            letterSpacing: '-0.02em', marginBottom: 'var(--space-3)',
+          }}>
+            Pick your plan
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '15px' }}>
+            One good find pays for a year. Cancel anytime.
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 px-4 py-3" style={{
-            background: '#1a0000', border: '1px solid #dc2626',
-            borderRadius: '8px', maxWidth: '400px', margin: '0 auto 16px',
+          <div style={{
+            background: 'rgba(239,68,68,0.05)', border: '1px solid var(--accent-red)',
+            borderRadius: '8px', padding: '12px 16px', maxWidth: '400px',
+            margin: '0 auto var(--space-8)', textAlign: 'center',
           }}>
-            <p style={{ color: '#dc2626', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
-              {error}
-            </p>
+            <p style={{ color: 'var(--accent-red)', fontSize: '13px' }}>{error}</p>
           </div>
         )}
 
         {authStatus !== 'authenticated' && (
-          <div className="mb-4 px-4 py-3" style={{
-            background: '#111', border: '1px solid #333',
-            borderRadius: '8px', maxWidth: '400px', margin: '0 auto 16px',
+          <div style={{
+            background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
+            borderRadius: '8px', padding: '12px 16px', maxWidth: '400px',
+            margin: '0 auto var(--space-8)', textAlign: 'center',
           }}>
-            <p style={{ color: '#999', fontSize: '13px', fontFamily: 'system-ui, sans-serif' }}>
-              Sign up or log in first to upgrade to Pro.
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+              <a href="/?signup=pro" style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>Sign up or log in</a> first to choose a plan.
             </p>
           </div>
         )}
 
-        <div className="flex flex-col items-center gap-3">
-          <button
-            onClick={handleUpgrade}
-            disabled={loading}
-            style={{
-              background: loading ? '#333' : '#22C55E',
-              color: '#000',
-              border: 'none',
-              borderRadius: '8px',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              fontSize: '16px',
-              fontWeight: 700,
-              padding: '14px 48px',
-              cursor: loading ? 'wait' : 'pointer',
-            }}
-          >
-            {loading ? 'Loading...' : (authStatus !== 'authenticated' ? 'Sign Up to Upgrade' : 'Lock In $5/month')}
-          </button>
+        {/* 3-tier grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ maxWidth: '900px', margin: '0 auto' }}>
 
-          <button
-            onClick={handleManage}
-            style={{
-              background: 'none',
-              border: '1px solid #333',
-              borderRadius: '6px',
-              color: '#666',
-              fontFamily: 'system-ui, sans-serif',
-              fontSize: '12px',
-              padding: '8px 20px',
-              cursor: 'pointer',
-            }}
-          >
-            Already Pro? Manage subscription
-          </button>
-
-          <a href="/" style={{
-            color: '#555', fontFamily: 'system-ui, sans-serif',
-            textDecoration: 'underline', fontSize: '12px', marginTop: '8px',
+          {/* Free */}
+          <div style={{
+            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+            borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
           }}>
-            &larr; back to free tier
-          </a>
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Free</div>
+            <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-6)' }}>
+              $0<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+            </div>
+            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0 }}>
+              <li>15 searches/day</li>
+              <li>1 market</li>
+              <li>Score number only</li>
+              <li>Weekly digest</li>
+            </ul>
+            <a href="/" style={{
+              display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
+              background: 'transparent', color: 'var(--text-muted)',
+              border: '1px solid var(--border-active)', borderRadius: '8px',
+              fontSize: '14px', fontWeight: 600, textDecoration: 'none', textAlign: 'center',
+            }}>
+              Current plan
+            </a>
+          </div>
+
+          {/* Pro — highlighted */}
+          <div style={{
+            background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
+            borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
+            position: 'relative',
+          }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>Most Popular</div>
+            <div style={{ fontSize: '13px', color: 'var(--accent-green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Pro</div>
+            <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+              $5<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>
+              Founding price &middot; Locks in for life
+            </div>
+            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0 }}>
+              <li>Unlimited searches</li>
+              <li>3 markets</li>
+              <li>Full score breakdown</li>
+              <li>Daily + weekly digest</li>
+              <li>3 saved searches</li>
+            </ul>
+            <button onClick={() => handleUpgrade('pro')} disabled={loading} style={{
+              display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
+              background: loading ? 'var(--border-active)' : 'var(--accent-green)', color: '#000',
+              border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600,
+              cursor: loading ? 'wait' : 'pointer',
+            }}>
+              {loading ? 'Loading...' : authStatus !== 'authenticated' ? 'Sign Up for Pro' : 'Start Pro'}
+            </button>
+          </div>
+
+          {/* Power */}
+          <div style={{
+            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+            borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '13px', color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Power</div>
+            <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+              $19<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>
+              Founding price &middot; Locks in for life
+            </div>
+            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0 }}>
+              <li>Unlimited searches</li>
+              <li>Unlimited markets</li>
+              <li>Breakdown + trends</li>
+              <li>Daily + instant alerts</li>
+              <li>Unlimited saved searches</li>
+            </ul>
+            <button onClick={() => handleUpgrade('power')} disabled={loading} style={{
+              display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
+              background: 'transparent', color: 'var(--text-muted)',
+              border: '1px solid var(--border-active)', borderRadius: '8px',
+              fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
+            }}>
+              {loading ? 'Loading...' : authStatus !== 'authenticated' ? 'Sign Up for Power' : 'Go Power'}
+            </button>
+          </div>
+        </div>
+
+        <p style={{
+          textAlign: 'center', color: 'var(--text-dim)', fontSize: '13px',
+          marginTop: 'var(--space-6)',
+        }}>
+          All plans include 20+ source coverage and AI scoring. No contracts.
+        </p>
+
+        {/* Feature comparison */}
+        <div style={{
+          maxWidth: '600px', margin: 'var(--space-12) auto 0',
+          background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+          borderRadius: '12px', padding: 'var(--space-6)', overflow: 'auto',
+        }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-default)' }}>
+                <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Feature</th>
+                <th style={{ textAlign: 'center', padding: '8px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Free</th>
+                <th style={{ textAlign: 'center', padding: '8px 0', color: 'var(--accent-green)', fontWeight: 600 }}>Pro</th>
+                <th style={{ textAlign: 'center', padding: '8px 0', color: 'var(--accent-purple)', fontWeight: 600 }}>Power</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ['Searches/day', '15', 'Unlimited', 'Unlimited'],
+                ['Markets', '1', '3', 'Unlimited'],
+                ['AI score', 'Number only', 'Full breakdown', 'Breakdown + trends'],
+                ['Digest', 'Weekly', 'Daily + weekly', 'Daily + instant'],
+                ['Saved searches', '--', '3', 'Unlimited'],
+                ['Source links', 'Hidden', 'Full access', 'Full access'],
+              ].map(([feature, free, pro, power], i) => (
+                <tr key={i} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                  <td style={{ padding: '10px 0', color: 'var(--text-secondary)' }}>{feature}</td>
+                  <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-dim)' }}>{free}</td>
+                  <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>{pro}</td>
+                  <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>{power}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -277,7 +318,7 @@ function ProContent() {
 
 export default function ProPage() {
   return (
-    <Suspense fallback={<div style={{ background: '#000', minHeight: '100vh' }} />}>
+    <Suspense fallback={<div style={{ background: 'var(--bg-primary)', minHeight: '100vh' }} />}>
       <ProContent />
     </Suspense>
   )
