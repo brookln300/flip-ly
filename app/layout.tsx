@@ -19,8 +19,8 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Flip-ly.net — AI-Powered Garage Sale Finder',
-  description: 'Find the best garage sales, estate sales, and local deals near you. AI-scored listings from 20+ sources, delivered to your inbox every Thursday.',
+  title: 'Flip-ly.net — Every Deal Near You, Scored by AI',
+  description: 'AI scores Craigslist, OfferUp, estate sales & 20+ sources across 400+ markets. Find the best local deals before anyone else.',
   metadataBase: new URL('https://flip-ly.net'),
   openGraph: {
     title: 'Flip-ly.net — Every Deal Near You, Scored by AI',
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Flip-ly.net — Every Deal Near You, Scored by AI',
-    description: 'AI scores Craigslist, OfferUp, estate sales & 20+ sources so you never miss a deal. Free to use.',
+    description: 'AI scores Craigslist, OfferUp, estate sales & 20+ sources across 400+ markets. Find the best local deals before anyone else.',
     images: ['/og-image.png'],
   },
   robots: {

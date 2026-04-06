@@ -69,7 +69,7 @@ export default function Home() {
   const [searchGate, setSearchGate] = useState<any>(null)
   const [featuredDeals, setFeaturedDeals] = useState<any[]>([])
   const [featuredLoading, setFeaturedLoading] = useState(true)
-  const [stats, setStats] = useState({ listings: 0, sources: 0, markets: 413 })
+  const [stats, setStats] = useState({ listings: 0, sources: 20, markets: 413 })
   const [expandedDeal, setExpandedDeal] = useState<number | null>(null)
 
   // Fetch featured deals
@@ -389,8 +389,8 @@ export default function Home() {
             }}>
               What&apos;s the best deal near you right now?
             </h1>
-            <p style={{ fontSize: '15px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px' }}>
-              {stats.markets} markets &middot; 20+ sources &middot; AI-scored
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', fontFamily: 'var(--font-mono)' }}>
+              {stats.listings > 0 ? `${stats.listings.toLocaleString()} deals scored` : `${stats.markets} markets`} &middot; {stats.sources || '20'}+ sources &middot; updated daily
             </p>
             <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '12px', maxWidth: '420px', lineHeight: 1.8 }}>
               Craigslist &middot; OfferUp &middot; EstateSales.net &middot; Facebook Marketplace &middot; Goodwill &middot; more
@@ -502,11 +502,7 @@ export default function Home() {
             <p style={{ color: 'var(--text-dim)', fontSize: '13px' }}>Loading deals...</p>
           </div>
         )}
-        {featuredDeals.length > 0 && (
-          <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: 'var(--space-4)', fontFamily: 'var(--font-mono)' }}>
-            Craigslist &middot; OfferUp &middot; EstateSales.net &middot; Facebook Marketplace &middot; Goodwill &middot; 20+ more
-          </p>
-        )}
+        {/* Source text already shown in hero — no duplicate here */}
       </div>
 
 
@@ -515,8 +511,11 @@ export default function Home() {
       {/* ═══ BEAT 4: INLINE SIGNUP — not a modal, just a form ═══ */}
       {!loggedInUser && (
         <div style={{ maxWidth: '28rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
-            Free account &middot; 15 searches/day
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: 500 }}>
+            Get the weekly digest every Thursday
+          </p>
+          <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-6)' }}>
+            Top deals in your market, scored and sorted. Free · 15 searches/day.
           </p>
           <button onClick={() => signIn('google')} type="button" style={{
             width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
@@ -540,28 +539,31 @@ export default function Home() {
       <div id="pricing" style={{ maxWidth: '32rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border-subtle)', borderRadius: '10px', overflow: 'hidden' }}>
           {/* Free */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--bg-surface)' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between" style={{ padding: '14px 16px', background: 'var(--bg-surface)', gap: '4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', minWidth: '52px' }}>Free</span>
-              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>15 searches/day · 1 market · weekly digest</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }} className="sm:hidden">$0</span>
             </div>
-            <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', flexShrink: 0, marginLeft: '12px' }}>$0</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }} className="sm:flex-1">15 searches/day · 1 market · weekly digest</span>
+            <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', flexShrink: 0 }} className="hidden sm:inline">$0</span>
           </div>
           {/* Pro */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--bg-surface)' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between" style={{ padding: '14px 16px', background: 'var(--bg-surface)', gap: '4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-green)', minWidth: '52px' }}>Pro</span>
-              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Unlimited · 3 markets · score breakdown · saved searches</span>
+              <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: '#000', fontFamily: 'var(--font-mono)', background: 'var(--accent-green)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }} className="sm:hidden">$5/mo</a>
             </div>
-            <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: '#000', fontFamily: 'var(--font-mono)', flexShrink: 0, marginLeft: '12px', background: 'var(--accent-green)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }}>$5/mo</a>
+            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }} className="sm:flex-1">Unlimited · 3 markets · score breakdown · saved searches</span>
+            <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: '#000', fontFamily: 'var(--font-mono)', flexShrink: 0, background: 'var(--accent-green)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }} className="hidden sm:inline">$5/mo</a>
           </div>
           {/* Power */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--bg-surface)' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between" style={{ padding: '14px 16px', background: 'var(--bg-surface)', gap: '4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-purple)', minWidth: '52px' }}>Power</span>
-              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Unlimited everything · instant alerts · trends</span>
+              <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', border: '1px solid var(--border-active)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }} className="sm:hidden">$19/mo</a>
             </div>
-            <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', flexShrink: 0, marginLeft: '12px', border: '1px solid var(--border-active)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }}>$19/mo</a>
+            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }} className="sm:flex-1">Unlimited everything · instant alerts · trends</span>
+            <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', flexShrink: 0, border: '1px solid var(--border-active)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }} className="hidden sm:inline">$19/mo</a>
           </div>
         </div>
         <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '11px', marginTop: 'var(--space-3)', fontFamily: 'var(--font-mono)' }}>
