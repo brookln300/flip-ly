@@ -354,6 +354,7 @@ export default function Home() {
           <span style={{ fontSize: '18px', color: 'var(--text-primary)', fontWeight: 700, letterSpacing: '-0.03em' }}>FLIP-LY</span>
         </a>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <a href="/blog" className="hidden sm:inline" style={{ color: 'var(--text-muted)', fontSize: '13px', textDecoration: 'none', padding: '6px 12px' }}>Blog</a>
           <a href="#pricing" className="hidden sm:inline" style={{ color: 'var(--text-muted)', fontSize: '13px', textDecoration: 'none', padding: '6px 12px' }}>Pricing</a>
           {loggedInUser ? (
             <a href="/dashboard" style={{
@@ -583,6 +584,7 @@ export default function Home() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <a href="#search" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Search</a>
                 <a href="#pricing" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Pricing</a>
+                <a href="/blog" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Blog</a>
               </div>
             </div>
             <div>
