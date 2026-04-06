@@ -376,83 +376,104 @@ export default function Home() {
       </header>
 
 
-      {/* ═══ BEAT 1: HERO + SEARCH — The product IS the hero ═══ */}
+      {/* ═══ BEAT 1: HERO — Clear value prop + search ═══ */}
       <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start" style={{ minHeight: '280px' }}>
 
-          {/* Left: headline */}
-          <div style={{ paddingTop: 'var(--space-4)' }}>
-            <h1 style={{
-              fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 700,
-              color: 'var(--text-primary)', lineHeight: 1.1, letterSpacing: '-0.03em',
-              marginBottom: 'var(--space-4)',
+        {/* Centered value proposition */}
+        <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto', marginBottom: 'var(--space-8)' }}>
+          <h1 style={{
+            fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 700,
+            color: 'var(--text-primary)', lineHeight: 1.1, letterSpacing: '-0.03em',
+            marginBottom: 'var(--space-3)',
+          }}>
+            Find underpriced items to flip for profit.
+          </h1>
+          <p style={{
+            fontSize: '17px', color: 'var(--text-secondary)', lineHeight: 1.5,
+            maxWidth: '480px', margin: '0 auto', marginBottom: 'var(--space-3)',
+          }}>
+            We scan 20+ marketplaces and score every deal by resale potential &mdash; so you don&apos;t have to.
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+            {stats.listings > 0 ? `${stats.listings.toLocaleString()} deals` : `${stats.markets} markets`} &middot; {stats.sources || '20'}+ sources &middot; updated daily
+          </p>
+        </div>
+
+        {/* Search bar — centered, full width */}
+        <div id="search" style={{ maxWidth: '560px', margin: '0 auto' }}>
+          <form onSubmit={handleSearch}>
+            <div style={{
+              background: '#ffffff', border: '1px solid var(--border-default)',
+              borderRadius: '14px', padding: '16px',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
             }}>
-              What&apos;s the best deal near you right now?
-            </h1>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', fontFamily: 'var(--font-mono)' }}>
-              {stats.listings > 0 ? `${stats.listings.toLocaleString()} deals scored` : `${stats.markets} markets`} &middot; {stats.sources || '20'}+ sources &middot; updated daily
-            </p>
-            <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '12px', maxWidth: '420px', lineHeight: 1.8 }}>
-              Craigslist &middot; OfferUp &middot; EstateSales.net &middot; Facebook Marketplace &middot; Goodwill &middot; more
-            </p>
-          </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search tools, vintage, furniture..."
+                  style={{
+                    width: '100%', padding: '8px 0', border: 'none', outline: 'none',
+                    fontSize: '16px', color: 'var(--text-primary)', background: 'transparent',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <select value={searchMarket} onChange={e => setSearchMarket(e.target.value)} style={{
+                  flex: 1, padding: '10px 12px', border: '1px solid var(--border-default)', borderRadius: '10px',
+                  fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-surface)', cursor: 'pointer',
+                }}>
+                  <option value="">All areas</option>
+                  {Object.keys(marketsData).sort().map(st =>
+                    (marketsData[st] || []).map(m => (
+                      <option key={m.id} value={m.slug}>{m.name}, {st}</option>
+                    ))
+                  )}
+                </select>
+                <button type="submit" disabled={searching} style={{
+                  padding: '10px 24px',
+                  background: searching ? 'var(--border-active)' : 'var(--accent-green)',
+                  color: '#fff',
+                  border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px',
+                  cursor: searching ? 'wait' : 'pointer', whiteSpace: 'nowrap',
+                }}>
+                  {searching ? '...' : 'Search'}
+                </button>
+              </div>
+            </div>
 
-          {/* Right: search bar — the product */}
-          <div id="search" style={{ paddingTop: 'var(--space-4)' }}>
-            <form onSubmit={handleSearch}>
+            {/* Quick tags */}
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1 justify-center" style={{ WebkitOverflowScrolling: 'touch' }}>
+              {['tools', 'vintage', 'furniture', 'free', 'electronics', 'estate sale'].map(tag => (
+                <button key={tag} type="button" onClick={() => setSearchQuery(tag)} style={{
+                  padding: '4px 12px', border: '1px solid var(--border-subtle)', borderRadius: '16px',
+                  fontSize: '12px', color: 'var(--text-dim)', background: 'transparent', cursor: 'pointer', flexShrink: 0,
+                }}>
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </form>
+        </div>
+
+        {/* How it works — 3 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6" style={{ maxWidth: '560px', margin: 'var(--space-10) auto 0' }}>
+          {[
+            { step: '1', label: 'We scan', desc: 'Craigslist, OfferUp, estate sales, and 20+ more sources.' },
+            { step: '2', label: 'AI scores', desc: 'Every listing rated by resale value, demand, and margin.' },
+            { step: '3', label: 'You flip', desc: 'See the best deals first. Buy low, sell high.' },
+          ].map(item => (
+            <div key={item.step} style={{ textAlign: 'center' }}>
               <div style={{
-                background: '#ffffff', border: '1px solid var(--border-default)',
-                borderRadius: '14px', padding: '16px',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <input
-                    type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search tools, vintage, furniture..."
-                    style={{
-                      width: '100%', padding: '8px 0', border: 'none', outline: 'none',
-                      fontSize: '16px', color: 'var(--text-primary)', background: 'transparent',
-                    }}
-                  />
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <select value={searchMarket} onChange={e => setSearchMarket(e.target.value)} style={{
-                    flex: 1, padding: '10px 12px', border: '1px solid var(--border-default)', borderRadius: '10px',
-                    fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-surface)', cursor: 'pointer',
-                  }}>
-                    <option value="">All areas</option>
-                    {Object.keys(marketsData).sort().map(st =>
-                      (marketsData[st] || []).map(m => (
-                        <option key={m.id} value={m.slug}>{m.name}, {st}</option>
-                      ))
-                    )}
-                  </select>
-                  <button type="submit" disabled={searching} style={{
-                    padding: '10px 24px',
-                    background: searching ? 'var(--border-active)' : 'var(--accent-green)',
-                    color: searching ? 'var(--text-muted)' : '#000',
-                    border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px',
-                    cursor: searching ? 'wait' : 'pointer', whiteSpace: 'nowrap',
-                  }}>
-                    {searching ? '...' : 'Search'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Quick tags */}
-              <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: 'touch' }}>
-                {['tools', 'vintage', 'furniture', 'free', 'electronics', 'estate sale'].map(tag => (
-                  <button key={tag} type="button" onClick={() => setSearchQuery(tag)} style={{
-                    padding: '4px 12px', border: '1px solid var(--border-subtle)', borderRadius: '16px',
-                    fontSize: '12px', color: 'var(--text-dim)', background: 'transparent', cursor: 'pointer', flexShrink: 0,
-                  }}>
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </form>
-          </div>
+                width: '32px', height: '32px', borderRadius: '50%', margin: '0 auto 8px',
+                background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)',
+              }}>{item.step}</div>
+              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>{item.label}</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>{item.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -484,13 +505,18 @@ export default function Home() {
       <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>
         {featuredDeals.length > 0 && (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 'var(--space-4)' }}>
-              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                {featuredMarketName}
-              </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
-                updated today
-              </span>
+            <div style={{ marginBottom: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  Top deals in {featuredMarketName}
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+                  updated today
+                </span>
+              </div>
+              <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>
+                Scored by AI — higher score = better flip potential
+              </p>
             </div>
             {featuredDeals.map((deal, i) => (
               <DealRow key={deal.id || i} deal={deal} i={100 + i} showExpand={i === 1} />
