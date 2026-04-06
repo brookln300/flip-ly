@@ -228,9 +228,9 @@ export default function Home() {
           display: 'flex', alignItems: 'center', gap: '12px',
           padding: '12px 0',
           borderBottom: '1px solid var(--border-subtle)',
-          cursor: showExpand ? 'pointer' : 'default',
+          cursor: showExpand && deal.deal_reason ? 'pointer' : 'default',
         }}
-        onClick={() => showExpand && setExpandedDeal(expandedDeal === i ? null : i)}
+        onClick={() => showExpand && deal.deal_reason && setExpandedDeal(expandedDeal === i ? null : i)}
       >
         {/* Category icon */}
         <div style={{
@@ -294,33 +294,14 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Expanded score breakdown — inline */}
-      {showExpand && expandedDeal === i && (
+      {/* Score reason — only shown if real data exists */}
+      {showExpand && expandedDeal === i && deal.deal_reason && (
         <div style={{
-          padding: '16px 0 16px 52px',
+          padding: '8px 0 12px 52px',
           borderBottom: '1px solid var(--border-subtle)',
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '400px' }}>
-            {[
-              { label: 'Price', value: 95, desc: 'Below market avg', color: 'var(--score-excellent)' },
-              { label: 'Brand', value: 88, desc: 'Strong resale value', color: 'var(--score-excellent)' },
-              { label: 'Seller', value: 82, desc: 'Motivated seller', color: 'var(--score-good)' },
-              { label: 'Quality', value: 78, desc: 'Good condition signals', color: 'var(--score-good)' },
-              { label: 'Freshness', value: 90, desc: 'Recently posted', color: 'var(--score-excellent)' },
-            ].map(f => (
-              <div key={f.label}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>{f.label}</span>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{f.desc}</span>
-                </div>
-                <div style={{ width: '100%', height: '3px', borderRadius: '2px', background: 'var(--border-subtle)' }}>
-                  <div style={{ width: `${f.value}%`, height: '100%', borderRadius: '2px', background: f.color }} />
-                </div>
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '12px' }}>
-            Full breakdown available with Pro
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            {deal.deal_reason}
           </p>
         </div>
       )}
@@ -421,7 +402,7 @@ export default function Home() {
               <div style={{
                 background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
                 borderRadius: '12px', padding: '16px',
-                boxShadow: '0 2px 16px rgba(0,0,0,0.3)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -554,94 +535,40 @@ export default function Home() {
       )}
 
 
-      {/* ═══ BEAT 5: PRICING ═══ */}
-      <div id="pricing" style={{ maxWidth: '56rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* ═══ PRICING — inline tiers, not a sales grid ═══ */}
+      <div id="pricing" style={{ maxWidth: '32rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border-subtle)', borderRadius: '10px', overflow: 'hidden' }}>
           {/* Free */}
-          <div style={{
-            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Free</div>
-            <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-4)' }}>
-              $0<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--bg-surface)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', minWidth: '52px' }}>Free</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>15 searches/day · 1 market · weekly digest</span>
             </div>
-            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.2, listStyle: 'none', padding: 0 }}>
-              <li>15 searches/day</li>
-              <li>1 market</li>
-              <li>Score number only</li>
-              <li>Weekly digest</li>
-            </ul>
-            <button onClick={() => setShowSignup(true)} style={{
-              width: '100%', marginTop: 'var(--space-4)', padding: '10px 24px',
-              background: 'transparent', color: 'var(--text-muted)',
-              border: '1px solid var(--border-active)', borderRadius: '8px',
-              fontSize: '14px', fontWeight: 600, cursor: 'pointer',
-            }}>
-              Get Started
-            </button>
+            <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', flexShrink: 0, marginLeft: '12px' }}>$0</span>
           </div>
-
           {/* Pro */}
-          <div style={{
-            background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
-            borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '13px', color: 'var(--accent-green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Pro</div>
-            <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
-              $5<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--bg-surface)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-green)', minWidth: '52px' }}>Pro</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Unlimited · 3 markets · score breakdown · saved searches</span>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>Founding price</div>
-            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.2, listStyle: 'none', padding: 0 }}>
-              <li>Unlimited searches</li>
-              <li>3 markets</li>
-              <li>Full score breakdown</li>
-              <li>Daily + weekly digest</li>
-              <li>3 saved searches</li>
-            </ul>
-            <a href="/pro" style={{
-              display: 'block', width: '100%', marginTop: 'var(--space-4)', padding: '10px 24px',
-              background: 'var(--accent-green)', color: '#000',
-              borderRadius: '8px', fontSize: '14px', fontWeight: 600, textDecoration: 'none', textAlign: 'center',
-            }}>
-              Start Pro
-            </a>
+            <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: '#000', fontFamily: 'var(--font-mono)', flexShrink: 0, marginLeft: '12px', background: 'var(--accent-green)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }}>$5/mo</a>
           </div>
-
           {/* Power */}
-          <div style={{
-            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '13px', color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Power</div>
-            <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
-              $19<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'var(--bg-surface)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-purple)', minWidth: '52px' }}>Power</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Unlimited everything · instant alerts · trends</span>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>Founding price</div>
-            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.2, listStyle: 'none', padding: 0 }}>
-              <li>Unlimited searches</li>
-              <li>Unlimited markets</li>
-              <li>Breakdown + trends</li>
-              <li>Daily + instant alerts</li>
-              <li>Unlimited saved searches</li>
-            </ul>
-            <a href="/pro" style={{
-              display: 'block', width: '100%', marginTop: 'var(--space-4)', padding: '10px 24px',
-              background: 'transparent', color: 'var(--text-muted)',
-              border: '1px solid var(--border-active)', borderRadius: '8px',
-              fontSize: '14px', fontWeight: 600, textDecoration: 'none', textAlign: 'center',
-            }}>
-              Go Power
-            </a>
+            <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)', flexShrink: 0, marginLeft: '12px', border: '1px solid var(--border-active)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }}>$19/mo</a>
           </div>
         </div>
-
-        <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '12px', marginTop: 'var(--space-4)', fontFamily: 'var(--font-mono)' }}>
+        <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '11px', marginTop: 'var(--space-3)', fontFamily: 'var(--font-mono)' }}>
           {(() => {
             const end = new Date('2026-04-18T23:59:59')
             const now = new Date()
             const days = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86400000))
-            return days > 0 ? `${days} days left at founding price` : 'Founding pricing ends soon'
+            return days > 0 ? `Founding price · ${days} days left` : 'Founding pricing ends soon'
           })()}
         </p>
       </div>

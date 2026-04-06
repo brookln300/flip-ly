@@ -16,14 +16,14 @@
 
   /* ── Backgrounds ── */
   --bg-primary: #000000;
-  --bg-elevated: #0a0a0a;
-  --bg-surface: #111111;
-  --bg-surface-hover: #1a1a1a;
+  --bg-elevated: #080808;
+  --bg-surface: #131313;
+  --bg-surface-hover: #1e1e1e;
 
   /* ── Borders ── */
-  --border-subtle: #1a1a1a;
-  --border-default: #222222;
-  --border-active: #333333;
+  --border-subtle: #1c1c1c;
+  --border-default: #262626;
+  --border-active: #363636;
 
   /* ── Text ── */
   --text-primary: #FFFFFF;
