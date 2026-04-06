@@ -246,8 +246,8 @@ export default function Home() {
         {deal.deal_score && deal.deal_score !== 'gated' ? (
           <div style={{
             width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
-            background: `${scoreColor(deal.deal_score)}10`,
-            border: `1px solid ${scoreColor(deal.deal_score)}30`,
+            background: `${scoreColor(deal.deal_score)}15`,
+            border: `1px solid ${scoreColor(deal.deal_score)}25`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <span style={{
@@ -330,25 +330,25 @@ export default function Home() {
       {searchGate?.limited && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[90] max-w-md w-full mx-4" style={{
           background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '12px',
-          padding: '20px 24px', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          padding: '20px 24px', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
         }}>
           <p style={{ color: 'var(--text-primary)', fontSize: '16px', fontWeight: 600, marginBottom: '8px' }}>You&apos;ve used today&apos;s searches</p>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '16px' }}>Resets at midnight, or go unlimited with Pro.</p>
-          <a href="/pro" style={{ display: 'inline-block', padding: '10px 24px', background: 'var(--accent-green)', color: '#000', fontWeight: 600, fontSize: '14px', textDecoration: 'none', borderRadius: '8px' }}>Go Pro</a>
+          <a href="/pro" style={{ display: 'inline-block', padding: '10px 24px', background: 'var(--accent-green)', color: '#fff', fontWeight: 600, fontSize: '14px', textDecoration: 'none', borderRadius: '8px' }}>Go Pro</a>
         </div>
       )}
 
       {/* HEADER */}
       <header style={{
         padding: 'var(--space-3) var(--space-4)',
-        background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(0,0,0,0.06)',
         position: 'sticky', top: 0, zIndex: 80,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M12 4l5 5h-3v4h-4V9H7l5-5z" fill="var(--accent-green)"/>
+            <path d="M12 4l5 5h-3v4h-4V9H7l5-5z" fill="var(--text-primary)"/>
             <path d="M7 16a7 7 0 0 0 10 0" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" fill="none"/>
           </svg>
           <span style={{ fontSize: '18px', color: 'var(--text-primary)', fontWeight: 700, letterSpacing: '-0.03em' }}>FLIP-LY</span>
@@ -359,15 +359,15 @@ export default function Home() {
           {loggedInUser ? (
             <a href="/dashboard" style={{
               padding: '6px 12px', fontSize: '12px', fontWeight: 700,
-              background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)',
-              border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', textDecoration: 'none',
+              background: 'var(--bg-surface)', color: 'var(--text-secondary)',
+              border: '1px solid var(--border-default)', borderRadius: '6px', textDecoration: 'none',
             }}>
               {loggedInUser.email.split('@')[0]}
             </a>
           ) : (
             <button onClick={() => setShowSignup(true)} style={{
               padding: '6px 16px', fontSize: '12px', fontWeight: 700,
-              background: 'var(--accent-green)', color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer',
+              background: 'var(--accent-green)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer',
             }}>
               Sign Up Free
             </button>
@@ -401,9 +401,9 @@ export default function Home() {
           <div id="search" style={{ paddingTop: 'var(--space-4)' }}>
             <form onSubmit={handleSearch}>
               <div style={{
-                background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
-                borderRadius: '12px', padding: '16px',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03)',
+                background: '#ffffff', border: '1px solid var(--border-default)',
+                borderRadius: '14px', padding: '16px',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -418,8 +418,8 @@ export default function Home() {
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <select value={searchMarket} onChange={e => setSearchMarket(e.target.value)} style={{
-                    flex: 1, padding: '10px 12px', border: '1px solid var(--border-subtle)', borderRadius: '8px',
-                    fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-surface-hover)', cursor: 'pointer',
+                    flex: 1, padding: '10px 12px', border: '1px solid var(--border-default)', borderRadius: '10px',
+                    fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-surface)', cursor: 'pointer',
                   }}>
                     <option value="">All areas</option>
                     {Object.keys(marketsData).sort().map(st =>
@@ -469,7 +469,7 @@ export default function Home() {
           {!loggedInUser && realListings.length > 3 && (
             <div style={{ padding: 'var(--space-6) 0', textAlign: 'center' }}>
               <button onClick={() => setShowSignup(true)} style={{
-                padding: '10px 24px', background: 'var(--accent-green)', color: '#000',
+                padding: '10px 24px', background: 'var(--accent-green)', color: '#fff',
                 border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
               }}>
                 Sign up free to see all {totalResults} results
@@ -520,7 +520,7 @@ export default function Home() {
           <button onClick={() => signIn('google')} type="button" style={{
             width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-            background: '#fff', color: '#333', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer',
+            background: '#ffffff', color: '#1d1d1f', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '8px', cursor: 'pointer',
             marginBottom: '12px',
           }}>
             <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -551,10 +551,10 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between" style={{ padding: '14px 16px', background: 'var(--bg-surface)', gap: '4px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-green)', minWidth: '52px' }}>Pro</span>
-              <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: '#000', fontFamily: 'var(--font-mono)', background: 'var(--accent-green)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }} className="sm:hidden">$5/mo</a>
+              <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)', background: 'var(--accent-green)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }} className="sm:hidden">$5/mo</a>
             </div>
             <span style={{ fontSize: '12px', color: 'var(--text-dim)' }} className="sm:flex-1">Unlimited · 3 markets · score breakdown · saved searches</span>
-            <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: '#000', fontFamily: 'var(--font-mono)', flexShrink: 0, background: 'var(--accent-green)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }} className="hidden sm:inline">$5/mo</a>
+            <a href="/pro" style={{ fontSize: '13px', fontWeight: 700, color: '#fff', fontFamily: 'var(--font-mono)', flexShrink: 0, background: 'var(--accent-green)', padding: '4px 12px', borderRadius: '6px', textDecoration: 'none' }} className="hidden sm:inline">$5/mo</a>
           </div>
           {/* Power */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between" style={{ padding: '14px 16px', background: 'var(--bg-surface)', gap: '4px' }}>
@@ -619,7 +619,7 @@ export default function Home() {
         </div>
         <div style={{ position: 'relative', height: '12px', marginTop: '4px' }}>
           <a href="/lobster-hunt" onClick={e => e.stopPropagation()} style={{ width: '16px', height: '16px', background: 'transparent', cursor: 'default', position: 'absolute', right: '23%', top: '0', zIndex: 60, display: 'block' }}>
-            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--bg-primary)', position: 'absolute', top: '50%', left: '50%' }} />
+            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'transparent', position: 'absolute', top: '50%', left: '50%' }} />
           </a>
         </div>
       </footer>
@@ -628,14 +628,15 @@ export default function Home() {
       {/* SIGNUP MODAL — kept for header CTA and direct links */}
       {showSignup && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4"
-          onClick={() => setShowSignup(false)} style={{ background: 'rgba(0,0,0,0.85)', cursor: 'pointer' }}>
+          onClick={() => setShowSignup(false)} style={{ background: 'rgba(0,0,0,0.4)', cursor: 'pointer' }}>
           <div className="w-full max-w-md relative" onClick={e => e.stopPropagation()} style={{
-            background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
-            borderRadius: '12px', cursor: 'default', overflow: 'hidden',
+            background: '#ffffff', border: '1px solid var(--border-default)',
+            borderRadius: '16px', cursor: 'default', overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
           }}>
             <button onClick={() => { setShowSignup(false); setSubmitted(false); setSignupError('') }}
               className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-sm font-bold"
-              style={{ background: 'var(--bg-surface-hover)', border: '1px solid var(--border-active)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text-muted)' }}>
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-muted)' }}>
               &#10005;
             </button>
             <div style={{ padding: 'var(--space-6)' }}>
@@ -650,7 +651,7 @@ export default function Home() {
                   {!isLoginMode && <p style={{ color: 'var(--text-dim)', fontSize: '12px' }}>(check spam too)</p>}
                   <button onClick={() => { setShowSignup(false); setSubmitted(false) }} style={{
                     marginTop: 'var(--space-6)', padding: '8px 24px',
-                    background: 'var(--accent-green)', color: '#000', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+                    background: 'var(--accent-green)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
                   }}>Continue</button>
                 </div>
               ) : isLoginMode ? (
@@ -660,7 +661,7 @@ export default function Home() {
                   <button onClick={() => signIn('google')} type="button" style={{
                     width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                    background: '#fff', color: '#333', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer',
+                    background: '#ffffff', color: '#1d1d1f', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', cursor: 'pointer',
                   }}>
                     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
                     Continue with Google
@@ -676,7 +677,7 @@ export default function Home() {
                     {signupError && <p style={{ fontSize: '12px', color: 'var(--accent-red)' }}>{signupError}</p>}
                     <button type="submit" disabled={signingUp} style={{
                       width: '100%', padding: '12px', fontWeight: 700, fontSize: '16px',
-                      background: signingUp ? 'var(--border-active)' : 'var(--accent-green)', color: '#000',
+                      background: signingUp ? 'var(--border-active)' : 'var(--accent-green)', color: '#fff',
                       border: 'none', borderRadius: '6px', cursor: signingUp ? 'wait' : 'pointer',
                     }}>{signingUp ? 'Logging in...' : 'Log In'}</button>
                   </form>
@@ -693,7 +694,7 @@ export default function Home() {
                   <button onClick={() => signIn('google')} type="button" style={{
                     width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                    background: '#fff', color: '#333', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer',
+                    background: '#ffffff', color: '#1d1d1f', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', cursor: 'pointer',
                   }}>
                     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
                     Sign up with Google
@@ -719,7 +720,7 @@ export default function Home() {
                     {signupError && <p style={{ fontSize: '12px', color: 'var(--accent-red)' }}>{signupError}</p>}
                     <button type="submit" disabled={signingUp} style={{
                       width: '100%', padding: '12px', fontWeight: 700, fontSize: '16px',
-                      background: signingUp ? 'var(--border-active)' : 'var(--accent-green)', color: '#000',
+                      background: signingUp ? 'var(--border-active)' : 'var(--accent-green)', color: '#fff',
                       border: 'none', borderRadius: '6px', cursor: signingUp ? 'wait' : 'pointer',
                     }}>{signingUp ? 'Creating account...' : 'Get Started Free'}</button>
                   </form>
@@ -746,11 +747,12 @@ export default function Home() {
 
       {showFeedback && (
         <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-4"
-          onClick={() => setShowFeedback(false)} style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}>
+          onClick={() => setShowFeedback(false)} style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)' }}>
           <div onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: '420px',
-            background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
-            borderRadius: '12px', padding: 'var(--space-6)',
+            background: '#ffffff', border: '1px solid var(--border-default)',
+            borderRadius: '16px', padding: 'var(--space-6)',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
               <h4 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -787,7 +789,7 @@ export default function Home() {
                   className="cl-input" rows={4} style={{ resize: 'vertical' }} />
                 <button type="submit" disabled={feedbackSending || !feedbackMsg.trim()} style={{
                   padding: '10px 24px', fontWeight: 700, fontSize: '14px',
-                  background: feedbackSending ? 'var(--border-active)' : 'var(--accent-green)', color: '#000',
+                  background: feedbackSending ? 'var(--border-active)' : 'var(--accent-green)', color: '#fff',
                   border: 'none', borderRadius: '6px',
                   cursor: feedbackSending ? 'wait' : 'pointer',
                 }}>{feedbackSending ? 'Sending...' : 'Send Feedback'}</button>
