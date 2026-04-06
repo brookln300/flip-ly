@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
             `💰 <b>NEW PRO SUBSCRIBER!</b> 💰`,
             `User: ${userId}`,
             `Subscription: ${subscriptionId}`,
-            `$5/mo activated. The lobster is pleased.`,
+            `Tier: ${session.metadata?.tier || 'pro'}`,
           ].join('\n'))
         }
         break

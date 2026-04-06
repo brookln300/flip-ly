@@ -36,9 +36,10 @@ export default function Terms() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>4. Free and Pro Tiers</h2>
-          <p><strong style={{ color: '#22C55E' }}>Free accounts</strong> include up to 10 searches per day, partially redacted deal scores, and a weekly email digest.</p>
-          <p className="mt-2"><strong style={{ color: '#22C55E' }}>Pro accounts</strong> ($5/month) include unlimited searches, full deal scores with source URLs, early access to the weekly digest (6 hours before free users), and priority deal alerts. Subscriptions are billed monthly through Stripe and can be cancelled at any time. No contracts.</p>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>4. Free, Pro, and Power Tiers</h2>
+          <p><strong style={{ color: 'var(--accent-green)' }}>Free accounts</strong> include up to 15 searches per day, score number only, and a weekly email digest.</p>
+          <p className="mt-2"><strong style={{ color: 'var(--accent-green)' }}>Pro accounts</strong> ($5/month) include unlimited searches, full score breakdowns with source URLs, 3 markets, saved searches, and early digest access. Billed monthly through Stripe. Cancel anytime.</p>
+          <p className="mt-2"><strong style={{ color: 'var(--accent-purple)' }}>Power accounts</strong> ($19/month) include everything in Pro plus unlimited markets, instant deal alerts, category trends, and 90-day deal history. Billed monthly through Stripe. Cancel anytime.</p>
           <p className="mt-2">Refunds are handled on a case-by-case basis. Contact us and we will work it out.</p>
         </section>
 

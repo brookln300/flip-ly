@@ -35,10 +35,11 @@ export default function About() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Free vs. Pro</h2>
-          <div className="mt-2 p-4 rounded" style={{ background: '#0a0a0a', border: '1px solid #222', borderRadius: '8px' }}>
-            <p><strong style={{ color: '#22C55E' }}>Free</strong> — 10 searches/day, partial deal scores, weekly digest on Thursdays at noon.</p>
-            <p className="mt-2"><strong style={{ color: '#22C55E' }}>Pro ($5/month)</strong> — Unlimited searches, full scores with source URLs, weekly digest 6 hours early, hot deal alerts. Cancel anytime.</p>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Plans</h2>
+          <div className="mt-2 p-4 rounded" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: '8px' }}>
+            <p><strong style={{ color: 'var(--text-primary)' }}>Free</strong> — 15 searches/day, 1 market, weekly digest on Thursdays.</p>
+            <p className="mt-2"><strong style={{ color: 'var(--accent-green)' }}>Pro ($5/mo)</strong> — Unlimited searches, 3 markets, full score breakdowns, saved searches. Cancel anytime.</p>
+            <p className="mt-2"><strong style={{ color: 'var(--accent-purple)' }}>Power ($19/mo)</strong> — Unlimited everything, instant alerts, category trends, 90-day history.</p>
           </div>
         </section>
 

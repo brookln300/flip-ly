@@ -166,7 +166,7 @@ export async function getDripEmailHtml(
         </table>
       </div>
       <div style="text-align:center;margin:24px 0;">
-        <p style="color:#22C55E;font-size:28px;font-weight:700;margin:0 0 4px;">$5/month</p>
+        <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0 0 4px;">From $5/month</p>
         <p style="color:#999;font-size:12px;margin:0 0 16px;">Early adopter pricing — locked in for life.</p>
         <a href="https://flip-ly.net/pro?utm_source=email&utm_medium=drip&utm_campaign=soft-pitch&utm_content=cta" style="${btnStyle}">
           Upgrade to Pro
@@ -197,7 +197,7 @@ export async function getDripEmailHtml(
         The early birds who show up at opening get the best finds. Pro gives you that edge.
       </p>
       <div style="text-align:center;margin:24px 0;">
-        <p style="color:#22C55E;font-size:28px;font-weight:700;margin:0 0 4px;">$5/month</p>
+        <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0 0 4px;">From $5/month</p>
         <p style="color:#999;font-size:12px;margin:0 0 16px;">Early adopter pricing — locked in for life.</p>
         <a href="https://flip-ly.net/pro?utm_source=email&utm_medium=drip&utm_campaign=fomo&utm_content=cta" style="${btnStyle}">
           Get Early Access
@@ -225,11 +225,11 @@ export async function getDripEmailHtml(
         2. Want to get more out of it?
       </p>
       <p style="color:#555;font-size:14px;line-height:1.7;">
-        Pro is $5/month — early adopter price, locked in for life. You get deals 6 hours early, unlimited searches, full AI scores, and premium sources. One good find pays for a year.
+        Pro is $5/month and Power is $19/month — early adopter prices, locked in for life. You get deals early, unlimited searches, full AI score breakdowns, and more. One good find pays for a year.
       </p>
       <div style="text-align:center;margin:24px 0;">
         <a href="https://flip-ly.net/pro?utm_source=email&utm_medium=drip&utm_campaign=hard-convert&utm_content=cta" style="${btnStyle}">
-          Try Pro — $5/month
+          See plans — from $5/month
         </a>
       </div>
       <p style="color:#555;font-size:14px;line-height:1.7;">

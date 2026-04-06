@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Yesterday's numbers
+    // Fetch pro users with their subscription tier for accurate MRR
     const [
       { count: newSignups },
       { count: totalUsers },
@@ -29,6 +30,7 @@ export async function GET(req: NextRequest) {
       { count: searches },
       { count: emailsSent },
       { count: unsubs },
+      { data: premiumUsers },
     ] = await Promise.all([
       supabase.from('fliply_users').select('*', { count: 'exact', head: true }).gte('created_at', since),
       supabase.from('fliply_users').select('*', { count: 'exact', head: true }),
@@ -36,7 +38,13 @@ export async function GET(req: NextRequest) {
       supabase.from('fliply_search_log').select('*', { count: 'exact', head: true }).gte('searched_at', since),
       supabase.from('email_sends').select('*', { count: 'exact', head: true }).gte('created_at', since),
       supabase.from('fliply_users').select('*', { count: 'exact', head: true }).gte('unsubscribed_at', since).eq('unsubscribed', true),
+      supabase.from('fliply_users').select('subscription_tier').eq('is_premium', true),
     ])
+
+    // Calculate MRR: Pro=$5, Power=$19
+    const mrr = (premiumUsers || []).reduce((sum, u) => {
+      return sum + (u.subscription_tier === 'power' ? 19 : 5)
+    }, 0)
 
     // Scraper health — check if we got listings in last 12h
     const twelvHrsAgo = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
@@ -81,7 +89,7 @@ export async function GET(req: NextRequest) {
       `  ${emailsSent ?? 0} emails sent · ${unsubs ?? 0} unsubs`,
       `  Scraper: ${scraperStatus}`,
       ``,
-      `<b>Totals:</b> ${totalUsers ?? 0} users · ${proUsers ?? 0} pro · $${(proUsers ?? 0) * 5}/mo MRR`,
+      `<b>Totals:</b> ${totalUsers ?? 0} users · ${proUsers ?? 0} pro · $${mrr}/mo MRR`,
       ``,
       `<b>TODAY'S TARGET:</b>`,
       `  ${todayTarget}`,

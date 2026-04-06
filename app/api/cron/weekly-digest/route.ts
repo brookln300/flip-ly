@@ -257,11 +257,11 @@ function buildDigestEmail(
         <p style="color:#888;font-size:12px;margin:0 0 16px;">
           Pro members see full AI scores, direct source links, and get this email 6 hours earlier.
         </p>
-        <a href="${utm('https://flip-ly.net/pro', 'upsell-cta')}" style="display:inline-block;padding:10px 28px;background:#22C55E;color:#000;text-decoration:none;font-weight:700;font-size:14px;border-radius:6px;">
-          Upgrade to Pro — $5/mo for life
+        <a href="${utm('https://flip-ly.net/pro', 'upsell-cta')}" style="display:inline-block;padding:10px 28px;background:#16a34a;color:#fff;text-decoration:none;font-weight:700;font-size:14px;border-radius:6px;">
+          Go Pro — from $5/mo
         </a>
-        <p style="color:#bbb;font-size:11px;margin:8px 0 0;">
-          Early adopter pricing. Locked in as long as you're subscribed.
+        <p style="color:#999;font-size:11px;margin:8px 0 0;">
+          Founding price. Locked in for life.
         </p>
       </div>`
 

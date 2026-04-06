@@ -20,8 +20,8 @@ const LINKS = [
   },
   {
     emoji: '👑',
-    title: 'GO PRO — $5/mo',
-    subtitle: 'First Dibs: digest 6hrs early + unlimited search',
+    title: 'GO PRO — from $5/mo',
+    subtitle: 'Unlimited searches, full score breakdowns, early digest',
     url: 'https://flip-ly.net/pro?utm_source=linkinbio&utm_medium=social&utm_campaign=links&utm_content=pro',
     color: '#FFD700',
   },

@@ -82,9 +82,10 @@ export default function WhyPage() {
             <h2 className="text-xl font-bold mb-3" style={{ color: '#fff' }}>
               Simple Pricing
             </h2>
-            <div className="mt-2 p-5 rounded-lg" style={{ background: '#0a0a0a', border: '1px solid #222' }}>
-              <p className="text-sm" style={{ color: '#ccc' }}><strong style={{ color: '#22C55E' }}>Free</strong> &mdash; 10 searches/day, weekly digest on Thursdays, basic deal info.</p>
-              <p className="text-sm mt-3" style={{ color: '#ccc' }}><strong style={{ color: '#22C55E' }}>Pro ($5/month)</strong> &mdash; Unlimited searches, full AI scores with direct source links, digest 6 hours early, hot deal alerts. Cancel anytime.</p>
+            <div className="mt-2 p-5 rounded-lg" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}><strong style={{ color: 'var(--text-primary)' }}>Free</strong> &mdash; 15 searches/day, 1 market, weekly digest on Thursdays.</p>
+              <p className="text-sm mt-3" style={{ color: 'var(--text-secondary)' }}><strong style={{ color: 'var(--accent-green)' }}>Pro ($5/mo)</strong> &mdash; Unlimited searches, 3 markets, full score breakdowns, saved searches. Cancel anytime.</p>
+              <p className="text-sm mt-3" style={{ color: 'var(--text-secondary)' }}><strong style={{ color: 'var(--accent-purple)' }}>Power ($19/mo)</strong> &mdash; Unlimited everything, instant alerts, category trends, 90-day history.</p>
             </div>
           </section>
 

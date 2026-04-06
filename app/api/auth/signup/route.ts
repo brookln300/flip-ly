@@ -39,7 +39,7 @@ function getWelcomeEmail(email: string, marketName: string | null) {
 
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:0 0 24px;">
         <p style="font-size:14px;font-weight:600;color:#166534;margin:0 0 8px;">🚀 Want more?</p>
-        <p style="font-size:13px;color:#555;margin:0;">Pro members ($5/mo) get unlimited searches, AI deal scores, and deals 6 hours before everyone else. Early adopters lock in this price for life. <a href="https://flip-ly.net/pro" style="color:#22C55E;font-weight:600;">Learn more →</a></p>
+        <p style="font-size:13px;color:#555;margin:0;">Pro ($5/mo) and Power ($19/mo) members get unlimited searches, full AI score breakdowns, and deals before everyone else. Founding prices locked in for life. <a href="https://flip-ly.net/pro" style="color:#16a34a;font-weight:600;">See plans →</a></p>
       </div>
 
       <p style="font-size:15px;margin:0 0 24px;">Your first digest arrives this Thursday. In the meantime, <a href="https://flip-ly.net" style="color:#22C55E;font-weight:600;">search for deals now</a>.</p>
