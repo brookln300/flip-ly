@@ -410,6 +410,9 @@ export default function Home() {
             <p style={{ fontSize: '15px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px' }}>
               {stats.markets} markets &middot; 20+ sources &middot; AI-scored
             </p>
+            <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '12px', maxWidth: '420px', lineHeight: 1.8 }}>
+              Craigslist &middot; OfferUp &middot; EstateSales.net &middot; Facebook Marketplace &middot; Goodwill &middot; more
+            </p>
           </div>
 
           {/* Right: search bar — the product */}
@@ -504,7 +507,7 @@ export default function Home() {
                 {featuredMarketName}
               </span>
               <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
-                live
+                updated today
               </span>
             </div>
             {featuredDeals.map((deal, i) => (
@@ -517,31 +520,21 @@ export default function Home() {
             <p style={{ color: 'var(--text-dim)', fontSize: '13px' }}>Loading deals...</p>
           </div>
         )}
+        {featuredDeals.length > 0 && (
+          <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: 'var(--space-4)', fontFamily: 'var(--font-mono)' }}>
+            Craigslist &middot; OfferUp &middot; EstateSales.net &middot; Facebook Marketplace &middot; Goodwill &middot; 20+ more
+          </p>
+        )}
       </div>
 
 
-      {/* ═══ BEAT 3: VIDEO PROOF — secondary, below the fold ═══ */}
-      <div style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>
-        <div style={{
-          borderRadius: '12px', overflow: 'hidden',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
-        }}>
-          <video autoPlay loop muted playsInline style={{ width: '100%', display: 'block' }}>
-            <source src="/assets/hero-dashboard.webm" type="video/webm" />
-          </video>
-        </div>
-      </div>
 
 
       {/* ═══ BEAT 4: INLINE SIGNUP — not a modal, just a form ═══ */}
       {!loggedInUser && (
         <div style={{ maxWidth: '28rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
-          <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 'var(--space-2)' }}>
-            See every deal in your market
-          </p>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
-            Free. 15 searches/day.
+            Free account &middot; 15 searches/day
           </p>
           <button onClick={() => signIn('google')} type="button" style={{
             width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
