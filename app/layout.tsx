@@ -23,8 +23,8 @@ export const metadata: Metadata = {
   description: 'Find the best garage sales, estate sales, and local deals near you. AI-scored listings from 20+ sources, delivered to your inbox every Thursday.',
   metadataBase: new URL('https://flip-ly.net'),
   openGraph: {
-    title: 'Flip-ly.net — AI-Powered Garage Sale Finder',
-    description: 'Find the best garage sales and estate sales near you. AI-scored listings from Craigslist, EstateSales.net, and 20+ local sources delivered weekly.',
+    title: 'Flip-ly.net — Every Deal Near You, Scored by AI',
+    description: 'AI scores Craigslist, OfferUp, estate sales & 20+ sources so you never miss a deal. Free to use.',
     url: 'https://flip-ly.net',
     siteName: 'Flip-ly',
     images: [
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Flip-ly.net — AI-powered garage sale finder',
+        alt: 'Flip-ly.net — Every deal near you, scored before you see it',
       },
     ],
     locale: 'en_US',
@@ -40,8 +40,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Flip-ly.net — AI-Powered Garage Sale Finder',
-    description: 'AI-scored garage sale and estate sale listings from 20+ sources, delivered to your inbox every Thursday. Free to use.',
+    title: 'Flip-ly.net — Every Deal Near You, Scored by AI',
+    description: 'AI scores Craigslist, OfferUp, estate sales & 20+ sources so you never miss a deal. Free to use.',
     images: ['/og-image.png'],
   },
   robots: {
@@ -75,7 +75,7 @@ const jsonLd = {
       '@id': 'https://flip-ly.net/#app',
       name: 'Flip-ly',
       url: 'https://flip-ly.net',
-      description: 'AI-powered garage sale finder. Find local garage sales, estate sales, and community markets.',
+      description: 'AI-powered deal finder. Scores Craigslist, OfferUp, estate sales & 20+ local sources.',
       applicationCategory: 'ShoppingApplication',
       operatingSystem: 'Web',
       offers: {
