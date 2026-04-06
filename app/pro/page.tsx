@@ -87,7 +87,7 @@ function ProContent() {
           </p>
           <a href="/dashboard" style={{
             display: 'inline-block', padding: '12px 24px',
-            background: 'var(--accent-green)', color: '#000',
+            background: 'var(--accent-green)', color: '#fff',
             borderRadius: '8px', fontSize: '14px', fontWeight: 600,
             textDecoration: 'none',
           }}>
@@ -232,7 +232,7 @@ function ProContent() {
             </ul>
             <button onClick={() => handleUpgrade('pro')} disabled={loading} style={{
               display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
-              background: loading ? 'var(--border-active)' : 'var(--accent-green)', color: '#000',
+              background: loading ? 'var(--border-active)' : 'var(--accent-green)', color: '#fff',
               border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600,
               cursor: loading ? 'wait' : 'pointer',
             }}>

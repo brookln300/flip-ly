@@ -8,11 +8,14 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null
 
-// Set your Stripe Price ID in Vercel env — create a $5/mo recurring price in Stripe Dashboard
-const PRO_PRICE_ID = process.env.STRIPE_PRO_PRICE_ID
+// Stripe Price IDs — create these in Stripe Dashboard as recurring monthly prices
+const PRICE_IDS: Record<string, string | undefined> = {
+  pro: process.env.STRIPE_PRO_PRICE_ID,
+  power: process.env.STRIPE_POWER_PRICE_ID,
+}
 
 export async function POST(req: NextRequest) {
-  if (!stripe || !PRO_PRICE_ID) {
+  if (!stripe) {
     return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 })
   }
 
@@ -20,6 +23,18 @@ export async function POST(req: NextRequest) {
   const session = await getSession()
   if (!session) {
     return NextResponse.json({ error: 'Not logged in' }, { status: 401 })
+  }
+
+  // Parse tier from request body (default: pro)
+  let tier = 'pro'
+  try {
+    const body = await req.json()
+    if (body.tier === 'power') tier = 'power'
+  } catch {}
+
+  const priceId = PRICE_IDS[tier]
+  if (!priceId) {
+    return NextResponse.json({ error: `${tier} tier not configured` }, { status: 503 })
   }
 
   try {
@@ -81,14 +96,14 @@ export async function POST(req: NextRequest) {
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
-      line_items: [{ price: PRO_PRICE_ID, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       success_url: `${req.nextUrl.origin}/pro?status=success`,
       cancel_url: `${req.nextUrl.origin}/pro?status=cancelled`,
-      metadata: { fliply_user_id: user.id },
+      metadata: { fliply_user_id: user.id, tier },
       phone_number_collection: { enabled: false },
       subscription_data: {
-        metadata: { fliply_user_id: user.id },
+        metadata: { fliply_user_id: user.id, tier },
       },
     })
 
