@@ -8,17 +8,18 @@ Flip-ly started as a garage sale aggregator. It is now a **local deal discovery 
 ## Session Protocol
 
 **START of every session:**
-1. Read `docs/planning/INDEX.md` — know the full strategic context
-2. Read `docs/planning/LANDING-PAGE-SPEC.md` — the build blueprint
-3. Read `docs/planning/DESIGN-SYSTEM.md` — the visual bible
-4. Read `docs/PROJECT-STATUS.md` — know what's shipped and what's pending
-5. Check `git log --oneline -10` — know what just happened
+1. Read `docs/ORCHESTRATOR.md` — **this is your daily task list, read it FIRST**
+2. Read `docs/PROJECT-STATUS.md` — know what shipped and what's pending
+3. Check `git log --oneline -5` — know the last commits
+4. Find today's date → find today's tasks in ORCHESTRATOR.md → execute them in order
+5. Reference `docs/planning/DESIGN-SYSTEM.md` and `docs/planning/LANDING-PAGE-SPEC.md` as needed during build
 
 **If Keith says "let's start back up on flip-ly" or similar:**
-- You are mid-pivot. The planning phase is DONE (10 docs locked in `docs/planning/`).
-- The next task is BUILDING the landing page rework per `LANDING-PAGE-SPEC.md`.
+- You are in a 2-WEEK BUILD SPRINT (April 5-18). Planning is DONE.
+- Read `docs/ORCHESTRATOR.md` for today's specific tasks.
 - Preview branch: `polish/monday-deadline` — pushes auto-deploy to Vercel preview.
 - All strategic decisions are locked. Don't re-debate them. Execute.
+- After each completed task, mark it `[x]` in ORCHESTRATOR.md.
 
 **DURING session:** Update PROJECT-STATUS.md as tasks complete. Log decisions in `docs/planning/INDEX.md` decision log.
 **END of every session:** Update PROJECT-STATUS.md. Leave "PICK UP HERE" notes for anything half-done.
