@@ -422,8 +422,57 @@ export default function Home() {
           />
         </div>
 
-        {/* Search bar — centered, full width */}
+      </div>
+
+      {/* ═══ HOW IT WORKS — full-width section right under hero ═══ */}
+      <motion.div
+        initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
+        style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}
+      >
+        <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-10) var(--space-4)' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {[
+              { step: '1', label: 'We scan', desc: 'Craigslist, OfferUp, EstateSales.net, Eventbrite, and 20+ local sources — every 4 hours.', icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              )},
+              { step: '2', label: 'AI scores', desc: 'Every listing rated 1-10 by resale value, demand signals, and profit margin potential.', icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+              )},
+              { step: '3', label: 'You flip', desc: 'See the best deals before everyone else. Show up first, buy low, sell high.', icon: (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              )},
+            ].map(item => (
+              <div key={item.step} style={{ textAlign: 'center' }}>
+                <div style={{
+                  width: '44px', height: '44px', borderRadius: '12px', margin: '0 auto 12px',
+                  background: '#ffffff', border: '1px solid var(--border-default)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                }}>{item.icon}</div>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>{item.label}</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          {/* Source logos inline */}
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px', flexWrap: 'wrap', opacity: 0.4, marginTop: '28px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-label="Craigslist"><circle cx="12" cy="12" r="10" stroke="#6e6e73" strokeWidth="1.5"/><text x="12" y="16" textAnchor="middle" fill="#6e6e73" fontSize="10" fontWeight="700" fontFamily="system-ui">CL</text></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="Facebook Marketplace"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="OfferUp"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="EstateSales.net"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="Eventbrite"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="ShopGoodwill"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>+ 14 more</span>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ═══ SEARCH — try before you sign up ═══ */}
+      <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-10) var(--space-4) 0' }}>
         <div id="search" style={{ maxWidth: '560px', margin: '0 auto' }}>
+          <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)', marginBottom: 'var(--space-4)' }}>
+            Try it — search your area for free
+          </p>
           <form onSubmit={handleSearch}>
             <div style={{
               background: '#ffffff', border: '1px solid var(--border-default)',
@@ -481,70 +530,6 @@ export default function Home() {
 
       </div>
 
-      {/* ═══ HOW IT WORKS — full-width section with contrast background ═══ */}
-      <div style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)', marginTop: 'var(--space-12)' }}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8" style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4)' }}>
-          {[
-            { step: '1', label: 'We scan', desc: 'Craigslist, OfferUp, EstateSales.net, Eventbrite, and 20+ local sources — every 4 hours.', icon: (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            )},
-            { step: '2', label: 'AI scores', desc: 'Every listing rated 1-10 by resale value, demand signals, and profit margin potential.', icon: (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
-            )},
-            { step: '3', label: 'You flip', desc: 'See the best deals before everyone else. Show up first, buy low, sell high.', icon: (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            )},
-          ].map(item => (
-            <div key={item.step} style={{ textAlign: 'center' }}>
-              <div style={{
-                width: '44px', height: '44px', borderRadius: '12px', margin: '0 auto 12px',
-                background: '#ffffff', border: '1px solid var(--border-default)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-              }}>{item.icon}</div>
-              <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>{item.label}</p>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6 }}>{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-
-      {/* ═══ SOURCE STRIP — "we scan these" credibility row ═══ */}
-      <div style={{ maxWidth: '560px', margin: '0 auto', padding: 'var(--space-8) var(--space-4) 0', textAlign: 'center' }}>
-        <p style={{ fontSize: '11px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
-          Sources we scan
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '28px', flexWrap: 'wrap', opacity: 0.45 }}>
-          {/* Craigslist — peace sign CL */}
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-label="Craigslist">
-            <circle cx="12" cy="12" r="10" stroke="#6e6e73" strokeWidth="1.5"/>
-            <text x="12" y="16" textAnchor="middle" fill="#6e6e73" fontSize="10" fontWeight="700" fontFamily="system-ui">CL</text>
-          </svg>
-          {/* Facebook Marketplace — storefront */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="Facebook Marketplace">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-          {/* OfferUp — tag icon */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="OfferUp">
-            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
-          </svg>
-          {/* EstateSales.net — gavel */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="EstateSales.net">
-            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-          </svg>
-          {/* Eventbrite — calendar/ticket */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="Eventbrite">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          {/* Goodwill — heart/shopping */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="ShopGoodwill">
-            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-          </svg>
-          <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>+ 14 more</span>
-        </div>
-      </div>
-
       {/* ═══ SEARCH RESULTS — inline, no section break ═══ */}
       {showResults && (
         <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-6) var(--space-4) 0' }}>
@@ -569,7 +554,10 @@ export default function Home() {
 
 
       {/* ═══ BEAT 2: LIVE FEED — deals happening now ═══ */}
-      <div style={{ maxWidth: '560px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>
+      <motion.div
+        initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp}
+        style={{ maxWidth: '560px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}
+      >
         {featuredDeals.length > 0 && (
           <>
             <div style={{ marginBottom: 'var(--space-4)' }}>
@@ -596,29 +584,43 @@ export default function Home() {
           </div>
         )}
         {featuredDeals.length > 0 && !loggedInUser && (
-          <div style={{ textAlign: 'center', paddingTop: 'var(--space-6)' }}>
-            <button onClick={() => setShowSignup(true)} style={{
-              padding: '10px 28px', background: 'var(--accent-green)', color: '#fff',
-              border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
+          <div style={{ textAlign: 'center', paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-4)' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: 'var(--space-3)' }}>
+              These deals update every 4 hours. Get them in your inbox every Thursday.
+            </p>
+            <button onClick={() => signIn('google')} style={{
+              padding: '12px 32px', background: 'var(--accent-green)', color: '#fff',
+              border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '15px', cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(22,163,74,0.2)',
             }}>
-              Sign up to see all deals
+              Get started free
+            </button>
+            <button onClick={() => setShowSignup(true)} style={{
+              display: 'block', margin: '8px auto 0', background: 'none', border: 'none',
+              color: 'var(--text-dim)', fontSize: '12px', cursor: 'pointer',
+              textDecoration: 'underline', textUnderlineOffset: '2px',
+            }}>
+              or use email
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
 
 
 
 
-      {/* ═══ TRUST STRIP — credibility bridge before signup ask ═══ */}
+      {/* ═══ TRUST STRIP — before/after visual + single value line ═══ */}
       {!loggedInUser && (
-        <div style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
-          <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-8) var(--space-4)', textAlign: 'center' }}>
-            <p style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 'var(--space-2)' }}>
-              Built for resellers who value their time
+        <motion.div
+          initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
+          style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}
+        >
+          <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-10) var(--space-4)', textAlign: 'center' }}>
+            <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+              Stop checking 5 sites every morning
             </p>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto' }}>
-              Stop checking 5 different sites every morning. We aggregate, score, and rank so you can focus on buying and selling.
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '400px', margin: '0 auto' }}>
+              We aggregate, score, and rank — so you can focus on buying and selling.
             </p>
 
             {/* Before/After visual — drop public/assets/before-after.webp to activate */}
@@ -634,26 +636,17 @@ export default function Home() {
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
               />
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginTop: 'var(--space-6)', flexWrap: 'wrap' }}>
-              {[
-                { value: `${stats.markets}`, label: 'US markets' },
-                { value: '6x', label: 'daily scans' },
-                { value: 'Free', label: 'to start' },
-              ].map(s => (
-                <div key={s.label}>
-                  <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--accent-green)', fontFamily: 'var(--font-mono)' }}>{s.value}</span>
-                  <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>{s.label}</span>
-                </div>
-              ))}
-            </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {/* ═══ HOW SCORING WORKS — score breakdown visual ═══ */}
+      {/* ═══ HOW SCORING WORKS — entire section hidden until image exists ═══ */}
       {/* Drop public/assets/score-breakdown.webp to activate */}
-      <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
+      <motion.div
+        initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
+        id="score-section"
+        style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}
+      >
         <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
           Every deal gets a flip score
         </h2>
@@ -669,39 +662,19 @@ export default function Home() {
             border: '1px solid var(--border-subtle)',
             boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
           }}
-          onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none' }}
+          onError={(e) => {
+            // Hide the ENTIRE section (heading + copy + image) if image doesn't exist
+            const section = (e.target as HTMLImageElement).closest('#score-section')
+            if (section) (section as HTMLElement).style.display = 'none'
+          }}
         />
-      </div>
-
-      {/* ═══ BEAT 4: INLINE SIGNUP — not a modal, just a form ═══ */}
-      {!loggedInUser && (
-        <div style={{ maxWidth: '28rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: 500 }}>
-            Get the weekly digest every Thursday
-          </p>
-          <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-6)' }}>
-            Top deals in your market, scored and sorted. Free · 15 searches/day.
-          </p>
-          <button onClick={() => signIn('google')} type="button" style={{
-            width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-            background: '#ffffff', color: '#1d1d1f', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '8px', cursor: 'pointer',
-            marginBottom: '12px',
-          }}>
-            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.03 24.03 0 0 0 0 21.56l7.98-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-            Continue with Google
-          </button>
-          <button onClick={() => setShowSignup(true)} style={{
-            background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px',
-          }}>
-            or sign up with email
-          </button>
-        </div>
-      )}
-
+      </motion.div>
 
       {/* ═══ PRICING — card-based with clear feature differentiation ═══ */}
-      <div id="pricing" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
+      <motion.div
+        initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp}
+        id="pricing" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}
+      >
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
           <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>Simple pricing</h2>
           <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>One good find pays for a year of Pro.</p>
@@ -782,7 +755,7 @@ export default function Home() {
             return days > 0 ? `Founding member pricing — locked in for life · ${days} days left` : 'Founding pricing ends soon'
           })()}
         </p>
-      </div>
+      </motion.div>
 
 
       {/* FOOTER */}
