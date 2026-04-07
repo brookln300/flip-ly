@@ -496,6 +496,41 @@ export default function Home() {
       </div>
 
 
+      {/* ═══ SOURCE STRIP — "we scan these" credibility row ═══ */}
+      <div style={{ maxWidth: '560px', margin: '0 auto', padding: 'var(--space-8) var(--space-4) 0', textAlign: 'center' }}>
+        <p style={{ fontSize: '11px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
+          Sources we scan
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '28px', flexWrap: 'wrap', opacity: 0.45 }}>
+          {/* Craigslist — peace sign CL */}
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-label="Craigslist">
+            <circle cx="12" cy="12" r="10" stroke="#6e6e73" strokeWidth="1.5"/>
+            <text x="12" y="16" textAnchor="middle" fill="#6e6e73" fontSize="10" fontWeight="700" fontFamily="system-ui">CL</text>
+          </svg>
+          {/* Facebook Marketplace — storefront */}
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="Facebook Marketplace">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          {/* OfferUp — tag icon */}
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="OfferUp">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+          </svg>
+          {/* EstateSales.net — gavel */}
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="EstateSales.net">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+          {/* Eventbrite — calendar/ticket */}
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="Eventbrite">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          {/* Goodwill — heart/shopping */}
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-label="ShopGoodwill">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>+ 14 more</span>
+        </div>
+      </div>
+
       {/* ═══ SEARCH RESULTS — inline, no section break ═══ */}
       {showResults && (
         <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-6) var(--space-4) 0' }}>

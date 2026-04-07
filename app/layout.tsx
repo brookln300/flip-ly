@@ -29,10 +29,10 @@ export const metadata: Metadata = {
     siteName: 'Flip-ly',
     images: [
       {
-        url: '/og-image.png',
+        url: '/api/og',
         width: 1200,
         height: 630,
-        alt: 'Flip-ly.net — Every deal near you, scored before you see it',
+        alt: 'Flip-ly — AI-powered deal discovery for resellers',
       },
     ],
     locale: 'en_US',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Flip-ly.net — Every Deal Near You, Scored by AI',
     description: 'AI scores Craigslist, OfferUp, estate sales & 20+ sources across 400+ markets. Find the best local deals before anyone else.',
-    images: ['/og-image.png'],
+    images: ['/api/og'],
   },
   robots: {
     index: true,
