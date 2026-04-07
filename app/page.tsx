@@ -111,12 +111,16 @@ export default function Home() {
       .catch(() => {})
   }, [])
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const [searchError, setSearchError] = useState('')
+
+  const handleSearch = async (e?: React.FormEvent, overrideQuery?: string) => {
+    if (e) e.preventDefault()
+    const q = overrideQuery ?? searchQuery
     setSearching(true)
+    setSearchError('')
     try {
       const params = new URLSearchParams()
-      if (searchQuery) params.set('q', searchQuery)
+      if (q) params.set('q', q)
       if (searchMarket) params.set('market', searchMarket)
       params.set('limit', '20')
       const res = await fetch(`/api/listings?${params}`)
@@ -134,6 +138,9 @@ export default function Home() {
       setShowResults(true)
     } catch {
       setRealListings([])
+      setTotalResults(0)
+      setShowResults(true)
+      setSearchError('Something went wrong. Please try again.')
     } finally {
       setSearching(false)
     }
@@ -517,7 +524,7 @@ export default function Home() {
             {/* Quick tags */}
             <div className="flex gap-2 mt-3 overflow-x-auto pb-1 justify-center" style={{ WebkitOverflowScrolling: 'touch' }}>
               {['tools', 'vintage', 'furniture', 'free', 'electronics', 'estate sale'].map(tag => (
-                <button key={tag} type="button" onClick={() => setSearchQuery(tag)} style={{
+                <button key={tag} type="button" onClick={() => { setSearchQuery(tag); handleSearch(undefined, tag) }} style={{
                   padding: '4px 12px', border: '1px solid var(--border-subtle)', borderRadius: '16px',
                   fontSize: '12px', color: 'var(--text-dim)', background: 'transparent', cursor: 'pointer', flexShrink: 0,
                 }}>
@@ -533,21 +540,52 @@ export default function Home() {
       {/* ═══ SEARCH RESULTS — inline, no section break ═══ */}
       {showResults && (
         <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-6) var(--space-4) 0' }}>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: 'var(--space-3)', fontFamily: 'var(--font-mono)' }}>
-            {totalResults} results{searchQuery ? ` for "${searchQuery}"` : ''}
-          </div>
-          {realListings.slice(0, loggedInUser ? realListings.length : 3).map((listing, i) => (
-            <DealRow key={listing.id || i} deal={listing} i={i} showExpand={i === 0} />
-          ))}
-          {!loggedInUser && realListings.length > 3 && (
-            <div style={{ padding: 'var(--space-6) 0', textAlign: 'center' }}>
-              <button onClick={() => setShowSignup(true)} style={{
-                padding: '10px 24px', background: 'var(--accent-green)', color: '#fff',
-                border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
-              }}>
-                Sign up free to see all {totalResults} results
-              </button>
+          {searchError ? (
+            <div style={{ textAlign: 'center', padding: 'var(--space-6) 0' }}>
+              <p style={{ color: 'var(--accent-red)', fontSize: '14px', marginBottom: '8px' }}>{searchError}</p>
+              <button onClick={() => handleSearch()} style={{
+                padding: '8px 20px', background: 'var(--bg-surface)', color: 'var(--text-secondary)',
+                border: '1px solid var(--border-default)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer',
+              }}>Try again</button>
             </div>
+          ) : realListings.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 'var(--space-8) 0' }}>
+              <p style={{ fontSize: '15px', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '4px' }}>
+                No deals found{searchQuery ? ` for "${searchQuery}"` : ''}
+              </p>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                Try a different search term or select a broader area.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: 'var(--space-3)', fontFamily: 'var(--font-mono)' }}>
+                {totalResults} results{searchQuery ? ` for "${searchQuery}"` : ''}
+              </div>
+              {realListings.slice(0, loggedInUser ? realListings.length : 3).map((listing, i) => (
+                <DealRow key={listing.id || i} deal={listing} i={i} showExpand={i === 0} />
+              ))}
+              {!loggedInUser && realListings.length > 3 && (
+                <div style={{ padding: 'var(--space-6) 0', textAlign: 'center' }}>
+                  <button onClick={() => setShowSignup(true)} style={{
+                    padding: '10px 24px', background: 'var(--accent-green)', color: '#fff',
+                    border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
+                  }}>
+                    Sign up free to see all {totalResults} results
+                  </button>
+                </div>
+              )}
+              {!loggedInUser && realListings.length <= 3 && realListings.length > 0 && (
+                <div style={{ padding: 'var(--space-4) 0', textAlign: 'center' }}>
+                  <button onClick={() => setShowSignup(true)} style={{
+                    background: 'none', border: 'none', color: 'var(--accent-green)', fontSize: '13px',
+                    cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px',
+                  }}>
+                    Sign up for unlimited searches and full scores
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -815,7 +853,7 @@ export default function Home() {
             borderRadius: '16px', cursor: 'default', overflow: 'hidden',
             boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
           }}>
-            <button onClick={() => { setShowSignup(false); setSubmitted(false); setSignupError('') }}
+            <button onClick={() => { setShowSignup(false); setSubmitted(false); setSignupError(''); setEmail(''); setPassword(''); setSignupState(''); setSignupMarketId(''); setIsLoginMode(false) }}
               className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-sm font-bold"
               style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-muted)' }}>
               &#10005;

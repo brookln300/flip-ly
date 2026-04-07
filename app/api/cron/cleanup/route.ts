@@ -65,19 +65,42 @@ export async function GET(req: NextRequest) {
 
     results.push(`Past-event listings: ${pastEventCount || 0} dead rows deleted`)
 
-    // Expire stale listings (older than 14 days — gives buffer between weekly scrapes)
-    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
-    const { count: expiredCount } = await supabase
+    // Expire stale listings — 7 days for Craigslist (CL deletes posts after sale date),
+    // 10 days for everything else (Eventbrite, AI-extracted, etc.)
+    const clMaxAge = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    const otherMaxAge = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+
+    // CL listings: aggressive 7-day TTL (source URLs go 404 within days)
+    const { count: clExpiredCount } = await supabase
       .from('fliply_listings')
       .select('*', { count: 'exact', head: true })
-      .lt('scraped_at', fourteenDaysAgo)
+      .like('source_url', '%craigslist%')
+      .lt('scraped_at', clMaxAge)
 
-    await supabase
+    if (clExpiredCount && clExpiredCount > 0) {
+      await supabase
+        .from('fliply_listings')
+        .delete()
+        .like('source_url', '%craigslist%')
+        .lt('scraped_at', clMaxAge)
+    }
+
+    results.push(`Stale CL listings: ${clExpiredCount || 0} deleted (>7 days)`)
+
+    // All other listings: 10-day TTL
+    const { count: otherExpiredCount } = await supabase
       .from('fliply_listings')
-      .delete()
-      .lt('scraped_at', fourteenDaysAgo)
+      .select('*', { count: 'exact', head: true })
+      .lt('scraped_at', otherMaxAge)
 
-    results.push(`Expired listings: ${expiredCount || 0} stale rows deleted (>14 days)`)
+    if (otherExpiredCount && otherExpiredCount > 0) {
+      await supabase
+        .from('fliply_listings')
+        .delete()
+        .lt('scraped_at', otherMaxAge)
+    }
+
+    results.push(`Stale other listings: ${otherExpiredCount || 0} deleted (>10 days)`)
 
     // Delete rejected sources older than 60 days
     const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()

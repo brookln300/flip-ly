@@ -17,10 +17,10 @@ import { sendTelegramAlert } from '../../../lib/telegram'
  * 120s function timeout. Prioritizes oldest-checked listings first.
  */
 
-const BATCH_SIZE = 25
-const MAX_BATCHES = 8           // 25 * 8 = 200 listings per run max
-const FETCH_TIMEOUT_MS = 5000
-const MAX_CONSECUTIVE_FAILS = 3 // delete after 3 failed checks
+const BATCH_SIZE = 50
+const MAX_BATCHES = 8           // 50 * 8 = 400 listings per run max
+const FETCH_TIMEOUT_MS = 4000
+const MAX_CONSECUTIVE_FAILS = 2 // delete after 2 failed checks (CL links die fast)
 
 async function checkUrl(url: string): Promise<{ status: number | null; alive: boolean }> {
   try {
@@ -59,7 +59,25 @@ export async function GET(req: NextRequest) {
   let totalSuspect = 0
 
   try {
-    // Process in batches — oldest link_checked_at first, null = never checked
+    // Pre-purge: delete any CL listings older than 7 days without even checking
+    // (Craigslist deletes sale posts shortly after they end)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    const { count: prePurged } = await supabase
+      .from('fliply_listings')
+      .select('*', { count: 'exact', head: true })
+      .like('source_url', '%craigslist%')
+      .lt('scraped_at', sevenDaysAgo)
+
+    if (prePurged && prePurged > 0) {
+      await supabase
+        .from('fliply_listings')
+        .delete()
+        .like('source_url', '%craigslist%')
+        .lt('scraped_at', sevenDaysAgo)
+      totalDead += prePurged
+    }
+
+    // Process in batches — prioritize CL listings (die fastest), then oldest-checked
     for (let batch = 0; batch < MAX_BATCHES; batch++) {
       const { data: listings, error } = await supabase
         .from('fliply_listings')
@@ -137,11 +155,12 @@ export async function GET(req: NextRequest) {
 
     await sendTelegramAlert([
       `🔗 <b>Link Health Check</b> (${elapsed}s)`,
+      prePurged ? `Pre-purged: ${prePurged} stale CL listings 🗑️` : '',
       `Checked: ${totalChecked}`,
       `Alive: ${totalAlive} ✅`,
       `Dead (removed): ${totalDead} 🗑️`,
       `Suspect (will retry): ${totalSuspect} ⚠️`,
-    ].join('\n'))
+    ].filter(Boolean).join('\n'))
 
     return NextResponse.json({
       success: true,

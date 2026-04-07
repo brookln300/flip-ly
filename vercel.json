@@ -30,15 +30,19 @@
     },
     {
       "path": "/api/cron/cleanup",
-      "schedule": "0 4 * * 0"
+      "schedule": "0 4 * * *"
     },
     {
       "path": "/api/cron/link-check",
-      "schedule": "0 10 * * *"
+      "schedule": "0 6,18 * * *"
     },
     {
       "path": "/api/cron/discover-sources",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/daily-deals",
+      "schedule": "0 15 * * 1-5"
     }
   ]
 }

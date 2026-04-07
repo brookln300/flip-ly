@@ -48,6 +48,10 @@ export async function scrapeCraigslist(
     const items = json.data?.items || []
     const decode = json.data?.decode || {}
     const locationDescs: string[] = decode.locationDescriptions || []
+    // SAPI v8 encodes posting IDs as offsets from minPostingId
+    const minPostingId: number = decode.minPostingId || 0
+    // SAPI v8 encodes event/posting dates as offsets from minDate (unix seconds)
+    const minDate: number = decode.minDate || 0
 
     if (items.length === 0) {
       result.errors.push('CL SAPI returned 0 items')
@@ -58,15 +62,30 @@ export async function scrapeCraigslist(
 
     for (const item of items) {
       try {
-        // Item array format: [postingId, ?, locationIdx, price, latLng, ?, ?, thumbnailInfo, images, [?,slug], title]
-        const postingId = item[0]
+        // Item array format (SAPI v8):
+        // [postingIdOffset, dateOffset, locationIdx, price, latLng, ?, ?, thumbnailInfo, images, [?,slug], title]
+        // postingId = minPostingId + item[0]
+        // eventDate = minDate + item[1] (unix seconds)
+        const postingIdOffset = item[0]
+        const postingId = minPostingId + (typeof postingIdOffset === 'number' ? postingIdOffset : 0)
+        const dateOffset = item[1]
         const locationIdx = item[2]
-        const rawPrice = item[3] // -1 = no price, otherwise cents
+        const rawPrice = item[3] // -1 = no price, otherwise whole dollars
         const latLngStr = item[4] // "1:1~lat~lng"
         const title = item[item.length - 1]
         const slugArr = item[item.length - 2] // [6, "slug-text"] or similar
 
         if (!postingId || !title) continue
+
+        // Parse event date from SAPI offset
+        let eventDate: string | null = null
+        if (minDate && typeof dateOffset === 'number') {
+          const d = new Date((minDate + dateOffset) * 1000)
+          // Only use if the date is reasonable (within 30 days)
+          if (d.getTime() > Date.now() - 7 * 86400000 && d.getTime() < Date.now() + 30 * 86400000) {
+            eventDate = d.toISOString().split('T')[0]
+          }
+        }
 
         // Parse location
         const location = (typeof locationIdx === 'number' && locationDescs[locationIdx]) || null
@@ -111,10 +130,11 @@ export async function scrapeCraigslist(
           longitude,
           source_url: postUrl,
           source_type: 'craigslist_rss', // keep existing source_type for DB compat
+          event_date: eventDate,
           scraped_at: new Date().toISOString(),
         }, {
           onConflict: 'source_id,external_id',
-          ignoreDuplicates: true,
+          ignoreDuplicates: false, // Update existing listings with fresh data + correct URLs
         })
 
         if (error) {

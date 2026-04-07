@@ -151,10 +151,12 @@ export async function GET(req: NextRequest) {
       if (marketId) dbQuery = dbQuery.eq('market_id', marketId)
       if (hot) dbQuery = dbQuery.eq('is_hot', true)
 
-      // Filter out expired/past-event listings
+      // Filter out expired/past-event listings + stale data (max 7 days)
       const today = new Date().toISOString().split('T')[0]
+      const maxAge = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       dbQuery = dbQuery.or(`event_date.is.null,event_date.gte.${today}`)
       dbQuery = dbQuery.or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
+      dbQuery = dbQuery.gte('scraped_at', maxAge)
 
       dbQuery = dbQuery
         .order('is_hot', { ascending: false, nullsFirst: false })
@@ -176,10 +178,12 @@ export async function GET(req: NextRequest) {
     if (marketId) dbQuery = dbQuery.eq('market_id', marketId)
     if (hot) dbQuery = dbQuery.eq('is_hot', true)
 
-    // Filter out expired/past-event listings
+    // Filter out expired/past-event listings + stale data (max 7 days)
     const todayBrowse = new Date().toISOString().split('T')[0]
+    const maxAgeBrowse = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     dbQuery = dbQuery.or(`event_date.is.null,event_date.gte.${todayBrowse}`)
     dbQuery = dbQuery.or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
+    dbQuery = dbQuery.gte('scraped_at', maxAgeBrowse)
 
     dbQuery = dbQuery
       .order('is_hot', { ascending: false, nullsFirst: false })
