@@ -6,13 +6,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Flip-ly Pro & Power Plans',
     description: 'Unlimited searches, full AI score breakdowns, early digest access. Plans from $5/mo.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: '/api/og', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Flip-ly Pro & Power Plans',
     description: 'Unlimited searches, full AI score breakdowns, early digest access. Plans from $5/mo.',
-    images: ['/og-image.png'],
+    images: ['/api/og'],
   },
 }
 

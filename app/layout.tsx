@@ -94,7 +94,7 @@ const jsonLd = {
       '@id': 'https://flip-ly.net/#org',
       name: 'Flip-ly',
       url: 'https://flip-ly.net',
-      logo: 'https://flip-ly.net/og-image.png',
+      logo: 'https://flip-ly.net/api/og',
       sameAs: [
         'https://x.com/ctrl_alt_flip',
         'https://www.facebook.com/61574265411500',

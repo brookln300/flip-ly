@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     description: 'Stop scrolling Craigslist. Get the best garage sales near you delivered every Thursday. Free, AI-powered, 20+ sources.',
     url: 'https://flip-ly.net/garage-sales',
     siteName: 'Flip-ly',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Flip-ly.net — AI-powered garage sale finder' }],
+    images: [{ url: '/api/og', width: 1200, height: 630, alt: 'Flip-ly.net — AI-powered garage sale finder' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Garage Sales Near You | Flip-ly.net',
     description: 'AI scans 20+ sources daily. Get the best garage sales near you every Thursday. Free.',
-    images: ['/og-image.png'],
+    images: ['/api/og'],
   },
   robots: { index: true, follow: true },
 }

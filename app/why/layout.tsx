@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Why flip-ly.net Looks Like This',
     description: 'AI garage sale finder that looks like 1997. On purpose. Here\'s why.',
-    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    images: [{ url: '/api/og', width: 1200, height: 630 }],
   },
 }
 
