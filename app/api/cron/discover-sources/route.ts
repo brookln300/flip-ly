@@ -169,7 +169,7 @@ async function runAutoApprove(results: { auto_approved: number; errors: string[]
     })
     .eq('is_approved', false)
     .eq('trust_level', 'pending')
-    .gte('ai_confidence', 10)
+    .gte('ai_confidence', 7)
     .lt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
     .select('id, name, market_id, ai_confidence')
 

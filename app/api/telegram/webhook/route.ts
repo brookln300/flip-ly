@@ -689,6 +689,25 @@ async function handleMarketToggle(query: string, activate: boolean) {
   if (!markets?.length) return reply([`No market found matching "${query}".`])
 
   const m = markets[0]
+
+  // Safety guard: refuse to deactivate markets that have users
+  if (!activate) {
+    const { count } = await supabase
+      .from('fliply_users')
+      .select('id', { count: 'exact', head: true })
+      .eq('market_id', m.id)
+    if (count && count > 0) {
+      return reply([
+        `⛔ <b>Cannot pause ${m.display_name}</b>`,
+        ``,
+        `${count} user(s) depend on this market for listings.`,
+        `Pausing would leave them with an empty dashboard.`,
+        ``,
+        `<i>To force-pause, remove users first or use the admin panel.</i>`,
+      ])
+    }
+  }
+
   await supabase.from('fliply_markets').update({ is_active: activate }).eq('id', m.id)
 
   // Also toggle all sources for this market
