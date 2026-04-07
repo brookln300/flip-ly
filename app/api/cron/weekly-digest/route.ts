@@ -123,7 +123,7 @@ export async function GET(req: NextRequest) {
           .replace('{city}', user.city || 'your area')
         const html = buildDigestEmail(user, listings, stats, isPro, user.email)
 
-        const { error: sendError } = await sendEmail({
+        const { id: resendMessageId, error: sendError } = await sendEmail({
           to: user.email,
           subject,
           html,
@@ -138,6 +138,18 @@ export async function GET(req: NextRequest) {
         } else {
           throw new Error(sendError)
         }
+
+        // Log to email_sends so webhook can track bounces/opens/complaints
+        await supabase.from('email_sends').insert({
+          user_id: user.id,
+          to_email: user.email.toLowerCase(),
+          subject,
+          template_key: isPro ? 'digest_pro' : 'digest_free',
+          resend_message_id: resendMessageId || null,
+          status: 'sent',
+        }).then(null, (err: any) =>
+          console.error(`[DIGEST] email_sends log failed for ${user.email}:`, err.message)
+        )
 
         await supabase.from('fliply_digest_log').insert({
           user_id: user.id,

@@ -249,8 +249,83 @@ export async function getDripEmailHtml(
   return renderer()
 }
 
+// ── TRANSACTIONAL TEMPLATES ──────────────────────────────────────
+// These are NOT part of the drip sequence. They fire on specific events.
+// All use the shared wrapEmail() for consistent branding + unsubscribe.
+
+/**
+ * Pro upgrade confirmation — sent immediately when Stripe confirms payment.
+ * This is the highest-intent moment in the funnel. Make it count.
+ */
+export function getProUpgradeEmail(email: string, tier: string): string {
+  const username = email.split('@')[0]
+  const tierLabel = tier === 'power' ? 'Power' : 'Pro'
+  const price = tier === 'power' ? '$19' : '$5'
+
+  return wrapEmail(`
+    <h1 style="color:#000;font-size:22px;margin:0 0 16px;font-weight:700;">
+      You're on ${esc(tierLabel)} now
+    </h1>
+    <p style="color:#555;font-size:15px;line-height:1.7;">
+      ${esc(username)}, your upgrade just went through. Here's what changed:
+    </p>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px;margin:20px 0;">
+      <table style="width:100%;font-size:14px;color:#555;">
+        <tr><td style="padding:8px 0;width:28px;vertical-align:top;color:#22C55E;font-weight:700;">1</td><td style="padding:8px 8px;"><strong style="color:#000;">Early access</strong> — Your weekly digest now arrives 6 hours before free users</td></tr>
+        <tr><td style="padding:8px 0;vertical-align:top;color:#22C55E;font-weight:700;">2</td><td style="padding:8px 8px;"><strong style="color:#000;">Full AI scores</strong> — See the breakdown behind every deal score</td></tr>
+        <tr><td style="padding:8px 0;vertical-align:top;color:#22C55E;font-weight:700;">3</td><td style="padding:8px 8px;"><strong style="color:#000;">Unlimited searches</strong> — No daily cap, full descriptions, direct links</td></tr>
+        ${tier === 'power' ? '<tr><td style="padding:8px 0;vertical-align:top;color:#22C55E;font-weight:700;">4</td><td style="padding:8px 8px;"><strong style="color:#000;">Instant alerts</strong> — Get notified the moment high-score deals appear</td></tr>' : ''}
+      </table>
+    </div>
+    <p style="color:#555;font-size:14px;line-height:1.7;">
+      Your founding rate of <strong style="color:#000;">${esc(price)}/month</strong> is locked in for life. It won't change even when prices go up.
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="https://flip-ly.net?utm_source=email&utm_medium=transactional&utm_campaign=pro-upgrade&utm_content=cta" style="${btnStyle}">
+        Search Deals Now
+      </a>
+    </div>
+    <p style="color:#999;font-size:13px;margin:0;">
+      Questions? Just reply to this email. I read every one. — Keith
+    </p>
+  `, `You're on ${tierLabel} — here's what's unlocked`, email)
+}
+
+/**
+ * Payment failed notice — sent when Stripe invoice.payment_failed fires.
+ * Keep it helpful, not scary. One clear action.
+ */
+export function getPaymentFailedEmail(email: string): string {
+  const username = email.split('@')[0]
+
+  return wrapEmail(`
+    <h1 style="color:#000;font-size:22px;margin:0 0 16px;font-weight:700;">
+      Heads up — your payment didn't go through
+    </h1>
+    <p style="color:#555;font-size:15px;line-height:1.7;">
+      ${esc(username)}, your latest flip-ly payment was declined. This can happen with expired cards or bank holds — usually an easy fix.
+    </p>
+    <div style="background:#f8f8f8;border-radius:8px;padding:20px;margin:20px 0;">
+      <p style="color:#555;font-size:14px;margin:0;">
+        If your payment method isn't updated, your Pro features (early access digest, unlimited searches, full AI scores) will be paused until it's resolved.
+      </p>
+    </div>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="https://flip-ly.net/pro?utm_source=email&utm_medium=transactional&utm_campaign=payment-failed&utm_content=cta" style="${btnStyle}">
+        Update Payment Method
+      </a>
+    </div>
+    <p style="color:#999;font-size:13px;margin:0;">
+      If you think this is a mistake, just reply to this email.
+    </p>
+  `, 'Your payment needs attention', email)
+}
+
 // Clean button style — matches site branding
 const btnStyle = `display:inline-block;padding:14px 32px;background:#22C55E;color:#000;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-weight:700;font-size:15px;border-radius:8px;`
+
+// Exported for use by transactional emails outside the drip system
+export { wrapEmail, esc }
 
 // Clean email wrapper — white background, professional
 function wrapEmail(content: string, previewText?: string, userEmail?: string): string {

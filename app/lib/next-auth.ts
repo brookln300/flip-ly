@@ -9,7 +9,9 @@ import { sendTelegramAlert } from './telegram'
 
 /**
  * Enroll a new OAuth user in the welcome-to-convert drip sequence.
- * Same logic as signup route — randomly assigns A/B variant.
+ * Starts at step 1 (skips drip welcome) because /api/auth/assign-market
+ * sends the welcome email with correct geo-resolved location on first
+ * dashboard visit. This matches the email/password signup behavior.
  */
 async function enrollInWelcomeSequence(userId: string) {
   const { data: seqs } = await supabase
@@ -26,12 +28,12 @@ async function enrollInWelcomeSequence(userId: string) {
   await supabase.from('sequence_enrollments').upsert({
     user_id: userId,
     sequence_id: seqs[0].id,
-    current_step: 0,
+    current_step: 1,
     status: 'active',
     variant,
   }, { onConflict: 'user_id,sequence_id' })
 
-  console.log(`[DRIP] OAuth user ${userId} enrolled in welcome sequence (variant ${variant})`)
+  console.log(`[DRIP] OAuth user ${userId} enrolled in welcome sequence at step 1 (variant ${variant})`)
 }
 
 export const authOptions: NextAuthOptions = {
@@ -97,6 +99,7 @@ export const authOptions: NextAuthOptions = {
               password_hash: '', // OAuth users don't have passwords
               x_id: account.providerAccountId,
               x_username: user.name || null,
+              acquisition_source: 'twitter',
             })
             .select('id')
             .single()

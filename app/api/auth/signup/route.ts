@@ -5,61 +5,11 @@ import { createToken } from '../../../lib/auth'
 import { trackEvent } from '../../../lib/analytics'
 import { discoverSourcesForMarket } from '../../../lib/discovery/source-discovery'
 import { sendEmail } from '../../../lib/email/send'
+import { getDripEmailHtml } from '../../../lib/email/drip-templates'
 import { sendTelegramAlert } from '../../../lib/telegram'
 
-// Welcome email — informative with a touch of personality
+// Welcome email uses the shared drip template — single source of truth
 const WELCOME_SUBJECT = "Welcome to flip-ly — here's how it works"
-
-function getWelcomeEmail(email: string, marketName: string | null) {
-  const username = email.split('@')[0]
-  const location = marketName || 'your area'
-
-  return `<div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
-  Welcome — your Thursday deal digest starts this week
-  <!-- Padding to prevent email client from pulling body text -->
-  &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
-</div>
-<div style="background:#ffffff;max-width:520px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-    <div style="background:#0a0a0a;padding:24px 32px;">
-      <h1 style="color:#22C55E;font-size:22px;margin:0;font-weight:700;">flip-ly.net</h1>
-    </div>
-    <div style="padding:32px;color:#333;line-height:1.7;">
-      <p style="font-size:16px;margin:0 0 20px;">Hey ${username},</p>
-      <p style="font-size:15px;margin:0 0 20px;">Welcome to flip-ly. You're signed up for <strong>${location}</strong> — here's what to expect.</p>
-
-      <div style="background:#f8f8f8;border-radius:8px;padding:20px;margin:0 0 24px;">
-        <p style="font-size:14px;font-weight:600;color:#000;margin:0 0 12px;">What you get:</p>
-        <table style="width:100%;font-size:14px;color:#555;">
-          <tr><td style="padding:6px 0;">📬</td><td style="padding:6px 8px;">Weekly email digest every <strong style="color:#000;">Thursday at noon</strong></td></tr>
-          <tr><td style="padding:6px 0;">📍</td><td style="padding:6px 8px;">Garage sales, estate sales &amp; deals near <strong style="color:#000;">${location}</strong></td></tr>
-          <tr><td style="padding:6px 0;">🔍</td><td style="padding:6px 8px;">Search across Craigslist, EstateSales.net &amp; 20+ local sources</td></tr>
-          <tr><td style="padding:6px 0;">🆓</td><td style="padding:6px 8px;">Free tier: 10 searches/day, weekly digest, no credit card</td></tr>
-        </table>
-      </div>
-
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:0 0 24px;">
-        <p style="font-size:14px;font-weight:600;color:#166534;margin:0 0 8px;">🚀 Want more?</p>
-        <p style="font-size:13px;color:#555;margin:0;">Pro ($5/mo) and Power ($19/mo) members get unlimited searches, full AI score breakdowns, and deals before everyone else. Founding prices locked in for life. <a href="https://flip-ly.net/pro" style="color:#16a34a;font-weight:600;">See plans →</a></p>
-      </div>
-
-      <p style="font-size:15px;margin:0 0 24px;">Your first digest arrives this Thursday. In the meantime, <a href="https://flip-ly.net" style="color:#22C55E;font-weight:600;">search for deals now</a>.</p>
-
-      <p style="font-size:14px;color:#888;margin:0;">Simple, honest, and built to save you time every week.</p>
-    </div>
-    <div style="background:#f8f8f8;padding:20px 32px;border-top:1px solid #eee;">
-      <p style="font-size:12px;color:#999;margin:0 0 4px;">flip-ly.net — Garage sale intelligence, delivered weekly.</p>
-      <p style="font-size:11px;color:#bbb;margin:0;">
-        <a href="https://flip-ly.net" style="color:#999;">Visit</a> · <a href="https://flip-ly.net/why" style="color:#999;">Why this exists</a> · <a href="https://flip-ly.net/privacy" style="color:#999;">Privacy</a>
-      </p>
-    </div>
-  </div>`
-}
-
-/* ── ARCHIVED CHAOS TEMPLATES (kept for future A/B testing) ──
- * Original templates: Classic Chaos, FBI Style, Tech Support
- * These can be re-enabled for chaos-mode signups or drip sequences.
- * See git history: commit before this change for full templates.
- */
 
 export async function POST(req: NextRequest) {
   try {
@@ -159,23 +109,52 @@ export async function POST(req: NextRequest) {
       ...(fbclid ? { fbclid } : {}),
     }, user.id)
 
-    // Send welcome email
+    // Send welcome email — uses the shared drip template (single source of truth)
+    // This ensures: unsubscribe link in body, consistent branding, no emojis
     try {
       const subject = WELCOME_SUBJECT
-      const html = getWelcomeEmail(email, marketDisplayName)
+      const html = await getDripEmailHtml('welcome', {
+        email,
+        city: marketDisplayName,
+        state: market.state,
+        step_order: 0,
+        variant: 'a',
+      })
 
-      await sendEmail({
+      const { id: resendMessageId, error: sendError } = await sendEmail({
         to: email,
         subject,
         html,
-        tags: [{ name: 'sequence', value: 'welcome' }],
+        tags: [
+          { name: 'sequence', value: 'welcome' },
+          { name: 'template', value: 'welcome' },
+        ],
       })
-      console.log(`[SIGNUP] Welcome email sent to ${email}`)
+
+      if (!sendError) {
+        console.log(`[SIGNUP] Welcome email sent to ${email} (resend: ${resendMessageId})`)
+
+        // Log to email_sends so webhook can track bounces/complaints/opens
+        await supabase.from('email_sends').insert({
+          user_id: user.id,
+          to_email: email.toLowerCase(),
+          subject,
+          template_key: 'welcome',
+          variant: 'a',
+          resend_message_id: resendMessageId || null,
+          status: 'sent',
+        }).then(null, (err: any) =>
+          console.error('[SIGNUP] email_sends log failed:', err.message)
+        )
+      } else {
+        console.error(`[SIGNUP] Welcome email send error: ${sendError}`)
+      }
+
       trackEvent('welcome_email_sent', { email_type: 'welcome' }, user.id)
 
       // Telegram: new signup alert
       sendTelegramAlert([
-        `<b>New Signup</b> 🎉`,
+        `<b>New Signup</b>`,
         `Email: ${email}`,
         `Market: ${marketDisplayName}, ${market.state}`,
         `CL Region: ${market.cl_subdomain}`,

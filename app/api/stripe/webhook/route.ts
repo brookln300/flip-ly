@@ -3,6 +3,8 @@ import Stripe from 'stripe'
 import { supabase } from '../../../lib/supabase'
 import { trackEvent } from '../../../lib/analytics'
 import { sendTelegramAlert } from '../../../lib/telegram'
+import { sendEmail } from '../../../lib/email/send'
+import { getProUpgradeEmail, getPaymentFailedEmail } from '../../../lib/email/drip-templates'
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -41,6 +43,7 @@ export async function POST(req: NextRequest) {
         const customerId = session.customer as string
 
         if (userId) {
+          // Activate Pro in database
           await supabase
             .from('fliply_users')
             .update({
@@ -56,11 +59,59 @@ export async function POST(req: NextRequest) {
 
           console.log(`[Stripe] Pro activated for user ${userId}`)
 
+          // Get user email for confirmation
+          const { data: proUser } = await supabase
+            .from('fliply_users')
+            .select('email')
+            .eq('id', userId)
+            .single()
+
+          const tier = session.metadata?.tier || 'pro'
+
+          // Send Pro upgrade confirmation email
+          if (proUser?.email) {
+            const subject = tier === 'power'
+              ? "You're on Power — here's what's unlocked"
+              : "You're on Pro — here's what's unlocked"
+            const html = getProUpgradeEmail(proUser.email, tier)
+
+            const { id: resendMessageId } = await sendEmail({
+              to: proUser.email,
+              subject,
+              html,
+              tags: [
+                { name: 'sequence', value: 'transactional' },
+                { name: 'template', value: 'pro-upgrade' },
+              ],
+            })
+
+            // Log for webhook tracking
+            await supabase.from('email_sends').insert({
+              user_id: userId,
+              to_email: proUser.email.toLowerCase(),
+              subject,
+              template_key: 'pro-upgrade',
+              resend_message_id: resendMessageId || null,
+              status: 'sent',
+            }).then(null, (err: any) =>
+              console.error('[STRIPE] email_sends log failed:', err.message)
+            )
+
+            console.log(`[Stripe] Pro upgrade email sent to ${proUser.email}`)
+          }
+
+          // Cancel any active drip enrollments — they converted, stop selling
+          await supabase
+            .from('sequence_enrollments')
+            .update({ status: 'converted', completed_at: new Date().toISOString() })
+            .eq('user_id', userId)
+            .eq('status', 'active')
+
           sendTelegramAlert([
-            `💰 <b>NEW PRO SUBSCRIBER!</b> 💰`,
-            `User: ${userId}`,
+            `<b>NEW PRO SUBSCRIBER!</b>`,
+            `User: ${proUser?.email || userId}`,
+            `Tier: ${tier}`,
             `Subscription: ${subscriptionId}`,
-            `Tier: ${session.metadata?.tier || 'pro'}`,
           ].join('\n'))
         }
         break
@@ -111,18 +162,49 @@ export async function POST(req: NextRequest) {
         const customerId = invoice.customer as string
 
         // Look up user by customer ID
-        const { data: user } = await supabase
+        const { data: failedUser } = await supabase
           .from('fliply_users')
           .select('id, email')
           .eq('stripe_customer_id', customerId)
           .single()
 
-        if (user) {
+        if (failedUser) {
           trackEvent('pro_payment_failed', {
             invoice_id: invoice.id || 'unknown',
-          }, user.id)
+          }, failedUser.id)
 
-          console.log(`[Stripe] Payment failed for user ${user.id} (${user.email})`)
+          // Send payment failed email — helpful, not scary
+          const failSubject = 'Heads up — your payment didn\'t go through'
+          const failHtml = getPaymentFailedEmail(failedUser.email)
+
+          const { id: failMsgId } = await sendEmail({
+            to: failedUser.email,
+            subject: failSubject,
+            html: failHtml,
+            tags: [
+              { name: 'sequence', value: 'transactional' },
+              { name: 'template', value: 'payment-failed' },
+            ],
+          })
+
+          await supabase.from('email_sends').insert({
+            user_id: failedUser.id,
+            to_email: failedUser.email.toLowerCase(),
+            subject: failSubject,
+            template_key: 'payment-failed',
+            resend_message_id: failMsgId || null,
+            status: 'sent',
+          }).then(null, (err: any) =>
+            console.error('[STRIPE] email_sends log failed:', err.message)
+          )
+
+          console.log(`[Stripe] Payment failed email sent to ${failedUser.email}`)
+
+          sendTelegramAlert([
+            `<b>Payment Failed</b>`,
+            `User: ${failedUser.email}`,
+            `Invoice: ${invoice.id || 'unknown'}`,
+          ].join('\n'))
         }
         break
       }

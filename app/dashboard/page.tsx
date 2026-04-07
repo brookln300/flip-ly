@@ -170,7 +170,21 @@ export default function Dashboard() {
   useEffect(() => {
     fetch('/api/auth/me')
       .then(r => r.json())
-      .then(data => { setUser(data.user); setLoading(false) })
+      .then(async (data) => {
+        let u = data.user
+        // OAuth users may not have a market yet — auto-assign via geo headers
+        if (u && !u.market_id) {
+          try {
+            const res = await fetch('/api/auth/assign-market', { method: 'POST' })
+            const geo = await res.json()
+            if (geo.assigned) {
+              u = { ...u, market_id: geo.market_id, city: geo.city, state: geo.state }
+            }
+          } catch { /* proceed without market — digest will catch up */ }
+        }
+        setUser(u)
+        setLoading(false)
+      })
       .catch(() => { setLoading(false); window.location.href = '/' })
   }, [])
 
