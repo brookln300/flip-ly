@@ -408,6 +408,20 @@ export default function Home() {
           </div>
         </div>
 
+        {/* ── Hero product shot — drop public/hero-product.webp to activate ── */}
+        <div style={{ maxWidth: '680px', margin: '0 auto var(--space-8)', position: 'relative' }}>
+          <img
+            src="/hero-product.webp"
+            alt="flip-ly dashboard showing AI-scored deals"
+            width={1200} height={800}
+            style={{
+              width: '100%', height: 'auto', borderRadius: '12px',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)',
+            }}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        </div>
+
         {/* Search bar — centered, full width */}
         <div id="search" style={{ maxWidth: '560px', margin: '0 auto' }}>
           <form onSubmit={handleSearch}>
@@ -606,6 +620,21 @@ export default function Home() {
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto' }}>
               Stop checking 5 different sites every morning. We aggregate, score, and rank so you can focus on buying and selling.
             </p>
+
+            {/* Before/After visual — drop public/assets/before-after.webp to activate */}
+            <div style={{ marginTop: 'var(--space-6)' }}>
+              <img
+                src="/assets/before-after.webp"
+                alt="Before: 5 browser tabs. After: one flip-ly dashboard."
+                width={800} height={420}
+                style={{
+                  width: '100%', maxWidth: '560px', height: 'auto', borderRadius: '10px',
+                  border: '1px solid var(--border-subtle)',
+                }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+              />
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginTop: 'var(--space-6)', flexWrap: 'wrap' }}>
               {[
                 { value: `${stats.markets}`, label: 'US markets' },
@@ -621,6 +650,28 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* ═══ HOW SCORING WORKS — score breakdown visual ═══ */}
+      {/* Drop public/assets/score-breakdown.webp to activate */}
+      <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
+          Every deal gets a flip score
+        </h2>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto var(--space-6)' }}>
+          Our AI analyzes demand, margin potential, competition, and sell-through velocity to rate every listing 1&ndash;10.
+        </p>
+        <img
+          src="/assets/score-breakdown.webp"
+          alt="AI flip score breakdown showing demand, margin, competition, and velocity signals"
+          width={640} height={420}
+          style={{
+            width: '100%', maxWidth: '540px', height: 'auto', borderRadius: '10px',
+            border: '1px solid var(--border-subtle)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+          }}
+          onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none' }}
+        />
+      </div>
 
       {/* ═══ BEAT 4: INLINE SIGNUP — not a modal, just a form ═══ */}
       {!loggedInUser && (
