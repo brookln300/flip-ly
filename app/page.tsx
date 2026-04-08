@@ -274,15 +274,50 @@ export default function Home() {
 
         {/* Deal info */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            {deal.source_url ? (
-              <a href={deal.source_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>{deal.title}</a>
-            ) : deal.title}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
+            {deal.hot && (
+              <span style={{ background: '#fef2f2', color: '#dc2626', padding: '1px 5px', fontSize: '9px', fontWeight: 700, borderRadius: '3px', letterSpacing: '0.04em', flexShrink: 0 }}>HOT</span>
+            )}
+            {deal.event_type && deal.event_type !== 'listing' && (
+              <span style={{
+                padding: '1px 6px', fontSize: '9px', fontWeight: 600, borderRadius: '3px',
+                letterSpacing: '0.02em', whiteSpace: 'nowrap', flexShrink: 0,
+                background: deal.event_type === 'estate_sale' ? 'rgba(168,85,247,0.08)' : deal.event_type === 'garage_sale' ? 'rgba(59,130,246,0.08)' : deal.event_type === 'flea_market' ? 'rgba(236,72,153,0.08)' : deal.event_type === 'moving_sale' ? 'rgba(249,115,22,0.08)' : deal.event_type === 'auction' ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.08)',
+                color: deal.event_type === 'estate_sale' ? '#A855F7' : deal.event_type === 'garage_sale' ? '#3B82F6' : deal.event_type === 'flea_market' ? '#EC4899' : deal.event_type === 'moving_sale' ? '#F97316' : deal.event_type === 'auction' ? '#EF4444' : '#6366F1',
+              }}>
+                {(deal.event_type || '').replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
+              </span>
+            )}
+            <span style={{
+              fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {deal.source_url ? (
+                <a href={deal.source_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>{deal.title}</a>
+              ) : deal.title}
+            </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+            {deal.date && (() => {
+              const d = new Date(deal.date + 'T12:00:00')
+              if (isNaN(d.getTime())) return null
+              const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+              const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+              const diff = Math.round((target.getTime() - today.getTime()) / 86400000)
+              const label = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : diff > 0 && diff <= 6 ? d.toLocaleDateString('en-US', { weekday: 'short' }) : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              const isHot = diff === 0 || diff === 1
+              return (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '3px',
+                  padding: '1px 6px', borderRadius: '3px', fontSize: '10px', fontWeight: 600,
+                  background: isHot ? 'rgba(22,163,74,0.08)' : 'var(--bg-surface)',
+                  color: isHot ? 'var(--accent-green)' : 'var(--text-muted)',
+                  border: `1px solid ${isHot ? 'rgba(22,163,74,0.15)' : 'var(--border-subtle)'}`,
+                }}>
+                  📅 {label}{deal.time ? ` · ${deal.time}` : ''}
+                </span>
+              )
+            })()}
             {deal.city && <span>{deal.city}</span>}
             <span style={{
               textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.5px',
@@ -591,14 +626,25 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Quick tags */}
+            {/* Event type quick filters */}
             <div className="flex gap-2 mt-3 overflow-x-auto pb-1 justify-center" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {['tools', 'vintage', 'furniture', 'free', 'electronics', 'estate sale'].map(tag => (
-                <button key={tag} type="button" onClick={() => { setSearchQuery(tag); handleSearch(undefined, tag) }} style={{
-                  padding: '4px 12px', border: '1px solid var(--border-subtle)', borderRadius: '16px',
-                  fontSize: '12px', color: 'var(--text-dim)', background: 'transparent', cursor: 'pointer', flexShrink: 0,
-                }}>
-                  {tag}
+              {[
+                { label: '🏠 Garage Sales', q: 'garage sale' },
+                { label: '🏛️ Estate Sales', q: 'estate sale' },
+                { label: '🎪 Flea Markets', q: 'flea market' },
+                { label: '📦 Moving Sales', q: 'moving sale' },
+                { label: '🔨 Auctions', q: 'auction' },
+                { label: '🆓 Free Items', q: 'free' },
+              ].map(tag => (
+                <button key={tag.q} type="button" onClick={() => { setSearchQuery(tag.q); handleSearch(undefined, tag.q) }} style={{
+                  padding: '5px 14px', border: '1px solid var(--border-subtle)', borderRadius: '20px',
+                  fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', cursor: 'pointer', flexShrink: 0,
+                  transition: 'all 0.15s', fontWeight: 500,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(22,163,74,0.4)'; e.currentTarget.style.color = 'var(--accent-green)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
+                >
+                  {tag.label}
                 </button>
               ))}
             </div>

@@ -9,6 +9,7 @@ interface Listing {
   price: string
   city: string
   date: string
+  time?: string
   hot: boolean
   source: string
   deal_score: number | 'gated'
@@ -18,6 +19,13 @@ interface Listing {
   source_url?: string
   posted_at?: string
   image_url?: string
+  event_type?: string
+  distance_miles?: number
+  address?: string
+  lat?: number
+  lng?: number
+  zip_code?: string
+  enriched?: boolean
 }
 
 interface User {
@@ -71,6 +79,14 @@ const DASH_CSS = `
   .dash-save-btn { transition: all 0.15s ease }
   .dash-save-btn:hover { transform: scale(1.15) }
   .dash-dropdown { animation: slideDown 0.15s ease }
+  .dash-expand { max-height: 0; overflow: hidden; transition: max-height 0.25s ease, opacity 0.2s ease; opacity: 0 }
+  .dash-expand.open { max-height: 300px; opacity: 1 }
+  .dash-img-thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: var(--bg-surface); border: 1px solid var(--border-subtle) }
+  .dash-score-tip { position: relative; cursor: help }
+  .dash-score-tip:hover .dash-tip-text { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto }
+  .dash-tip-text { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px); background: var(--text-primary); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 11px; white-space: nowrap; max-width: 240px; white-space: normal; opacity: 0; pointer-events: none; transition: all 0.15s ease; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.15) }
+  .dash-date-pill { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap }
+  .dash-tag-sm { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 500; background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border-subtle) }
   @media (max-width: 640px) {
     .dash-stats-grid { grid-template-columns: repeat(2, 1fr) !important }
     .dash-bottom-grid { grid-template-columns: 1fr !important }
@@ -80,15 +96,24 @@ const DASH_CSS = `
 
 const font = 'var(--font-primary), system-ui, -apple-system, sans-serif'
 
-const CATEGORIES = [
-  { key: 'all', label: 'All Deals' },
-  { key: 'tools', label: 'Tools' },
-  { key: 'furniture', label: 'Furniture' },
-  { key: 'electronics', label: 'Electronics' },
-  { key: 'vintage', label: 'Vintage' },
-  { key: 'free', label: 'Free' },
-  { key: 'estate', label: 'Estate Sale' },
-  { key: 'collectibles', label: 'Collectibles' },
+// Event type filters — these hit the API directly via event_type param
+const EVENT_TYPES = [
+  { key: 'all', label: 'All', icon: '🔍' },
+  { key: 'garage_sale', label: 'Garage Sales', icon: '🏠' },
+  { key: 'estate_sale', label: 'Estate Sales', icon: '🏛️' },
+  { key: 'flea_market', label: 'Flea Markets', icon: '🎪' },
+  { key: 'moving_sale', label: 'Moving Sales', icon: '📦' },
+  { key: 'auction', label: 'Auctions', icon: '🔨' },
+  { key: 'community_sale', label: 'Community', icon: '🏘️' },
+  { key: 'event', label: 'Events', icon: '🎫' },
+]
+
+// Quick filters — special logic
+const QUICK_FILTERS = [
+  { key: 'weekend', label: 'This Weekend' },
+  { key: 'hot', label: 'Score 7+' },
+  { key: 'free', label: 'Free Items' },
+  { key: 'nearby', label: 'Near Me' },
 ]
 
 /* ── HELPERS ───────────────────────────────────────────── */
@@ -109,12 +134,32 @@ function formatTimeAgo(hours: number): string {
   return days === 1 ? '1 day ago' : `${days}d ago`
 }
 
-function matchesCategory(listing: Listing, cat: string): boolean {
-  if (cat === 'all') return true
-  const text = `${listing.title} ${listing.description || ''} ${(listing.tags || []).join(' ')}`.toLowerCase()
-  if (cat === 'free') return listing.price === 'FREE' || text.includes('free')
-  if (cat === 'estate') return text.includes('estate')
-  return text.includes(cat)
+// Event type display config
+const EVENT_TYPE_COLORS: Record<string, { bg: string; color: string; label: string }> = {
+  garage_sale: { bg: 'rgba(59,130,246,0.08)', color: '#3B82F6', label: 'Garage Sale' },
+  estate_sale: { bg: 'rgba(168,85,247,0.08)', color: '#A855F7', label: 'Estate Sale' },
+  moving_sale: { bg: 'rgba(249,115,22,0.08)', color: '#F97316', label: 'Moving Sale' },
+  flea_market: { bg: 'rgba(236,72,153,0.08)', color: '#EC4899', label: 'Flea Market' },
+  auction: { bg: 'rgba(239,68,68,0.08)', color: '#EF4444', label: 'Auction' },
+  community_sale: { bg: 'rgba(20,184,166,0.08)', color: '#14B8A6', label: 'Community' },
+  thrift: { bg: 'rgba(132,204,22,0.08)', color: '#84CC16', label: 'Thrift' },
+  event: { bg: 'rgba(99,102,241,0.08)', color: '#6366F1', label: 'Event' },
+  listing: { bg: 'rgba(107,114,128,0.06)', color: '#6B7280', label: 'Listing' },
+}
+
+function getWeekendDates(): { start: string; end: string } {
+  const now = new Date()
+  const day = now.getDay()
+  // Saturday = 6, Sunday = 0
+  const daysUntilSat = (6 - day + 7) % 7
+  const sat = new Date(now)
+  sat.setDate(now.getDate() + daysUntilSat)
+  const sun = new Date(sat)
+  sun.setDate(sat.getDate() + 1)
+  return {
+    start: sat.toISOString().split('T')[0],
+    end: sun.toISOString().split('T')[0],
+  }
 }
 
 /* ── ICONS ─────────────────────────────────────────────── */
@@ -199,11 +244,33 @@ function ScoreBadge({ score }: { score: number | 'gated' }) {
   )
 }
 
+/* ── DATE HELPERS ─────────────────────────────────────── */
+function formatEventDate(dateStr: string | null | undefined): { label: string; isToday: boolean; isTomorrow: boolean; isWeekend: boolean; dayName: string } | null {
+  if (!dateStr) return null
+  const d = new Date(dateStr + 'T12:00:00')
+  if (isNaN(d.getTime())) return null
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  const diffDays = Math.round((target.getTime() - today.getTime()) / (86400000))
+  const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
+  const isToday = diffDays === 0
+  const isTomorrow = diffDays === 1
+  const isWeekend = d.getDay() === 0 || d.getDay() === 6
+  let label = ''
+  if (isToday) label = 'Today'
+  else if (isTomorrow) label = 'Tomorrow'
+  else if (diffDays > 0 && diffDays <= 6) label = dayName
+  else label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return { label, isToday, isTomorrow, isWeekend, dayName }
+}
+
 /* ── LISTING ROW ───────────────────────────────────────── */
 function ListingRow({ listing, isSaved, onToggleSave, isPro }: {
   listing: Listing; isSaved: boolean; onToggleSave: () => void; isPro: boolean
 }) {
   const [copied, setCopied] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -214,90 +281,246 @@ function ListingRow({ listing, isSaved, onToggleSave, isPro }: {
     }).catch(() => {})
   }
 
-  return (
-    <div className="dash-row" style={{
-      display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-      cursor: listing.source_url ? 'pointer' : 'default',
-      background: '#fff',
-    }}
-    onClick={() => { if (listing.source_url) window.open(listing.source_url, '_blank') }}
-    >
-      <ScoreBadge score={listing.deal_score} />
+  const eventDate = formatEventDate(listing.date)
+  const hasDetails = listing.description || listing.deal_reason || listing.address || (listing.tags && listing.tags.length > 0)
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-          {listing.hot && (
-            <span style={{ background: '#fef2f2', color: '#dc2626', padding: '1px 5px', fontSize: '9px', fontWeight: 700, borderRadius: '3px', fontFamily: font, letterSpacing: '0.04em' }}>HOT</span>
+  return (
+    <div style={{ background: '#fff' }}>
+      {/* ── Main row ── */}
+      <div className="dash-row" style={{
+        display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+        cursor: 'pointer',
+      }}
+      onClick={(e) => {
+        // If there are details, toggle expand. Otherwise open source URL.
+        if (hasDetails) { setExpanded(!expanded) }
+        else if (listing.source_url) { window.open(listing.source_url, '_blank') }
+      }}
+      >
+        {/* ── Score badge with tooltip ── */}
+        <div className="dash-score-tip">
+          <ScoreBadge score={listing.deal_score} />
+          {listing.deal_reason && typeof listing.deal_score === 'number' && (
+            <div className="dash-tip-text" style={{ fontFamily: font }}>{listing.deal_reason}</div>
           )}
-          <span style={{
-            color: 'var(--text-primary)', fontSize: '13px', fontWeight: 500,
-            fontFamily: font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {listing.title}
-          </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          {listing.city && (
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: font }}>{listing.city}</span>
+
+        {/* ── Image thumbnail (if available) ── */}
+        {listing.image_url && (
+          <img
+            src={listing.image_url}
+            alt=""
+            className="dash-img-thumb"
+            loading="lazy"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        )}
+
+        {/* ── Content ── */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Row 1: badges + title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '3px' }}>
+            {listing.hot && (
+              <span style={{ background: '#fef2f2', color: '#dc2626', padding: '1px 5px', fontSize: '9px', fontWeight: 700, borderRadius: '3px', fontFamily: font, letterSpacing: '0.04em', flexShrink: 0 }}>HOT</span>
+            )}
+            {listing.event_type && listing.event_type !== 'listing' && EVENT_TYPE_COLORS[listing.event_type] && (
+              <span style={{
+                background: EVENT_TYPE_COLORS[listing.event_type].bg,
+                color: EVENT_TYPE_COLORS[listing.event_type].color,
+                padding: '1px 6px', fontSize: '9px', fontWeight: 600, borderRadius: '3px',
+                fontFamily: font, letterSpacing: '0.02em', whiteSpace: 'nowrap', flexShrink: 0,
+              }}>
+                {EVENT_TYPE_COLORS[listing.event_type].label}
+              </span>
+            )}
+            <span style={{
+              color: 'var(--text-primary)', fontSize: '13px', fontWeight: 500,
+              fontFamily: font, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {listing.title}
+            </span>
+          </div>
+
+          {/* Row 2: location + date + distance + source */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            {eventDate && (
+              <span className="dash-date-pill" style={{
+                fontFamily: font,
+                background: eventDate.isToday ? 'rgba(22,163,74,0.08)' : eventDate.isTomorrow ? 'rgba(59,130,246,0.08)' : eventDate.isWeekend ? 'rgba(168,85,247,0.06)' : 'var(--bg-surface)',
+                color: eventDate.isToday ? 'var(--accent-green)' : eventDate.isTomorrow ? '#3B82F6' : eventDate.isWeekend ? '#A855F7' : 'var(--text-muted)',
+                border: `1px solid ${eventDate.isToday ? 'rgba(22,163,74,0.15)' : eventDate.isTomorrow ? 'rgba(59,130,246,0.12)' : eventDate.isWeekend ? 'rgba(168,85,247,0.12)' : 'var(--border-subtle)'}`,
+              }}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                </svg>
+                {eventDate.label}{listing.time ? ` · ${listing.time}` : ''}
+              </span>
+            )}
+            {listing.city && (
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: font }}>{listing.city}</span>
+            )}
+            {listing.distance_miles != null && (
+              <span style={{ fontSize: '10px', color: 'var(--accent-green)', fontFamily: font, fontWeight: 600 }}>
+                {listing.distance_miles < 1 ? '< 1 mi' : `${Math.round(listing.distance_miles)} mi`}
+              </span>
+            )}
+            <span style={{
+              textTransform: 'uppercase', fontSize: '8px', color: 'var(--text-muted)',
+              background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+              padding: '1px 5px', borderRadius: '3px', fontFamily: font, fontWeight: 600, letterSpacing: '0.06em',
+            }}>{listing.source}</span>
+          </div>
+        </div>
+
+        {/* ── ACTIONS ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+          <button
+            className="dash-save-btn"
+            onClick={(e) => { e.stopPropagation(); onToggleSave() }}
+            title={isSaved ? 'Unsave' : 'Save deal'}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
+              color: isSaved ? 'var(--accent-green)' : 'var(--text-dim)', borderRadius: '6px',
+              display: 'flex', alignItems: 'center',
+            }}
+          >
+            <BookmarkIcon filled={isSaved} />
+          </button>
+          <button
+            className="dash-action"
+            onClick={handleShare}
+            title={copied ? 'Copied!' : 'Share'}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
+              color: copied ? 'var(--accent-green)' : 'var(--text-dim)', borderRadius: '6px',
+              display: 'flex', alignItems: 'center',
+            }}
+          >
+            {copied ? (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            ) : (
+              <ShareIcon />
+            )}
+          </button>
+          {listing.source_url && (
+            <a href={listing.source_url} target="_blank" rel="noopener noreferrer" className="dash-action"
+              onClick={e => e.stopPropagation()}
+              style={{ color: 'var(--text-dim)', padding: '6px', display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+              <ExternalIcon />
+            </a>
           )}
-          <span style={{
-            textTransform: 'uppercase', fontSize: '8px', color: 'var(--text-muted)',
-            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            padding: '1px 5px', borderRadius: '3px', fontFamily: font, fontWeight: 600, letterSpacing: '0.06em',
-          }}>{listing.source}</span>
-          {listing.description && (
-            <span style={{ color: 'var(--text-dim)', fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '180px', fontFamily: font }}>
-              {listing.description}
+          {/* Expand chevron */}
+          {hasDetails && (
+            <span style={{
+              color: 'var(--text-dim)', padding: '4px', display: 'flex', alignItems: 'center',
+              transition: 'transform 0.2s', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
             </span>
           )}
         </div>
-      </div>
 
-      {/* ── ACTIONS ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-        <button
-          className="dash-save-btn"
-          onClick={(e) => { e.stopPropagation(); onToggleSave() }}
-          title={isSaved ? 'Unsave' : 'Save deal'}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
-            color: isSaved ? 'var(--accent-green)' : 'var(--text-dim)', borderRadius: '6px',
-            display: 'flex', alignItems: 'center',
-          }}
-        >
-          <BookmarkIcon filled={isSaved} />
-        </button>
-        <button
-          className="dash-action"
-          onClick={handleShare}
-          title={copied ? 'Copied!' : 'Share'}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer', padding: '6px',
-            color: copied ? 'var(--accent-green)' : 'var(--text-dim)', borderRadius: '6px',
-            display: 'flex', alignItems: 'center',
-          }}
-        >
-          {copied ? (
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          ) : (
-            <ShareIcon />
-          )}
-        </button>
-        {listing.source_url && (
-          <span className="dash-action" style={{ color: 'var(--text-dim)', padding: '6px', display: 'flex', alignItems: 'center' }}>
-            <ExternalIcon />
+        {/* ── PRICE ── */}
+        <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '52px' }}>
+          <span style={{
+            fontFamily: font, fontWeight: 700, fontSize: '13px',
+            color: listing.price === 'FREE' ? 'var(--accent-green)' : listing.price === 'Not listed' ? 'var(--text-dim)' : 'var(--text-primary)',
+          }}>
+            {listing.price === 'FREE' ? 'FREE' : listing.price === 'Not listed' ? '—' : listing.price || '—'}
           </span>
-        )}
+        </div>
       </div>
 
-      {/* ── PRICE ── */}
-      <div style={{ textAlign: 'right', flexShrink: 0, minWidth: '52px' }}>
-        <span style={{
-          fontFamily: font, fontWeight: 700, fontSize: '13px',
-          color: listing.price === 'FREE' ? 'var(--accent-green)' : listing.price === 'Not listed' ? 'var(--text-dim)' : 'var(--text-primary)',
-        }}>
-          {listing.price === 'FREE' ? 'FREE' : listing.price === 'Not listed' ? '—' : listing.price || '—'}
-        </span>
+      {/* ── Expandable detail panel ── */}
+      <div className={`dash-expand ${expanded ? 'open' : ''}`}>
+        <div style={{ padding: '0 16px 14px 70px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* AI Description */}
+          {listing.description && (
+            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', fontFamily: font, lineHeight: 1.5, margin: 0 }}>
+              {listing.description}
+            </p>
+          )}
+
+          {/* Deal reason */}
+          {listing.deal_reason && (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginTop: '2px', flexShrink: 0 }}>
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              <span style={{ color: 'var(--text-muted)', fontSize: '11px', fontFamily: font, fontStyle: 'italic' }}>
+                {listing.deal_reason}
+              </span>
+            </div>
+          )}
+
+          {/* Address (Pro only) */}
+          {isPro && listing.address && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+              </svg>
+              <a
+                href={`https://maps.google.com/?q=${encodeURIComponent(listing.address)}`}
+                target="_blank" rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{ color: '#3B82F6', fontSize: '11px', fontFamily: font, textDecoration: 'none' }}
+              >
+                {listing.address} →
+              </a>
+            </div>
+          )}
+
+          {/* Tags */}
+          {listing.tags && listing.tags.length > 0 && (
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+              {listing.tags.map(tag => (
+                <span key={tag} className="dash-tag-sm" style={{ fontFamily: font }}>{tag}</span>
+              ))}
+            </div>
+          )}
+
+          {/* Action buttons row */}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+            {listing.source_url && (
+              <a
+                href={listing.source_url}
+                target="_blank" rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                  padding: '5px 12px', borderRadius: '6px',
+                  background: 'var(--accent-green)', color: '#fff',
+                  fontSize: '11px', fontWeight: 600, fontFamily: font,
+                  textDecoration: 'none', transition: 'opacity 0.15s',
+                }}
+              >
+                View listing <ExternalIcon />
+              </a>
+            )}
+            {isPro && listing.address && (
+              <a
+                href={`https://maps.google.com/maps/dir/?api=1&destination=${encodeURIComponent(listing.address)}`}
+                target="_blank" rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                  padding: '5px 12px', borderRadius: '6px',
+                  background: 'var(--bg-surface)', color: 'var(--text-secondary)',
+                  fontSize: '11px', fontWeight: 500, fontFamily: font,
+                  textDecoration: 'none', border: '1px solid var(--border-default)',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                </svg>
+                Get directions
+              </a>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -319,7 +542,9 @@ export default function Dashboard() {
   const [searchResults, setSearchResults] = useState<Listing[]>([])
   const [searchTotal, setSearchTotal] = useState(0)
   const [meta, setMeta] = useState<any>(null)
-  const [category, setCategory] = useState('all')
+  const [eventTypeFilter, setEventTypeFilter] = useState('all')
+  const [quickFilters, setQuickFilters] = useState<Set<string>>(new Set())
+  const [filterLoading, setFilterLoading] = useState(false)
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [savedListings, setSavedListings] = useState<Listing[]>([])
   const [markets, setMarkets] = useState<MarketOption[]>([])
@@ -440,6 +665,24 @@ export default function Dashboard() {
     }
   }, [savedIds])
 
+  // ── Build filter params (shared by search + browse) ──
+  const buildFilterParams = useCallback(() => {
+    const params = new URLSearchParams()
+    if (eventTypeFilter !== 'all') params.set('event_type', eventTypeFilter)
+    if (quickFilters.has('hot')) params.set('min_score', '7')
+    if (quickFilters.has('weekend')) {
+      const { start, end } = getWeekendDates()
+      params.set('date_start', start)
+      params.set('date_end', end)
+    }
+    if (quickFilters.has('nearby') && userLocation) {
+      params.set('lat', String(userLocation.lat))
+      params.set('lng', String(userLocation.lng))
+      params.set('radius', '25')
+    }
+    return params
+  }, [eventTypeFilter, quickFilters])
+
   // ── Search ──
   const handleSearch = useCallback(async (e?: React.FormEvent, query?: string) => {
     if (e) e.preventDefault()
@@ -447,7 +690,9 @@ export default function Dashboard() {
     if (!q.trim()) return
     setSearching(true)
     try {
-      const params = new URLSearchParams({ q, limit: '20' })
+      const params = buildFilterParams()
+      params.set('q', q)
+      params.set('limit', '20')
       const res = await fetch(`/api/listings?${params}`)
       const data = await res.json()
       if (data._gate?.limited) { setSearchGate(data._gate); setSearchResults([]); return }
@@ -456,7 +701,53 @@ export default function Dashboard() {
       if (data._gate) setSearchGate(data._gate)
       setActiveTab('search')
     } catch {} finally { setSearching(false) }
-  }, [searchQuery])
+  }, [searchQuery, buildFilterParams])
+
+  // ── Filtered browse (fires when event type or quick filters change) ──
+  const fetchFilteredListings = useCallback(async () => {
+    if (!user) return
+    const hasFilters = eventTypeFilter !== 'all' || quickFilters.size > 0
+    if (!hasFilters) return // Default browse handles no-filter state
+    setFilterLoading(true)
+    try {
+      const params = buildFilterParams()
+      params.set('limit', '30')
+      const res = await fetch(`/api/listings?${params}`)
+      const data = await res.json()
+      if (data.results) setListings(data.results)
+      if (data.total) setTotalListings(data.total)
+      if (data._gate) setSearchGate(data._gate)
+    } catch {} finally { setFilterLoading(false) }
+  }, [user, eventTypeFilter, quickFilters, buildFilterParams])
+
+  // Trigger filtered fetch when filters change
+  useEffect(() => {
+    const hasFilters = eventTypeFilter !== 'all' || quickFilters.size > 0
+    if (hasFilters && user) {
+      fetchFilteredListings()
+      setActiveTab('deals')
+    } else if (user && !hasFilters) {
+      // Reset to default browse
+      fetch('/api/listings?limit=30')
+        .then(r => r.json())
+        .then(data => {
+          if (data.results) setListings(data.results)
+          if (data.total) setTotalListings(data.total)
+        }).catch(() => {})
+    }
+  }, [eventTypeFilter, quickFilters, user])
+
+  // ── Geolocation for "Near Me" ──
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const requestLocation = useCallback(() => {
+    if (userLocation) return // Already have it
+    if (!navigator.geolocation) { showToast('Location not supported'); return }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => showToast('Location access denied'),
+      { enableHighAccuracy: false, timeout: 8000 }
+    )
+  }, [userLocation])
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -497,19 +788,18 @@ export default function Dashboard() {
   const cityAlreadyHasState = user.city && user.state && user.city.toLowerCase().includes(user.state.toLowerCase().replace(/\.$/, ''))
   const marketLabel = cityAlreadyHasState ? user.city : (user.city && user.state ? `${user.city}, ${user.state}` : user.city || 'your area')
 
-  // ── Build display listings with category filter ──
+  // ── Build display listings (API-driven filtering) ──
   let displayListings: Listing[]
   if (activeTab === 'search') {
     displayListings = searchResults
   } else if (activeTab === 'saved') {
-    // For saved tab, filter from all listings
     displayListings = [...hotDeals, ...listings].filter(l => savedIds.has(l.id))
-    // Deduplicate
     const seen = new Set<string>()
     displayListings = displayListings.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true })
   } else {
-    const base = hotDeals.length > 0 ? hotDeals : listings
-    displayListings = category === 'all' ? base : base.filter(l => matchesCategory(l, category))
+    // Filters are applied API-side now; just show what came back
+    const hasFilters = eventTypeFilter !== 'all' || quickFilters.size > 0
+    displayListings = hasFilters ? listings : (hotDeals.length > 0 ? hotDeals : listings)
   }
 
   return (
@@ -711,25 +1001,64 @@ export default function Dashboard() {
           </form>
         </div>
 
-        {/* ═══ CATEGORY CHIPS ═══ */}
-        <div className="dash-fade" style={{ marginBottom: '20px', display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
-          {CATEGORIES.map(cat => (
+        {/* ═══ EVENT TYPE CHIPS ═══ */}
+        <div className="dash-fade" style={{ marginBottom: '8px', display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
+          {EVENT_TYPES.map(et => (
             <button
-              key={cat.key}
-              className={`dash-tag ${category === cat.key && activeTab === 'deals' ? 'dash-tag-active' : ''}`}
-              onClick={() => { setCategory(cat.key); setActiveTab('deals') }}
+              key={et.key}
+              className={`dash-tag ${eventTypeFilter === et.key ? 'dash-tag-active' : ''}`}
+              onClick={() => { setEventTypeFilter(et.key); setActiveTab('deals') }}
               style={{
                 padding: '6px 14px',
                 border: '1px solid var(--border-default)', borderRadius: '20px',
                 fontFamily: font, fontSize: '12px', fontWeight: 500,
-                color: category === cat.key && activeTab === 'deals' ? '#fff' : 'var(--text-muted)',
-                background: category === cat.key && activeTab === 'deals' ? 'var(--accent-green)' : 'transparent',
+                color: eventTypeFilter === et.key ? '#fff' : 'var(--text-muted)',
+                background: eventTypeFilter === et.key ? 'var(--accent-green)' : 'transparent',
                 cursor: 'pointer', flexShrink: 0, transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: '4px',
               }}
             >
-              {cat.label}
+              <span style={{ fontSize: '13px' }}>{et.icon}</span> {et.label}
             </button>
           ))}
+        </div>
+
+        {/* ═══ QUICK FILTER CHIPS ═══ */}
+        <div className="dash-fade" style={{ marginBottom: '20px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <span style={{ color: 'var(--text-dim)', fontSize: '10px', fontFamily: font, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>Quick:</span>
+          {QUICK_FILTERS.map(qf => {
+            const isActive = quickFilters.has(qf.key)
+            return (
+              <button
+                key={qf.key}
+                className={`dash-tag ${isActive ? 'dash-tag-active' : ''}`}
+                onClick={() => {
+                  if (qf.key === 'nearby' && !isActive) requestLocation()
+                  setQuickFilters(prev => {
+                    const next = new Set(prev)
+                    if (isActive) next.delete(qf.key)
+                    else next.add(qf.key)
+                    return next
+                  })
+                  setActiveTab('deals')
+                }}
+                style={{
+                  padding: '5px 12px',
+                  border: `1px solid ${isActive ? 'var(--accent-green)' : 'var(--border-default)'}`,
+                  borderRadius: '16px',
+                  fontFamily: font, fontSize: '11px', fontWeight: 500,
+                  color: isActive ? '#fff' : 'var(--text-muted)',
+                  background: isActive ? 'var(--accent-green)' : 'transparent',
+                  cursor: 'pointer', flexShrink: 0, transition: 'all 0.15s',
+                }}
+              >
+                {qf.label}
+              </button>
+            )
+          })}
+          {filterLoading && (
+            <div style={{ width: '14px', height: '14px', border: '2px solid var(--border-default)', borderTop: '2px solid var(--accent-green)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
+          )}
         </div>
 
         {/* ═══ RATE LIMIT ═══ */}
@@ -789,7 +1118,7 @@ export default function Dashboard() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontFamily: font }}>
                   {activeTab === 'saved' ? 'No saved deals yet. Tap the bookmark icon to save deals.' :
                    activeTab === 'search' ? 'No results found. Try a different search.' :
-                   category !== 'all' ? `No ${category} deals right now. Try another category.` :
+                   (eventTypeFilter !== 'all' || quickFilters.size > 0) ? 'No deals match these filters. Try adjusting.' :
                    'Scanning for deals...'}
                 </p>
               </div>
