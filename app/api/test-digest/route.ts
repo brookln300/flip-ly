@@ -1,34 +1,44 @@
-import { NextResponse } from 'next/server'
-import { getSession } from '../../lib/auth'
-import { supabase } from '../../lib/supabase'
-import { trackEvent } from '../../lib/analytics'
+export const dynamic = 'force-dynamic'
 
-export async function POST() {
+import { NextRequest, NextResponse } from 'next/server'
+import { getSession } from '../../lib/auth'
+
+/**
+ * Test digest endpoint — triggers a real digest email for the logged-in user.
+ *
+ * GET /api/test-digest — sends digest to current user
+ * GET /api/test-digest?email=foo@bar.com — sends to specific email (must match a user)
+ */
+export async function GET(req: NextRequest) {
   const session = await getSession()
   if (!session) {
     return NextResponse.json({ error: 'Not logged in' }, { status: 401 })
   }
 
-  const listingCount = Math.floor(Math.random() * 8) + 3
+  const { searchParams } = new URL(req.url)
+  const email = searchParams.get('email') || session.email
 
-  console.log(`[TEST DIGEST] User ${session.userId} (${session.email}) triggered test digest — ${listingCount} chaotic listings would be sent`)
+  // Call the real digest endpoint in test mode
+  const digestUrl = new URL('/api/cron/weekly-digest', req.url)
+  digestUrl.searchParams.set('test', 'true')
+  digestUrl.searchParams.set('email', email)
 
-  await supabase.from('fliply_digest_log').insert({
-    user_id: session.userId,
-    listing_count: listingCount,
-    status: 'skipped',
+  const response = await fetch(digestUrl.toString(), {
+    headers: { 'Authorization': `Bearer ${process.env.CRON_SECRET}` },
   })
 
-  // GA4: digest_triggered
-  trackEvent('digest_triggered', {
-    trigger_type: 'manual',
-    listing_count: listingCount,
-  }, session.userId)
+  const data = await response.json()
 
   return NextResponse.json({
-    success: true,
-    message: `Test digest logged! ${listingCount} chaotic listings would have been emailed to you.`,
-    listing_count: listingCount,
-    mode: 'stub — no real email sent yet',
+    success: data.success || false,
+    message: data.success
+      ? `Real digest email sent to ${email}! Check your inbox (and Resend dashboard).`
+      : `Digest failed: ${data.error || 'unknown error'}`,
+    details: data,
   })
+}
+
+// Keep POST for backward compat
+export async function POST(req: NextRequest) {
+  return GET(req)
 }
