@@ -181,6 +181,109 @@ const ExternalIcon = () => (
   </svg>
 )
 
+const MapPinIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+  </svg>
+)
+
+const RouteIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>
+  </svg>
+)
+
+/* ── ROUTE PLANNER HELPERS ────────────────────────────── */
+function haversineMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+/** Sort stops by nearest-neighbor from a starting point */
+function sortByProximity(stops: Listing[], startLat?: number, startLng?: number): Listing[] {
+  const withCoords = stops.filter(s => s.lat && s.lng)
+  const noCoords = stops.filter(s => !s.lat || !s.lng)
+  if (withCoords.length === 0) return stops
+
+  // If no start point, use first stop
+  let curLat = startLat || Number(withCoords[0].lat)
+  let curLng = startLng || Number(withCoords[0].lng)
+
+  const sorted: Listing[] = []
+  const remaining = [...withCoords]
+
+  while (remaining.length > 0) {
+    let nearestIdx = 0
+    let nearestDist = Infinity
+    for (let i = 0; i < remaining.length; i++) {
+      const d = haversineMiles(curLat, curLng, Number(remaining[i].lat), Number(remaining[i].lng))
+      if (d < nearestDist) { nearestDist = d; nearestIdx = i }
+    }
+    const next = remaining.splice(nearestIdx, 1)[0]
+    sorted.push(next)
+    curLat = Number(next.lat)
+    curLng = Number(next.lng)
+  }
+
+  return [...sorted, ...noCoords]
+}
+
+/** Build Google Maps multi-stop directions URL */
+function buildGoogleMapsRouteUrl(stops: Listing[]): string {
+  const waypoints = stops
+    .filter(s => s.address || (s.lat && s.lng))
+    .slice(0, 10) // Google Maps supports max 10 waypoints
+    .map(s => {
+      if (s.address) {
+        const full = [s.address, s.city].filter(Boolean).join(', ')
+        return encodeURIComponent(full)
+      }
+      return `${s.lat},${s.lng}`
+    })
+
+  if (waypoints.length === 0) return ''
+  if (waypoints.length === 1) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${waypoints[0]}`
+  }
+
+  // First waypoint is origin, last is destination, middle are waypoints
+  const origin = waypoints[0]
+  const destination = waypoints[waypoints.length - 1]
+  const middle = waypoints.slice(1, -1).join('|')
+
+  let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`
+  if (middle) url += `&waypoints=${middle}`
+  return url
+}
+
+/** Estimate total route distance */
+function estimateRouteDistance(stops: Listing[]): { totalMiles: number; legs: number[] } {
+  const withCoords = stops.filter(s => s.lat && s.lng)
+  const legs: number[] = []
+  let total = 0
+
+  for (let i = 1; i < withCoords.length; i++) {
+    const d = haversineMiles(
+      Number(withCoords[i - 1].lat), Number(withCoords[i - 1].lng),
+      Number(withCoords[i].lat), Number(withCoords[i].lng)
+    )
+    legs.push(d)
+    total += d
+  }
+
+  return { totalMiles: total, legs }
+}
+
+/** Estimate drive time from miles (rough: 25mph avg for suburban driving) */
+function estimateDriveMinutes(miles: number): number {
+  return Math.round(miles / 25 * 60)
+}
+
 /* ── STAT CARD ─────────────────────────────────────────── */
 function StatCard({ label, value, sub, icon, accentColor }: {
   label: string; value: string; sub?: string; icon: React.ReactNode; accentColor?: string
@@ -538,7 +641,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchGate, setSearchGate] = useState<SearchGate | null>(null)
-  const [activeTab, setActiveTab] = useState<'deals' | 'search' | 'saved'>('deals')
+  const [activeTab, setActiveTab] = useState<'deals' | 'search' | 'saved' | 'route'>('deals')
   const [searchResults, setSearchResults] = useState<Listing[]>([])
   const [searchTotal, setSearchTotal] = useState(0)
   const [meta, setMeta] = useState<any>(null)
@@ -1078,6 +1181,7 @@ export default function Dashboard() {
           {[
             { key: 'deals' as const, label: 'Hot Deals', show: true },
             { key: 'saved' as const, label: `Saved (${savedIds.size})`, show: savedIds.size > 0 },
+            { key: 'route' as const, label: `Plan Weekend`, show: savedIds.size >= 2 },
             { key: 'search' as const, label: `Results (${searchTotal})`, show: searchResults.length > 0 },
           ].filter(t => t.show).map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
@@ -1099,8 +1203,295 @@ export default function Dashboard() {
           )}
         </div>
 
+        {/* ═══ ROUTE PLANNER ═══ */}
+        {activeTab === 'route' && (() => {
+          // Build sorted route from saved deals
+          const allDeals = [...hotDeals, ...listings]
+          const savedDeals = allDeals.filter(l => savedIds.has(l.id))
+          const seen = new Set<string>()
+          const uniqueSaved = savedDeals.filter(l => { if (seen.has(l.id)) return false; seen.add(l.id); return true })
+
+          const routeStops = sortByProximity(uniqueSaved, userLocation?.lat, userLocation?.lng)
+          const stopsWithCoords = routeStops.filter(s => s.lat && s.lng)
+          const { totalMiles, legs } = estimateRouteDistance(routeStops)
+          const totalMinutes = estimateDriveMinutes(totalMiles)
+          const mapsUrl = buildGoogleMapsRouteUrl(routeStops)
+
+          // Pro gating: free users see first 2 stops
+          const FREE_STOP_LIMIT = 2
+          const isPro = user.is_premium
+          const visibleStops = isPro ? routeStops : routeStops.slice(0, FREE_STOP_LIMIT)
+          const gatedStops = isPro ? [] : routeStops.slice(FREE_STOP_LIMIT)
+
+          return (
+            <div style={{ marginBottom: '32px' }}>
+              {/* Route header card */}
+              <div style={{
+                background: '#fff', borderRadius: '14px',
+                border: '1px solid var(--border-subtle)', overflow: 'hidden',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                marginBottom: '12px',
+              }}>
+                <div style={{
+                  padding: '20px',
+                  background: 'linear-gradient(135deg, rgba(22,163,74,0.04), rgba(22,163,74,0.08))',
+                  borderBottom: '1px solid var(--border-subtle)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <RouteIcon />
+                        <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: font, margin: 0 }}>
+                          Weekend Route
+                        </h3>
+                      </div>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: font, margin: 0 }}>
+                        {stopsWithCoords.length} stop{stopsWithCoords.length !== 1 ? 's' : ''} with directions
+                        {routeStops.length > stopsWithCoords.length && ` · ${routeStops.length - stopsWithCoords.length} without coordinates`}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      {isPro ? (
+                        <>
+                          <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: font, margin: 0 }}>
+                              {totalMiles.toFixed(1)}
+                            </p>
+                            <p style={{ fontSize: '10px', color: 'var(--text-dim)', fontFamily: font, textTransform: 'uppercase', letterSpacing: '0.05em' }}>miles</p>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: font, margin: 0 }}>
+                              {totalMinutes < 60 ? `${totalMinutes}m` : `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`}
+                            </p>
+                            <p style={{ fontSize: '10px', color: 'var(--text-dim)', fontFamily: font, textTransform: 'uppercase', letterSpacing: '0.05em' }}>est. drive</p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-dim)', fontFamily: font, margin: 0 }}>🔒</p>
+                            <p style={{ fontSize: '10px', color: 'var(--text-dim)', fontFamily: font }}>miles</p>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-dim)', fontFamily: font, margin: 0 }}>🔒</p>
+                            <p style={{ fontSize: '10px', color: 'var(--text-dim)', fontFamily: font }}>drive time</p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Route stops */}
+                {routeStops.length === 0 ? (
+                  <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontFamily: font }}>
+                      Save at least 2 deals to plan a route.
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    {/* Visible stops */}
+                    {visibleStops.map((stop, i) => {
+                      const legDist = i > 0 && legs[i - 1] !== undefined ? legs[i - 1] : null
+                      const typeConfig = EVENT_TYPE_COLORS[stop.event_type || ''] || EVENT_TYPE_COLORS.listing
+                      return (
+                        <div key={stop.id}>
+                          {/* Leg connector */}
+                          {i > 0 && isPro && legDist !== null && (
+                            <div style={{
+                              display: 'flex', alignItems: 'center', gap: '8px',
+                              padding: '4px 20px 4px 32px',
+                              color: 'var(--text-dim)', fontSize: '10px', fontFamily: font,
+                            }}>
+                              <div style={{ width: '1px', height: '16px', background: 'var(--border-default)', marginLeft: '8px' }} />
+                              <span>{legDist.toFixed(1)} mi &middot; ~{estimateDriveMinutes(legDist)} min</span>
+                            </div>
+                          )}
+                          <div className="dash-row" style={{
+                            display: 'flex', alignItems: 'flex-start', gap: '12px',
+                            padding: '14px 20px',
+                            borderBottom: (i < visibleStops.length - 1 || gatedStops.length > 0) ? '1px solid var(--border-subtle)' : 'none',
+                          }}>
+                            {/* Stop number */}
+                            <div style={{
+                              width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
+                              background: 'var(--accent-green)', color: '#fff',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '12px', fontWeight: 700, fontFamily: font,
+                            }}>
+                              {i + 1}
+                            </div>
+
+                            {/* Stop info */}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+                                {stop.event_type && (
+                                  <span style={{
+                                    padding: '1px 6px', fontSize: '9px', fontWeight: 600, borderRadius: '3px',
+                                    background: typeConfig.bg, color: typeConfig.color,
+                                  }}>
+                                    {typeConfig.label}
+                                  </span>
+                                )}
+                                {stop.deal_score && stop.deal_score !== 'gated' && (
+                                  <span style={{
+                                    fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: 700,
+                                    color: (stop.deal_score as number) >= 7 ? 'var(--score-good)' : 'var(--text-muted)',
+                                    background: 'var(--bg-surface)', padding: '1px 5px', borderRadius: '3px',
+                                  }}>
+                                    {stop.deal_score}/10
+                                  </span>
+                                )}
+                              </div>
+                              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: font, margin: '0 0 3px', lineHeight: 1.3 }}>
+                                {stop.source_url ? (
+                                  <a href={stop.source_url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>{stop.title}</a>
+                                ) : stop.title}
+                              </p>
+                              {stop.address && isPro && (
+                                <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: font, margin: '0 0 2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <MapPinIcon /> {stop.address}{stop.city ? `, ${stop.city}` : ''}
+                                </p>
+                              )}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+                                {stop.date && (
+                                  <span className="dash-date-pill" style={{
+                                    background: 'var(--bg-surface)', color: 'var(--text-muted)',
+                                    border: '1px solid var(--border-subtle)',
+                                  }}>
+                                    {new Date(stop.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                    {stop.time ? ` · ${stop.time}` : ''}
+                                  </span>
+                                )}
+                                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 700, color: stop.price === 'FREE' ? 'var(--accent-green)' : 'var(--text-primary)' }}>
+                                  {stop.price === 'FREE' ? 'FREE' : stop.price === 'Not listed' ? '' : stop.price}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Directions button (Pro) */}
+                            {isPro && stop.address && (
+                              <a
+                                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent([stop.address, stop.city].filter(Boolean).join(', '))}`}
+                                target="_blank" rel="noopener noreferrer"
+                                className="dash-btn"
+                                style={{
+                                  padding: '6px 10px', background: 'var(--bg-surface)',
+                                  border: '1px solid var(--border-subtle)', borderRadius: '7px',
+                                  color: 'var(--text-muted)', fontSize: '11px', fontFamily: font, fontWeight: 500,
+                                  textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px',
+                                }}
+                              >
+                                <MapPinIcon /> Go
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                    {/* Gated stops (free users) */}
+                    {gatedStops.length > 0 && (
+                      <div style={{ position: 'relative' }}>
+                        {/* Blurred preview of next 2 stops */}
+                        {gatedStops.slice(0, 2).map((stop, i) => (
+                          <div key={stop.id} style={{
+                            display: 'flex', alignItems: 'center', gap: '12px',
+                            padding: '14px 20px',
+                            borderBottom: '1px solid var(--border-subtle)',
+                            filter: 'blur(4px)', opacity: 0.5, pointerEvents: 'none',
+                          }}>
+                            <div style={{
+                              width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
+                              background: 'var(--border-default)', color: '#fff',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '12px', fontWeight: 700, fontFamily: font,
+                            }}>
+                              {FREE_STOP_LIMIT + i + 1}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: font, margin: 0 }}>{stop.title}</p>
+                              <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: font, margin: '2px 0 0' }}>{stop.city || 'Address hidden'}</p>
+                            </div>
+                          </div>
+                        ))}
+                        {/* Upgrade overlay */}
+                        <div style={{
+                          position: 'absolute', inset: 0,
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                          background: 'rgba(255,255,255,0.7)',
+                        }}>
+                          <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: font, margin: '0 0 4px' }}>
+                            +{gatedStops.length} more stops
+                          </p>
+                          <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: font, margin: '0 0 12px' }}>
+                            Upgrade for full route, directions, and drive times
+                          </p>
+                          <a href="/pro" className="dash-btn" style={{
+                            padding: '9px 22px', background: 'var(--accent-green)', color: '#fff',
+                            borderRadius: '8px', fontSize: '13px', fontWeight: 600, textDecoration: 'none', fontFamily: font,
+                          }}>
+                            Go Pro — $5/mo
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Open in Google Maps button */}
+              {stopsWithCoords.length >= 2 && (
+                <div style={{ textAlign: 'center' }}>
+                  {isPro ? (
+                    <a
+                      href={mapsUrl}
+                      target="_blank" rel="noopener noreferrer"
+                      className="dash-btn"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '8px',
+                        padding: '13px 28px', background: 'var(--accent-green)', color: '#fff',
+                        borderRadius: '10px', fontSize: '14px', fontWeight: 600, textDecoration: 'none', fontFamily: font,
+                        boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                      </svg>
+                      Open Route in Google Maps
+                    </a>
+                  ) : (
+                    <a
+                      href="/pro"
+                      className="dash-btn"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '8px',
+                        padding: '13px 28px', background: 'var(--accent-green)', color: '#fff',
+                        borderRadius: '10px', fontSize: '14px', fontWeight: 600, textDecoration: 'none', fontFamily: font,
+                        boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                      </svg>
+                      Upgrade to Open in Google Maps
+                    </a>
+                  )}
+                  <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: font, marginTop: '8px' }}>
+                    {isPro
+                      ? `${stopsWithCoords.length} stops · ${totalMiles.toFixed(1)} miles · ~${totalMinutes < 60 ? `${totalMinutes} min` : `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`} driving`
+                      : 'Pro members get full route with turn-by-turn directions'
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
         {/* ═══ LISTINGS FEED ═══ */}
-        <div style={{ marginBottom: '32px' }}>
+        {activeTab !== 'route' && <div style={{ marginBottom: '32px' }}>
           <div style={{
             background: '#fff', borderRadius: '14px',
             border: '1px solid var(--border-subtle)', overflow: 'hidden',
@@ -1144,7 +1535,7 @@ export default function Dashboard() {
               </p>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* ═══ BOTTOM CARDS ═══ */}
         <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '32px' }}>
