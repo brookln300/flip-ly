@@ -6,7 +6,7 @@ import { trackEvent } from '../../lib/analytics'
 import { getSession } from '../../lib/auth'
 import { getClientIp } from '../../lib/get-ip'
 
-const FREE_SEARCH_LIMIT = 10  // per day
+const FREE_SEARCH_LIMIT = 15  // per day
 const FREE_RESULTS_CAP = 10   // max results per query for free users
 
 export async function GET(req: NextRequest) {

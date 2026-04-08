@@ -149,7 +149,7 @@ export default function Home() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password || !signupMarketId) return
+    if (!email || !password) return
     setSigningUp(true)
     setSignupError('')
     try {
@@ -157,7 +157,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email, password, market_id: signupMarketId,
+          email, password,
           utm_source: sessionStorage.getItem('fliply_utm_source') || undefined,
           utm_medium: sessionStorage.getItem('fliply_utm_medium') || undefined,
           utm_campaign: sessionStorage.getItem('fliply_utm_campaign') || undefined,
@@ -567,6 +567,7 @@ export default function Home() {
               loop
               muted
               playsInline
+              preload="none"
               poster="/hero-poster.jpg"
               style={{
                 width: '110%', height: 'auto',
@@ -889,7 +890,7 @@ export default function Home() {
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto var(--space-6)' }}>
           Our AI analyzes demand, margin potential, competition, and sell-through velocity to rate every listing 1&ndash;10.
         </p>
-        <div style={{
+        <div className="score-grid" style={{
           display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px',
           maxWidth: '480px', margin: '0 auto',
         }}>
