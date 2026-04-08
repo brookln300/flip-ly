@@ -69,7 +69,7 @@ export default function Home() {
   const [searchGate, setSearchGate] = useState<any>(null)
   const [featuredDeals, setFeaturedDeals] = useState<any[]>([])
   const [featuredLoading, setFeaturedLoading] = useState(true)
-  const [stats, setStats] = useState({ listings: 0, sources: 20, markets: 413 })
+  const [stats, setStats] = useState({ listings: 0, sources: 20, markets: 413, dealsScoredThisWeek: 0, totalUsers: 0, marketsWithListings: 0 })
   const [expandedDeal, setExpandedDeal] = useState<number | null>(null)
   const [sourceGateOverlay, setSourceGateOverlay] = useState(false)
 
@@ -107,7 +107,14 @@ export default function Home() {
     fetch('/api/stats')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
-        if (data) setStats({ listings: data.total_listings || 0, sources: data.total_sources || 0, markets: data.total_markets || 413 })
+        if (data) setStats({
+          listings: data.total_listings || 0,
+          sources: data.total_sources || 0,
+          markets: data.total_markets || 413,
+          dealsScoredThisWeek: data.deals_scored_this_week || 0,
+          totalUsers: data.total_users || 0,
+          marketsWithListings: data.markets_with_listings || 0,
+        })
       })
       .catch(() => {})
   }, [])
@@ -862,8 +869,35 @@ export default function Home() {
         )}
       </motion.div>
 
-
-
+      {/* ═══ SOCIAL PROOF STRIP — live stats from API ═══ */}
+      {!loggedInUser && (stats.dealsScoredThisWeek > 0 || stats.totalUsers > 0) && (
+        <div style={{
+          background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)',
+          borderBottom: '1px solid var(--border-subtle)', padding: '14px var(--space-4)',
+          textAlign: 'center',
+        }}>
+          <p style={{
+            fontSize: '13px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
+            margin: 0, letterSpacing: '0.01em',
+          }}>
+            {stats.dealsScoredThisWeek > 0 && (
+              <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.dealsScoredThisWeek.toLocaleString()}</span> deals scored this week</>
+            )}
+            {stats.dealsScoredThisWeek > 0 && stats.totalUsers > 0 && (
+              <span style={{ margin: '0 10px', color: 'var(--text-dim)' }}>&middot;</span>
+            )}
+            {stats.totalUsers > 0 && (
+              <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.totalUsers.toLocaleString()}</span> members</>
+            )}
+            {stats.marketsWithListings > 0 && (
+              <>
+                <span style={{ margin: '0 10px', color: 'var(--text-dim)' }}>&middot;</span>
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.marketsWithListings}</span> active markets
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* ═══ TRUST STRIP — value proposition (no image needed) ═══ */}
       {!loggedInUser && (
@@ -959,6 +993,11 @@ export default function Home() {
               padding: '3px 12px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>Most popular</div>
             <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-green)', marginBottom: '4px' }}>Pro</p>
+            {stats.totalUsers > 0 && (
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 2px', fontFamily: 'var(--font-mono)' }}>
+                Join {stats.totalUsers.toLocaleString()} members
+              </p>
+            )}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
               <span style={{ textDecoration: 'line-through', color: 'var(--text-dim)', fontSize: '16px', marginRight: '2px' }}>$12</span>
               <span style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>$5</span>

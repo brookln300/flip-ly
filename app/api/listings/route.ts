@@ -6,7 +6,7 @@ import { trackEvent } from '../../lib/analytics'
 import { getSession } from '../../lib/auth'
 import { getClientIp } from '../../lib/get-ip'
 
-const FREE_SEARCH_LIMIT = 10  // per day
+const FREE_SEARCH_LIMIT = 15  // per day
 const FREE_RESULTS_CAP = 10   // max results per query for free users
 
 export async function GET(req: NextRequest) {
@@ -292,10 +292,16 @@ export async function GET(req: NextRequest) {
     ? new Date(Math.min(...filtered.map((l: any) => new Date(l.scraped_at).getTime())))
     : null
 
-  // ── Format results — progressive reveal for free users ──
-  // Free/anon: first 5 get real scores, first 2 get deal_reason, source_url always gated
-  const SCORE_REVEAL_COUNT = 5
-  const REASON_REVEAL_COUNT = 2
+  // ── Format results — progressive reveal by tier ──
+  // Anonymous: first 5 scores, first 2 reasons (truncated), no source URLs, truncated descriptions
+  // Free signed-up: ALL scores, first 5 reasons (full), first 3 source URLs, first 5 full descriptions
+  // Pro: everything unlocked
+  const ANON_SCORE_REVEAL_COUNT = 5
+  const ANON_REASON_REVEAL_COUNT = 2
+  const FREE_SOURCE_URL_COUNT = 3
+  const FREE_REASON_REVEAL_COUNT = 5
+  const FREE_FULL_DESC_COUNT = 5
+  const isSignedIn = !!userId
 
   const results = filtered.map((l, idx) => {
     const base = {
@@ -330,9 +336,32 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Free/anonymous: progressive reveal
-    const showScore = idx < SCORE_REVEAL_COUNT
-    const showReason = idx < REASON_REVEAL_COUNT
+    if (isSignedIn) {
+      // Free signed-up user: real incremental value over anonymous
+      const showSourceUrl = idx < FREE_SOURCE_URL_COUNT
+      const showReason = idx < FREE_REASON_REVEAL_COUNT
+      const showFullDesc = idx < FREE_FULL_DESC_COUNT
+
+      return {
+        ...base,
+        event_type: l.event_type || null,
+        description: showFullDesc
+          ? (l.ai_description || l.description || null)
+          : (l.ai_description ? l.ai_description.substring(0, 80) + '...' : null),
+        deal_score: l.deal_score || null, // all scores unlocked
+        deal_reason: showReason ? (l.deal_score_reason || null) : null,
+        tags: (l.ai_tags || l.tags || []).slice(0, 3),
+        source_url: showSourceUrl ? l.source_url : null,
+        image_url: l.image_url,
+        address: null,
+        lat: null,
+        lng: null,
+      }
+    }
+
+    // Anonymous: most restricted progressive reveal
+    const showScore = idx < ANON_SCORE_REVEAL_COUNT
+    const showReason = idx < ANON_REASON_REVEAL_COUNT
 
     return {
       ...base,
@@ -341,7 +370,7 @@ export async function GET(req: NextRequest) {
       deal_score: showScore ? (l.deal_score || null) : (l.deal_score ? 'gated' : null),
       deal_reason: showReason ? (l.deal_score_reason || null) : null,
       tags: (l.ai_tags || l.tags || []).slice(0, 2),
-      source_url: null, // always gated — this is the conversion lever
+      source_url: null, // always gated for anonymous
       image_url: l.image_url,
       address: null,
       lat: null,
