@@ -19,10 +19,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
     }
 
-    if (!market_id) {
-      return NextResponse.json({ error: 'Please select your area' }, { status: 400 })
-    }
-
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
@@ -33,15 +29,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
     }
 
-    // Validate market exists
-    const { data: market } = await supabase
-      .from('fliply_markets')
-      .select('id, name, display_name, state, cl_subdomain')
-      .eq('id', market_id)
-      .single()
-
-    if (!market) {
-      return NextResponse.json({ error: 'Invalid market selected' }, { status: 400 })
+    // Optionally resolve market if provided, otherwise defer to geo-detection on dashboard
+    let market: { id: string; name: string; display_name: string | null; state: string; cl_subdomain: string } | null = null
+    if (market_id) {
+      const { data: m } = await supabase
+        .from('fliply_markets')
+        .select('id, name, display_name, state, cl_subdomain')
+        .eq('id', market_id)
+        .single()
+      if (!m) {
+        return NextResponse.json({ error: 'Invalid market selected' }, { status: 400 })
+      }
+      market = m
     }
 
     // Check if user exists
@@ -63,17 +62,17 @@ export async function POST(req: NextRequest) {
       ? String(utm_source).substring(0, 50).replace(/[^a-zA-Z0-9_-]/g, '')
       : 'signup'
 
-    const marketDisplayName = market.display_name || market.name
+    const marketDisplayName = market ? (market.display_name || market.name) : null
 
-    // Insert user — store city/state from market for email personalization
+    // Insert user — market fields are null when deferred to geo-detection
     const { data: user, error } = await supabase
       .from('fliply_users')
       .insert({
         email: email.toLowerCase(),
         password_hash,
-        market_id: market.id,
-        city: marketDisplayName,
-        state: market.state,
+        market_id: market?.id ?? null,
+        city: marketDisplayName ?? null,
+        state: market?.state ?? null,
         include_events: include_events !== false,
         user_status: 'trial',
         acquisition_source: acquisitionSource,
@@ -86,23 +85,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Signup failed' }, { status: 500 })
     }
 
-    // Activate market + bump user count (fire-and-forget)
-    supabase.rpc('increment_market_user_count', { p_market_id: market.id })
-      .then(null, () => {
-        // Fallback if RPC doesn't exist — just activate the market
-        supabase
-          .from('fliply_markets')
-          .update({ is_active: true })
-          .eq('id', market.id)
-          .then(null, (err: any) => console.error('[SIGNUP] Market update failed:', err))
-      })
+    // Activate market + bump user count (fire-and-forget) — only if market was provided
+    if (market) {
+      supabase.rpc('increment_market_user_count', { p_market_id: market.id })
+        .then(null, () => {
+          supabase
+            .from('fliply_markets')
+            .update({ is_active: true })
+            .eq('id', market!.id)
+            .then(null, (err: any) => console.error('[SIGNUP] Market update failed:', err))
+        })
+    }
 
     // GA4: signup_complete
     trackEvent('signup_complete', {
       signup_source: acquisitionSource,
-      market: market.cl_subdomain,
-      market_name: marketDisplayName,
-      state: market.state,
+      market: market?.cl_subdomain || 'pending-geo',
+      market_name: marketDisplayName || 'pending-geo',
+      state: market?.state || '',
       utm_medium: utm_medium || '',
       utm_campaign: utm_campaign || '',
       ...(gclid ? { gclid } : {}),
@@ -115,8 +115,8 @@ export async function POST(req: NextRequest) {
       const subject = WELCOME_SUBJECT
       const html = await getDripEmailHtml('welcome', {
         email,
-        city: marketDisplayName,
-        state: market.state,
+        city: marketDisplayName || 'your area',
+        state: market?.state || '',
         step_order: 0,
         variant: 'a',
       })
@@ -156,8 +156,8 @@ export async function POST(req: NextRequest) {
       sendTelegramAlert([
         `<b>New Signup</b>`,
         `Email: ${email}`,
-        `Market: ${marketDisplayName}, ${market.state}`,
-        `CL Region: ${market.cl_subdomain}`,
+        `Market: ${marketDisplayName || 'pending geo-detection'}${market ? `, ${market.state}` : ''}`,
+        market ? `CL Region: ${market.cl_subdomain}` : 'CL Region: pending',
         `Source: ${acquisitionSource}${utm_medium ? ` / ${utm_medium}` : ''}${utm_campaign ? ` / ${utm_campaign}` : ''}`,
       ].join('\n'))
     } catch (emailErr) {
@@ -180,10 +180,12 @@ export async function POST(req: NextRequest) {
       path: '/',
     })
 
-    console.log(`[SIGNUP] New user: ${email} → market: ${marketDisplayName} (${market.cl_subdomain})`)
+    console.log(`[SIGNUP] New user: ${email} → market: ${marketDisplayName || 'pending geo'}`)
 
     // Discover sources for this market if it's newly activated (fire-and-forget)
-    discoverSourcesForMarket(market.id)
+    if (market) {
+      discoverSourcesForMarket(market.id)
+    }
 
     // Enroll in welcome-to-convert drip sequence (7 emails over 21 days)
     enrollInWelcomeSequence(user.id).catch(err =>
