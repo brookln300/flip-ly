@@ -71,6 +71,7 @@ export default function Home() {
   const [featuredLoading, setFeaturedLoading] = useState(true)
   const [stats, setStats] = useState({ listings: 0, sources: 20, markets: 413 })
   const [expandedDeal, setExpandedDeal] = useState<number | null>(null)
+  const [sourceGateOverlay, setSourceGateOverlay] = useState(false)
 
   // Fetch featured deals
   useEffect(() => {
@@ -228,127 +229,186 @@ export default function Home() {
   }
 
   // Render a single deal row (reused in search results + featured feed)
-  const DealRow = ({ deal, i, showExpand }: { deal: any; i: number; showExpand?: boolean }) => (
-    <div>
-      <div
-        style={{
-          display: 'flex', alignItems: 'center', gap: '12px',
-          padding: '12px 0',
-          borderBottom: '1px solid var(--border-subtle)',
-          cursor: showExpand && deal.deal_reason ? 'pointer' : 'default',
-        }}
-        onClick={() => showExpand && deal.deal_reason && setExpandedDeal(expandedDeal === i ? null : i)}
-      >
-        {/* Category icon */}
-        <div style={{
-          width: '40px', height: '40px', borderRadius: '8px', flexShrink: 0,
-          background: 'var(--bg-surface)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '18px',
-        }}>
-          {categoryIcon(deal.title)}
+  const DealRow = ({ deal, i, showExpand }: { deal: any; i: number; showExpand?: boolean }) => {
+    const hasRealScore = deal.deal_score && deal.deal_score !== 'gated'
+    const isScoreGated = deal.deal_score === 'gated'
+    const hasReason = !!deal.deal_reason
+    const canExpand = showExpand && (hasReason || isScoreGated)
+
+    const handleTitleClick = (e: React.MouseEvent) => {
+      if (deal.source_url) return // Pro user — let the link work
+      // Free/anon user — gate the click-through
+      e.preventDefault()
+      e.stopPropagation()
+      setSourceGateOverlay(true)
+    }
+
+    return (
+      <div>
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            padding: '12px 0',
+            borderBottom: '1px solid var(--border-subtle)',
+            cursor: canExpand ? 'pointer' : 'default',
+          }}
+          onClick={() => canExpand && setExpandedDeal(expandedDeal === i ? null : i)}
+        >
+          {/* Category icon */}
+          <div style={{
+            width: '40px', height: '40px', borderRadius: '8px', flexShrink: 0,
+            background: 'var(--bg-surface)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '18px',
+          }}>
+            {categoryIcon(deal.title)}
+          </div>
+
+          {/* ScoreBadge */}
+          {hasRealScore ? (
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
+              background: `${scoreColor(deal.deal_score)}15`,
+              border: `1px solid ${scoreColor(deal.deal_score)}25`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700,
+                color: scoreColor(deal.deal_score),
+              }}>{deal.deal_score}</span>
+            </div>
+          ) : isScoreGated ? (
+            <div
+              onClick={(e) => { e.stopPropagation(); setShowSignup(true) }}
+              style={{
+                width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
+                background: 'linear-gradient(135deg, #f0fdf4, #f8f8f8)',
+                border: '1px solid rgba(22,163,74,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', position: 'relative',
+              }}
+              title="Sign up free to see this score"
+            >
+              <span style={{ fontSize: '14px' }}>🔒</span>
+            </div>
+          ) : (
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
+              background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-dim)' }}>--</span>
+            </div>
+          )}
+
+          {/* Deal info */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
+              {deal.hot && (
+                <span style={{ background: '#fef2f2', color: '#dc2626', padding: '1px 5px', fontSize: '9px', fontWeight: 700, borderRadius: '3px', letterSpacing: '0.04em', flexShrink: 0 }}>HOT</span>
+              )}
+              {deal.event_type && deal.event_type !== 'listing' && (
+                <span style={{
+                  padding: '1px 6px', fontSize: '9px', fontWeight: 600, borderRadius: '3px',
+                  letterSpacing: '0.02em', whiteSpace: 'nowrap', flexShrink: 0,
+                  background: deal.event_type === 'estate_sale' ? 'rgba(168,85,247,0.08)' : deal.event_type === 'garage_sale' ? 'rgba(59,130,246,0.08)' : deal.event_type === 'flea_market' ? 'rgba(236,72,153,0.08)' : deal.event_type === 'moving_sale' ? 'rgba(249,115,22,0.08)' : deal.event_type === 'auction' ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.08)',
+                  color: deal.event_type === 'estate_sale' ? '#A855F7' : deal.event_type === 'garage_sale' ? '#3B82F6' : deal.event_type === 'flea_market' ? '#EC4899' : deal.event_type === 'moving_sale' ? '#F97316' : deal.event_type === 'auction' ? '#EF4444' : '#6366F1',
+                }}>
+                  {(deal.event_type || '').replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                </span>
+              )}
+              <span
+                onClick={handleTitleClick}
+                style={{
+                  fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  cursor: 'pointer',
+                }}
+              >
+                {deal.source_url ? (
+                  <a href={deal.source_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>{deal.title}</a>
+                ) : deal.title}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+              {deal.date && (() => {
+                const d = new Date(deal.date + 'T12:00:00')
+                if (isNaN(d.getTime())) return null
+                const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+                const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+                const diff = Math.round((target.getTime() - today.getTime()) / 86400000)
+                const label = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : diff > 0 && diff <= 6 ? d.toLocaleDateString('en-US', { weekday: 'short' }) : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                const isHot = diff === 0 || diff === 1
+                return (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '3px',
+                    padding: '1px 6px', borderRadius: '3px', fontSize: '10px', fontWeight: 600,
+                    background: isHot ? 'rgba(22,163,74,0.08)' : 'var(--bg-surface)',
+                    color: isHot ? 'var(--accent-green)' : 'var(--text-muted)',
+                    border: `1px solid ${isHot ? 'rgba(22,163,74,0.15)' : 'var(--border-subtle)'}`,
+                  }}>
+                    {label}{deal.time ? ` · ${deal.time}` : ''}
+                  </span>
+                )
+              })()}
+              {deal.city && <span>{deal.city}</span>}
+              <span style={{
+                textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.5px',
+                color: 'var(--text-dim)', background: 'var(--bg-surface)',
+                padding: '1px 6px', borderRadius: '3px',
+              }}>{deal.source}</span>
+            </div>
+          </div>
+
+          {/* Price */}
+          <div style={{
+            fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '14px', flexShrink: 0,
+            color: deal.price === 'FREE' ? 'var(--accent-green)' : deal.price === 'Not listed' ? 'var(--text-dim)' : 'var(--text-primary)',
+          }}>
+            {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? '--' : deal.price || '--'}
+          </div>
         </div>
 
-        {/* ScoreBadge */}
-        {deal.deal_score && deal.deal_score !== 'gated' ? (
+        {/* Deal reason — shown for top results with real reasons */}
+        {showExpand && expandedDeal === i && hasReason && (
           <div style={{
-            width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
-            background: `${scoreColor(deal.deal_score)}15`,
-            border: `1px solid ${scoreColor(deal.deal_score)}25`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '8px 0 12px 52px',
+            borderBottom: '1px solid var(--border-subtle)',
           }}>
-            <span style={{
-              fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700,
-              color: scoreColor(deal.deal_score),
-            }}>{deal.deal_score}</span>
-          </div>
-        ) : (
-          <div style={{
-            width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
-            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-dim)' }}>--</span>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+              <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>AI insight:</span> {deal.deal_reason}
+            </p>
+            {!deal.source_url && !loggedInUser && (
+              <button onClick={(e) => { e.stopPropagation(); setShowSignup(true) }} style={{
+                marginTop: '8px', padding: '6px 14px', background: 'var(--accent-green)', color: '#fff',
+                border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+              }}>
+                Sign up free to see this deal
+              </button>
+            )}
           </div>
         )}
 
-        {/* Deal info */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
-            {deal.hot && (
-              <span style={{ background: '#fef2f2', color: '#dc2626', padding: '1px 5px', fontSize: '9px', fontWeight: 700, borderRadius: '3px', letterSpacing: '0.04em', flexShrink: 0 }}>HOT</span>
-            )}
-            {deal.event_type && deal.event_type !== 'listing' && (
-              <span style={{
-                padding: '1px 6px', fontSize: '9px', fontWeight: 600, borderRadius: '3px',
-                letterSpacing: '0.02em', whiteSpace: 'nowrap', flexShrink: 0,
-                background: deal.event_type === 'estate_sale' ? 'rgba(168,85,247,0.08)' : deal.event_type === 'garage_sale' ? 'rgba(59,130,246,0.08)' : deal.event_type === 'flea_market' ? 'rgba(236,72,153,0.08)' : deal.event_type === 'moving_sale' ? 'rgba(249,115,22,0.08)' : deal.event_type === 'auction' ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.08)',
-                color: deal.event_type === 'estate_sale' ? '#A855F7' : deal.event_type === 'garage_sale' ? '#3B82F6' : deal.event_type === 'flea_market' ? '#EC4899' : deal.event_type === 'moving_sale' ? '#F97316' : deal.event_type === 'auction' ? '#EF4444' : '#6366F1',
-              }}>
-                {(deal.event_type || '').replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
-              </span>
-            )}
-            <span style={{
-              fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        {/* Gated score expand — nudge to sign up */}
+        {showExpand && expandedDeal === i && isScoreGated && !hasReason && (
+          <div style={{
+            padding: '10px 0 14px 52px',
+            borderBottom: '1px solid var(--border-subtle)',
+          }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 8px' }}>
+              AI score and analysis available with a free account.
+            </p>
+            <button onClick={(e) => { e.stopPropagation(); setShowSignup(true) }} style={{
+              padding: '6px 14px', background: 'var(--accent-green)', color: '#fff',
+              border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
             }}>
-              {deal.source_url ? (
-                <a href={deal.source_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-primary)', textDecoration: 'none' }}>{deal.title}</a>
-              ) : deal.title}
-            </span>
+              Sign up free to unlock scores
+            </button>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-            {deal.date && (() => {
-              const d = new Date(deal.date + 'T12:00:00')
-              if (isNaN(d.getTime())) return null
-              const now = new Date(); const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-              const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-              const diff = Math.round((target.getTime() - today.getTime()) / 86400000)
-              const label = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : diff > 0 && diff <= 6 ? d.toLocaleDateString('en-US', { weekday: 'short' }) : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-              const isHot = diff === 0 || diff === 1
-              return (
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '3px',
-                  padding: '1px 6px', borderRadius: '3px', fontSize: '10px', fontWeight: 600,
-                  background: isHot ? 'rgba(22,163,74,0.08)' : 'var(--bg-surface)',
-                  color: isHot ? 'var(--accent-green)' : 'var(--text-muted)',
-                  border: `1px solid ${isHot ? 'rgba(22,163,74,0.15)' : 'var(--border-subtle)'}`,
-                }}>
-                  📅 {label}{deal.time ? ` · ${deal.time}` : ''}
-                </span>
-              )
-            })()}
-            {deal.city && <span>{deal.city}</span>}
-            <span style={{
-              textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.5px',
-              color: 'var(--text-dim)', background: 'var(--bg-surface)',
-              padding: '1px 6px', borderRadius: '3px',
-            }}>{deal.source}</span>
-          </div>
-        </div>
-
-        {/* Price */}
-        <div style={{
-          fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '14px', flexShrink: 0,
-          color: deal.price === 'FREE' ? 'var(--accent-green)' : deal.price === 'Not listed' ? 'var(--text-dim)' : 'var(--text-primary)',
-        }}>
-          {deal.price === 'FREE' ? 'FREE' : deal.price === 'Not listed' ? '--' : deal.price || '--'}
-        </div>
+        )}
       </div>
-
-      {/* Score reason — only shown if real data exists */}
-      {showExpand && expandedDeal === i && deal.deal_reason && (
-        <div style={{
-          padding: '8px 0 12px 52px',
-          borderBottom: '1px solid var(--border-subtle)',
-        }}>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            {deal.deal_reason}
-          </p>
-        </div>
-      )}
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="min-h-screen relative" style={{ background: 'var(--bg-primary)' }}>
@@ -678,27 +738,56 @@ export default function Home() {
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: 'var(--space-3)', fontFamily: 'var(--font-mono)' }}>
                 {totalResults} results{searchQuery ? ` for "${searchQuery}"` : ''}
               </div>
-              {realListings.slice(0, loggedInUser ? realListings.length : 3).map((listing, i) => (
-                <DealRow key={listing.id || i} deal={listing} i={i} showExpand={i === 0} />
-              ))}
-              {!loggedInUser && realListings.length > 3 && (
-                <div style={{ padding: 'var(--space-6) 0', textAlign: 'center' }}>
-                  <button onClick={() => setShowSignup(true)} style={{
-                    padding: '10px 24px', background: 'var(--accent-green)', color: '#fff',
-                    border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
-                  }}>
-                    Sign up free to see all {totalResults} results
-                  </button>
+              {realListings.map((listing, i) => (
+                <div key={listing.id || i}>
+                  <DealRow deal={listing} i={i} showExpand={i < 5} />
+
+                  {/* Inline CTA after result #5 for anonymous users */}
+                  {i === 4 && !loggedInUser && realListings.length > 5 && (
+                    <div style={{
+                      margin: '16px 0', padding: '16px 20px', borderRadius: '10px',
+                      background: 'linear-gradient(135deg, rgba(22,163,74,0.04), rgba(22,163,74,0.08))',
+                      border: '1px solid rgba(22,163,74,0.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      flexWrap: 'wrap', gap: '12px',
+                    }}>
+                      <div>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>
+                          Scores hidden below? Sign up free to see them all.
+                        </p>
+                        <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
+                          Plus: direct links, full AI analysis, and weekly digest.
+                        </p>
+                      </div>
+                      <button onClick={() => setShowSignup(true)} style={{
+                        padding: '8px 20px', background: 'var(--accent-green)', color: '#fff',
+                        border: 'none', borderRadius: '6px', fontWeight: 600, fontSize: '13px',
+                        cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+                      }}>
+                        Sign up free
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-              {!loggedInUser && realListings.length <= 3 && realListings.length > 0 && (
-                <div style={{ padding: 'var(--space-4) 0', textAlign: 'center' }}>
-                  <button onClick={() => setShowSignup(true)} style={{
-                    background: 'none', border: 'none', color: 'var(--accent-green)', fontSize: '13px',
-                    cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px',
-                  }}>
-                    Sign up for unlimited searches and full scores
-                  </button>
+              ))}
+              {/* Bottom CTA */}
+              {!loggedInUser && realListings.length > 0 && (
+                <div style={{ padding: 'var(--space-5) 0', textAlign: 'center' }}>
+                  {totalResults > realListings.length ? (
+                    <button onClick={() => setShowSignup(true)} style={{
+                      padding: '10px 24px', background: 'var(--accent-green)', color: '#fff',
+                      border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
+                    }}>
+                      Sign up free to see all {totalResults} results
+                    </button>
+                  ) : (
+                    <button onClick={() => setShowSignup(true)} style={{
+                      background: 'none', border: 'none', color: 'var(--accent-green)', fontSize: '13px',
+                      cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px',
+                    }}>
+                      Sign up for unlimited searches, full scores, and source links
+                    </button>
+                  )}
                 </div>
               )}
             </>
@@ -728,7 +817,7 @@ export default function Home() {
               </p>
             </div>
             {featuredDeals.map((deal, i) => (
-              <DealRow key={deal.id || i} deal={deal} i={100 + i} showExpand={i === 1} />
+              <DealRow key={deal.id || i} deal={deal} i={100 + i} showExpand={i < 3} />
             ))}
           </>
         )}
@@ -959,6 +1048,54 @@ export default function Home() {
         </div>
       </footer>
 
+
+      {/* SOURCE GATE OVERLAY — when anon clicks a deal title */}
+      {sourceGateOverlay && (
+        <div className="fixed inset-0 z-[95] flex items-center justify-center p-4"
+          onClick={() => setSourceGateOverlay(false)} style={{ background: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}>
+          <div className="w-full max-w-sm relative" onClick={e => e.stopPropagation()} style={{
+            background: '#ffffff', borderRadius: '16px', cursor: 'default', overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.15)', padding: '32px 28px', textAlign: 'center',
+          }}>
+            <button onClick={() => setSourceGateOverlay(false)}
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-sm font-bold"
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer' }}>
+              X
+            </button>
+            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔗</div>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>
+              Sign up free to see this deal
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
+              Get direct links to listings, full AI scores, and a weekly digest of the best deals near you.
+            </p>
+            <button
+              onClick={() => { setSourceGateOverlay(false); signIn('google') }}
+              style={{
+                width: '100%', padding: '12px', background: '#fff', color: 'var(--text-primary)',
+                border: '1px solid var(--border-default)', borderRadius: '8px', fontSize: '14px',
+                fontWeight: 600, cursor: 'pointer', marginBottom: '10px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 019.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 000 24c0 3.77.9 7.34 2.56 10.5l7.97-5.91z"/><path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.91C6.51 42.62 14.62 48 24 48z"/></svg>
+              Continue with Google
+            </button>
+            <button
+              onClick={() => { setSourceGateOverlay(false); setShowSignup(true) }}
+              style={{
+                width: '100%', padding: '12px', background: 'var(--accent-green)', color: '#fff',
+                border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              Sign up with email
+            </button>
+            <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '12px' }}>
+              Free forever. No credit card needed.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* SIGNUP MODAL — kept for header CTA and direct links */}
       {showSignup && (

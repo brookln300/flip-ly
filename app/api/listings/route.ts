@@ -274,8 +274,12 @@ export async function GET(req: NextRequest) {
     ? new Date(Math.min(...filtered.map((l: any) => new Date(l.scraped_at).getTime())))
     : null
 
-  // ── Format results — gate fields for free users ──
-  const results = filtered.map(l => {
+  // ── Format results — progressive reveal for free users ──
+  // Free/anon: first 5 get real scores, first 2 get deal_reason, source_url always gated
+  const SCORE_REVEAL_COUNT = 5
+  const REASON_REVEAL_COUNT = 2
+
+  const results = filtered.map((l, idx) => {
     const base = {
       id: l.id,
       title: l.title,
@@ -308,14 +312,18 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Free/anonymous: progressive reveal
+    const showScore = idx < SCORE_REVEAL_COUNT
+    const showReason = idx < REASON_REVEAL_COUNT
+
     return {
       ...base,
       event_type: l.event_type || null,
-      description: l.ai_description ? l.ai_description.substring(0, 60) + '...' : null,
-      deal_score: l.deal_score ? 'gated' : null,
-      deal_reason: null,
+      description: l.ai_description ? l.ai_description.substring(0, showReason ? 120 : 60) + '...' : null,
+      deal_score: showScore ? (l.deal_score || null) : (l.deal_score ? 'gated' : null),
+      deal_reason: showReason ? (l.deal_score_reason || null) : null,
       tags: (l.ai_tags || l.tags || []).slice(0, 2),
-      source_url: null,
+      source_url: null, // always gated — this is the conversion lever
       image_url: l.image_url,
       address: null,
       lat: null,
