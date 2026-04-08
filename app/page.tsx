@@ -289,7 +289,7 @@ export default function Home() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', position: 'relative',
               }}
-              title="Sign up free to see this score"
+              title="Sign up free for full scores on every result"
             >
               <span style={{ fontSize: '14px' }}>🔒</span>
             </div>
@@ -385,7 +385,7 @@ export default function Home() {
                 marginTop: '8px', padding: '6px 14px', background: 'var(--accent-green)', color: '#fff',
                 border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
               }}>
-                Sign up free to see this deal
+                Sign up free for scores + source links
               </button>
             )}
           </div>
@@ -404,7 +404,7 @@ export default function Home() {
               padding: '6px 14px', background: 'var(--accent-green)', color: '#fff',
               border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
             }}>
-              Sign up free to unlock scores
+              Sign up free for full scores and direct links on top deals
             </button>
           </div>
         )}
@@ -567,6 +567,7 @@ export default function Home() {
               loop
               muted
               playsInline
+              preload="none"
               poster="/hero-poster.jpg"
               style={{
                 width: '110%', height: 'auto',
@@ -765,7 +766,7 @@ export default function Home() {
                     }}>
                       <div>
                         <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 2px' }}>
-                          Scores hidden below? Sign up free to see them all.
+                          Free members see all scores + source links on top 3 deals
                         </p>
                         <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0 }}>
                           Plus: direct links, full AI analysis, and weekly digest.
@@ -790,14 +791,14 @@ export default function Home() {
                       padding: '10px 24px', background: 'var(--accent-green)', color: '#fff',
                       border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px', cursor: 'pointer',
                     }}>
-                      Sign up free to see all {totalResults} results
+                      Sign up free for full scores and direct links on top deals
                     </button>
                   ) : (
                     <button onClick={() => setShowSignup(true)} style={{
                       background: 'none', border: 'none', color: 'var(--accent-green)', fontSize: '13px',
                       cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px',
                     }}>
-                      Sign up for unlimited searches, full scores, and source links
+                      Sign up free for all scores, source links on top 3, and full descriptions
                     </button>
                   )}
                 </div>
@@ -874,6 +875,9 @@ export default function Home() {
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '400px', margin: '0 auto' }}>
               We aggregate, score, and rank — so you can focus on buying and selling.
             </p>
+            <a href="#pricing" style={{ display: 'inline-block', marginTop: '8px', fontSize: '12px', color: 'var(--accent-green)', textDecoration: 'none', fontWeight: 600 }}>
+              See Pro &rarr;
+            </a>
           </div>
         </div>
       )}
@@ -889,7 +893,7 @@ export default function Home() {
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto var(--space-6)' }}>
           Our AI analyzes demand, margin potential, competition, and sell-through velocity to rate every listing 1&ndash;10.
         </p>
-        <div style={{
+        <div className="score-grid" style={{
           display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px',
           maxWidth: '480px', margin: '0 auto',
         }}>
@@ -955,10 +959,12 @@ export default function Home() {
               padding: '3px 12px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.05em',
             }}>Most popular</div>
             <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-green)', marginBottom: '4px' }}>Pro</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
+              <span style={{ textDecoration: 'line-through', color: 'var(--text-dim)', fontSize: '16px', marginRight: '2px' }}>$12</span>
               <span style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>$5</span>
               <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>/mo</span>
             </div>
+            <p style={{ fontSize: '11px', color: 'var(--accent-green)', marginBottom: '16px', fontWeight: 600 }}>Founding price &middot; Locked for life</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)' }}>
               <span><strong>Unlimited</strong> searches</span>
               <span>3 markets</span>
@@ -975,10 +981,12 @@ export default function Home() {
           {/* Power */}
           <div style={{ background: 'var(--bg-surface)', borderRadius: '12px', padding: '24px', border: '1px solid var(--border-subtle)' }}>
             <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-purple)', marginBottom: '4px' }}>Power</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
+              <span style={{ textDecoration: 'line-through', color: 'var(--text-dim)', fontSize: '16px', marginRight: '2px' }}>$39</span>
               <span style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>$19</span>
               <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>/mo</span>
             </div>
+            <p style={{ fontSize: '11px', color: 'var(--accent-purple)', marginBottom: '16px', fontWeight: 600 }}>Founding price &middot; Locked for life</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text-muted)' }}>
               <span>Everything in Pro</span>
               <span><strong>Unlimited</strong> markets</span>
@@ -993,9 +1001,35 @@ export default function Home() {
             }}>Go Power</a>
           </div>
         </div>
-        <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '12px', marginTop: 'var(--space-4)', fontFamily: 'var(--font-mono)' }}>
+        {/* Trust strip */}
+        <div style={{
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          gap: '16px', flexWrap: 'wrap',
+          marginTop: 'var(--space-4)', padding: 'var(--space-3) 0',
+        }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Cancel anytime</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>&middot;</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Secure checkout via Stripe</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>&middot;</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>One good find pays for a year</span>
+        </div>
+
+        <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '12px', marginTop: 'var(--space-2)', fontFamily: 'var(--font-mono)' }}>
           Founding member pricing — locked in for life
         </p>
+
+        {/* Mini FAQ */}
+        <div style={{ maxWidth: '480px', margin: 'var(--space-6) auto 0' }}>
+          {[
+            { q: 'What if I don\'t find anything?', a: 'Cancel anytime — no contracts, no hoops. One click in your dashboard.' },
+            { q: 'How fast do I get access?', a: 'Instant. Your dashboard upgrades the moment you subscribe.' },
+          ].map((faq, i) => (
+            <div key={i} style={{ padding: '10px 0', borderBottom: i === 0 ? '1px solid var(--border-subtle)' : 'none' }}>
+              <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>{faq.q}</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>{faq.a}</p>
+            </div>
+          ))}
+        </div>
       </motion.div>
 
 
@@ -1153,7 +1187,7 @@ export default function Home() {
             </button>
             <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔗</div>
             <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-              Sign up free to see this deal
+              Sign up free for scores + source links
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
               Get direct links to listings, full AI scores, and a weekly digest of the best deals near you.
