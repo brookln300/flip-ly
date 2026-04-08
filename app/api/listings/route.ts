@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
   // ── Query listings ──
   const effectiveLimit = isPremium ? limit : Math.min(limit, FREE_RESULTS_CAP)
 
-  // Resolve market filter
+  // Resolve market filter — invalid slug returns 0 results instead of all
   let marketId: string | null = null
   if (marketSlug) {
     const { data: market } = await supabase
@@ -119,7 +119,25 @@ export async function GET(req: NextRequest) {
       .select('id')
       .eq('slug', marketSlug)
       .single()
-    if (market) marketId = market.id
+    if (market) {
+      marketId = market.id
+    } else {
+      return NextResponse.json({
+        results: [],
+        total: 0,
+        query,
+        offset,
+        limit,
+        _gate: {
+          limited: false,
+          searches_used: searchesUsed,
+          searches_remaining: searchesRemaining,
+          searches_max: FREE_SEARCH_LIMIT,
+          is_premium: isPremium,
+        },
+        _meta: { real_data: true, scraped_sources: ['craigslist', 'eventbrite'], search_method: 'invalid_market' },
+      })
+    }
   }
 
   let listings: any[] | null = null

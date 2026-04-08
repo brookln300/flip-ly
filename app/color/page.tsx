@@ -277,7 +277,7 @@ function PricingCard({ scheme, tier, price, features, highlighted }: {
       <div style={{ fontSize: '13px', color: highlighted ? scheme.green : scheme.textMuted, fontFamily: 'system-ui, sans-serif', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{tier}</div>
       <div style={{ fontSize: '36px', fontWeight: 700, color: scheme.textPrimary, fontFamily: 'system-ui, sans-serif', marginBottom: '4px' }}>{price}</div>
       <div style={{ fontSize: '11px', color: scheme.textDim, fontFamily: 'system-ui, sans-serif', marginBottom: '20px' }}>
-        {tier === 'Free' ? 'Forever' : 'Founding price · Locks in 12 days'}
+        {tier === 'Free' ? 'Forever' : 'Founding price · Locked for life'}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
         {features.map(f => (
@@ -437,7 +437,7 @@ export default function ColorPage() {
             ]} />
           </div>
           <p style={{ color: scheme.textDim, fontSize: '12px', fontFamily: 'system-ui, sans-serif', marginTop: '12px', textAlign: 'center' }}>
-            Founding pricing ends in 12 days.
+            Founding pricing — locked in for life.
           </p>
         </div>
 

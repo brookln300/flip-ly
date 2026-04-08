@@ -966,12 +966,7 @@ export default function Home() {
           </div>
         </div>
         <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '12px', marginTop: 'var(--space-4)', fontFamily: 'var(--font-mono)' }}>
-          {(() => {
-            const end = new Date('2026-04-18T23:59:59')
-            const now = new Date()
-            const days = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86400000))
-            return days > 0 ? `Founding member pricing — locked in for life · ${days} days left` : 'Founding pricing ends soon'
-          })()}
+          Founding member pricing — locked in for life
         </p>
       </motion.div>
 
