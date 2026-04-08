@@ -383,53 +383,123 @@ export default function Home() {
       </header>
 
 
-      {/* ═══ BEAT 1: HERO — Clear value prop + search ═══ */}
+      {/* ═══ BEAT 1: HERO — Split layout: text left, video right ═══ */}
       <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1.1fr',
+          gap: '40px',
+          alignItems: 'center',
+        }} className="hero-split">
 
-        {/* Centered value proposition */}
-        <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto', marginBottom: 'var(--space-8)' }}>
-          <h1 style={{
-            fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 700,
-            color: 'var(--text-primary)', lineHeight: 1.1, letterSpacing: '-0.03em',
-            marginBottom: 'var(--space-3)',
-          }}>
-            Find underpriced items to flip for profit.
-          </h1>
-          <p style={{
-            fontSize: '17px', color: 'var(--text-secondary)', lineHeight: 1.5,
-            maxWidth: '480px', margin: '0 auto', marginBottom: 'var(--space-3)',
-          }}>
-            We scan 20+ marketplaces and score every deal by resale potential &mdash; so you don&apos;t have to.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
-            {[
-              { value: stats.listings > 0 ? stats.listings.toLocaleString() : `${stats.markets}`, label: stats.listings > 0 ? 'deals scored' : 'markets' },
-              { value: `${stats.sources || '20'}+`, label: 'sources' },
-              { value: 'Every 4h', label: 'refresh rate' },
-            ].map(s => (
-              <div key={s.label} style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em' }}>{s.value}</span>
-                <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</span>
-              </div>
-            ))}
+          {/* ── Left: Value prop + stats + CTA ── */}
+          <div style={{ textAlign: 'left' }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)',
+              borderRadius: '20px', padding: '5px 12px', marginBottom: '16px',
+              fontSize: '12px', fontWeight: 600, color: 'var(--accent-green)',
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'pulse-dot 2s ease-in-out infinite' }} />
+              Live — scanning now
+            </div>
+            <h1 style={{
+              fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 700,
+              color: 'var(--text-primary)', lineHeight: 1.1, letterSpacing: '-0.03em',
+              marginBottom: 'var(--space-3)',
+            }}>
+              Find underpriced items to flip for profit.
+            </h1>
+            <p style={{
+              fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6,
+              maxWidth: '420px', marginBottom: 'var(--space-5)',
+            }}>
+              We scan 20+ marketplaces and score every deal by resale potential &mdash; so you don&apos;t have to.
+            </p>
+
+            {/* CTA row */}
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: 'var(--space-5)', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setShowSignup(true)}
+                style={{
+                  background: 'var(--accent-green)', color: '#fff', border: 'none',
+                  padding: '13px 28px', borderRadius: '10px', fontSize: '15px', fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  boxShadow: '0 2px 8px rgba(22,163,74,0.3)',
+                }}
+                onMouseOver={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+                onMouseOut={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)' }}
+              >
+                Start finding deals — free
+              </button>
+              <a href="#search" style={{
+                fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none',
+                display: 'flex', alignItems: 'center', gap: '4px',
+              }}>
+                or try a search
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </a>
+            </div>
+
+            {/* Stats row */}
+            <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap' }}>
+              {[
+                { value: stats.listings > 0 ? stats.listings.toLocaleString() : `${stats.markets}`, label: stats.listings > 0 ? 'deals scored' : 'markets' },
+                { value: `${stats.sources || '20'}+`, label: 'sources' },
+                { value: 'Every 4h', label: 'refresh rate' },
+              ].map(s => (
+                <div key={s.label}>
+                  <span style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em' }}>{s.value}</span>
+                  <span style={{ display: 'block', fontSize: '10px', color: 'var(--text-dim)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>{s.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* ── Hero product shot — drop public/hero-product.webp to activate ── */}
-        <div style={{ maxWidth: '680px', margin: '0 auto var(--space-8)', position: 'relative' }}>
-          <img
-            src="/hero-product.webp"
-            alt="flip-ly dashboard showing AI-scored deals"
-            width={1200} height={800}
-            style={{
-              width: '100%', height: 'auto', borderRadius: '12px',
-              boxShadow: '0 8px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04)',
-            }}
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-          />
-        </div>
+          {/* ── Right: Hero demo video — overflow crop to remove black edges ── */}
+          <div style={{
+            position: 'relative',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            background: '#f5f5f7',
+            boxShadow: '0 12px 48px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04)',
+          }}>
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              src="/hero-demo.webm"
+              style={{
+                width: '110%', height: 'auto',
+                margin: '-3% 0 -4% -5%',
+                display: 'block',
+              }}
+            />
+          </div>
 
+        </div>
       </div>
+
+      {/* Hero split responsive + pulse animation */}
+      <style>{`
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        @media (max-width: 768px) {
+          .hero-split {
+            grid-template-columns: 1fr !important;
+            gap: 32px !important;
+          }
+          .hero-split > div:first-child {
+            text-align: center !important;
+          }
+          .hero-split > div:first-child > div {
+            justify-content: center !important;
+          }
+        }
+      `}</style>
 
       {/* ═══ HOW IT WORKS — full-width section right under hero ═══ */}
       <motion.div

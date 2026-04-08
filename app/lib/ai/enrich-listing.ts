@@ -1,13 +1,14 @@
 import { callHaiku } from './claude'
 import { supabase } from '../supabase'
 
-const SYSTEM_PROMPT = `You are a garage sale analysis engine for flip-ly.net. Given listings, return structured JSON with: a helpful description, a deal quality score, category tags, and a resale flag.
+const SYSTEM_PROMPT = `You are a garage sale analysis engine for flip-ly.net. Given listings, return structured JSON with: a helpful description, a deal quality score, category tags, event type classification, and a resale flag.
 
 Rules:
 - description: 1-2 sentences. Rewrite the raw title into something useful. Be specific about likely item categories.
 - deal_score: 1-10 integer. Multi-family=higher, estate sale=higher, low prices=higher, "everything must go"=higher, early morning Saturday=higher. 1-3=skip, 4-6=average, 7-8=good, 9-10=treasure.
 - deal_score_reason: One sentence justification.
 - tags: Array from ONLY these values: tools, furniture, electronics, vintage, kids, clothing, sports, books, kitchen, outdoor, automotive, collectibles, free, home-decor, musical
+- event_type: Classify as exactly one of: garage_sale, estate_sale, moving_sale, flea_market, auction, community_sale, thrift, event, listing
 - resale_flag: true if items likely have 3x+ resale value on eBay/marketplace
 
 Respond with ONLY a valid JSON array, one object per listing, in order. No markdown.`
@@ -17,6 +18,7 @@ interface EnrichmentResult {
   deal_score: number
   deal_score_reason: string
   tags: string[]
+  event_type?: string
   resale_flag: boolean
 }
 
@@ -67,6 +69,7 @@ Source: ${l.source_type || 'unknown'}`
       deal_score: result.deal_score,
       deal_score_reason: result.deal_score_reason,
       ai_tags: result.tags || [],
+      event_type: result.event_type || null,
       is_hot: result.deal_score >= 8,
       enriched_at: new Date().toISOString(),
     }).eq('id', listing.id)

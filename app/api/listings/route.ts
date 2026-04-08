@@ -17,9 +17,16 @@ export async function GET(req: NextRequest) {
   const limit = Math.max(1, Math.min(parseInt(searchParams.get('limit') || '20') || 20, 50))
   const offset = Math.max(0, parseInt(searchParams.get('offset') || '0') || 0)
 
-  // ── Price range filters (Pro feature, cents) ──
+  // ── New filter params ──
   const priceMin = searchParams.get('price_min') ? parseInt(searchParams.get('price_min')!) * 100 : null
   const priceMax = searchParams.get('price_max') ? parseInt(searchParams.get('price_max')!) * 100 : null
+  const eventType = searchParams.get('event_type') || null      // garage_sale, estate_sale, flea_market, etc.
+  const minScore = searchParams.get('min_score') ? parseInt(searchParams.get('min_score')!) : null
+  const dateStart = searchParams.get('date_start') || null       // YYYY-MM-DD
+  const dateEnd = searchParams.get('date_end') || null           // YYYY-MM-DD
+  const lat = searchParams.get('lat') ? parseFloat(searchParams.get('lat')!) : null
+  const lng = searchParams.get('lng') ? parseFloat(searchParams.get('lng')!) : null
+  const radius = searchParams.get('radius') ? parseFloat(searchParams.get('radius')!) : null
 
   // ── Auth + Premium check ──
   const session = await getSession()
@@ -118,26 +125,56 @@ export async function GET(req: NextRequest) {
   let listings: any[] | null = null
   let count: number | null = null
   let error: any = null
+  let searchMethod = 'browse'
 
-  if (query) {
-    // ── Full-text search via Postgres tsvector RPC ──
-    // Uses weighted search_vector (title=A, ai_desc+tags=B, desc=C)
-    // with ts_rank_cd for relevance scoring. Falls back to ILIKE if RPC fails.
+  // ── Geo search via nearby_listings RPC ──
+  if (lat !== null && lng !== null) {
+    searchMethod = 'nearby'
+    const { data: geoData, error: geoError } = await supabase.rpc('nearby_listings', {
+      user_lat: lat,
+      user_lng: lng,
+      radius_miles: radius || (isPremium ? 50 : 15),
+      market_filter: marketId,
+      hot_only: hot,
+      result_limit: effectiveLimit,
+      result_offset: offset,
+      event_type_filter: eventType,
+      date_start: dateStart,
+      date_end: dateEnd,
+    })
+
+    if (!geoError && geoData) {
+      count = geoData[0]?.total_count ? parseInt(geoData[0].total_count) : geoData.length
+      listings = geoData
+    } else {
+      if (geoError) console.warn('Nearby RPC failed:', geoError.message)
+      listings = []
+      count = 0
+    }
+  } else if (query) {
+    // ── Full-text search via upgraded search_listings RPC ──
+    searchMethod = 'fts'
     const { data: rpcData, error: rpcError } = await supabase.rpc('search_listings', {
       search_query: query,
       market_filter: marketId,
       hot_only: hot,
       result_limit: effectiveLimit,
       result_offset: offset,
+      event_type_filter: eventType,
+      min_score: minScore,
+      date_start: dateStart,
+      date_end: dateEnd,
+      price_min_cents: priceMin,
+      price_max_cents: priceMax,
     })
 
     if (!rpcError && rpcData && rpcData.length > 0) {
-      // RPC success — use ranked results
       count = rpcData[0]?.total_count ? parseInt(rpcData[0].total_count) : rpcData.length
       listings = rpcData
     } else {
       // Fallback: ILIKE search (backed by pg_trgm GIN indexes)
       if (rpcError) console.warn('FTS RPC failed, falling back to ILIKE:', rpcError.message)
+      searchMethod = 'ilike_fallback'
 
       let dbQuery = supabase
         .from('fliply_listings')
@@ -150,8 +187,8 @@ export async function GET(req: NextRequest) {
       )
       if (marketId) dbQuery = dbQuery.eq('market_id', marketId)
       if (hot) dbQuery = dbQuery.eq('is_hot', true)
+      if (eventType) dbQuery = dbQuery.eq('event_type', eventType)
 
-      // Filter out expired/past-event listings + stale data (max 7 days)
       const today = new Date().toISOString().split('T')[0]
       const maxAge = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       dbQuery = dbQuery.or(`event_date.is.null,event_date.gte.${today}`)
@@ -169,31 +206,57 @@ export async function GET(req: NextRequest) {
       error = result.error
     }
   } else {
-    // ── Browse mode (no query) ──
-    let dbQuery = supabase
-      .from('fliply_listings')
-      .select('*', { count: 'exact' })
-      .range(offset, offset + effectiveLimit - 1)
+    // ── Browse mode (no query) — use RPC for filter support ──
+    if (eventType || minScore || dateStart || dateEnd || priceMin || priceMax) {
+      searchMethod = 'filtered_browse'
+      const { data: rpcData, error: rpcError } = await supabase.rpc('search_listings', {
+        search_query: '',
+        market_filter: marketId,
+        hot_only: hot,
+        result_limit: effectiveLimit,
+        result_offset: offset,
+        event_type_filter: eventType,
+        min_score: minScore,
+        date_start: dateStart,
+        date_end: dateEnd,
+        price_min_cents: priceMin,
+        price_max_cents: priceMax,
+      })
 
-    if (marketId) dbQuery = dbQuery.eq('market_id', marketId)
-    if (hot) dbQuery = dbQuery.eq('is_hot', true)
+      if (!rpcError && rpcData) {
+        count = rpcData[0]?.total_count ? parseInt(rpcData[0].total_count) : rpcData.length
+        listings = rpcData
+      } else {
+        if (rpcError) console.warn('Browse RPC failed:', rpcError.message)
+        listings = []
+        count = 0
+      }
+    } else {
+      // Simple browse — direct query
+      let dbQuery = supabase
+        .from('fliply_listings')
+        .select('*', { count: 'exact' })
+        .range(offset, offset + effectiveLimit - 1)
 
-    // Filter out expired/past-event listings + stale data (max 7 days)
-    const todayBrowse = new Date().toISOString().split('T')[0]
-    const maxAgeBrowse = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    dbQuery = dbQuery.or(`event_date.is.null,event_date.gte.${todayBrowse}`)
-    dbQuery = dbQuery.or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
-    dbQuery = dbQuery.gte('scraped_at', maxAgeBrowse)
+      if (marketId) dbQuery = dbQuery.eq('market_id', marketId)
+      if (hot) dbQuery = dbQuery.eq('is_hot', true)
 
-    dbQuery = dbQuery
-      .order('is_hot', { ascending: false, nullsFirst: false })
-      .order('deal_score', { ascending: false, nullsFirst: false })
-      .order('scraped_at', { ascending: false })
+      const todayBrowse = new Date().toISOString().split('T')[0]
+      const maxAgeBrowse = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      dbQuery = dbQuery.or(`event_date.is.null,event_date.gte.${todayBrowse}`)
+      dbQuery = dbQuery.or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
+      dbQuery = dbQuery.gte('scraped_at', maxAgeBrowse)
 
-    const result = await dbQuery
-    listings = result.data
-    count = result.count
-    error = result.error
+      dbQuery = dbQuery
+        .order('is_hot', { ascending: false, nullsFirst: false })
+        .order('deal_score', { ascending: false, nullsFirst: false })
+        .order('scraped_at', { ascending: false })
+
+      const result = await dbQuery
+      listings = result.data
+      count = result.count
+      error = result.error
+    }
   }
 
   if (error) {
@@ -201,17 +264,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Search failed. Try again.' }, { status: 500 })
   }
 
-  // ── Apply price range filter (post-query for RPC, could be optimized later) ──
-  let filtered = listings || []
-  if (priceMin !== null || priceMax !== null) {
-    filtered = filtered.filter(l => {
-      const price = l.price_low_cents
-      if (price === null || price === undefined) return false
-      if (priceMin !== null && price < priceMin) return false
-      if (priceMax !== null && price > priceMax) return false
-      return true
-    })
-  }
+  const filtered = listings || []
 
   // ── Freshness metadata ──
   const newestListing = filtered.length > 0
@@ -240,6 +293,7 @@ export async function GET(req: NextRequest) {
     if (isPremium) {
       return {
         ...base,
+        event_type: l.event_type || null,
         description: l.ai_description || l.description || null,
         deal_score: l.deal_score || null,
         deal_reason: l.deal_score_reason || null,
@@ -250,11 +304,13 @@ export async function GET(req: NextRequest) {
         lat: l.latitude,
         lng: l.longitude,
         price_cents: l.price_low_cents || null,
+        distance_miles: l.distance_miles || null,
       }
     }
 
     return {
       ...base,
+      event_type: l.event_type || null,
       description: l.ai_description ? l.ai_description.substring(0, 60) + '...' : null,
       deal_score: l.deal_score ? 'gated' : null,
       deal_reason: null,
@@ -267,16 +323,39 @@ export async function GET(req: NextRequest) {
     }
   })
 
+  // ── Log to search analytics table ──
+  if (query || eventType || lat) {
+    supabase.from('fliply_search_analytics').insert({
+      user_id: userId || null,
+      query_text: query || null,
+      filters: {
+        market: marketSlug || null,
+        event_type: eventType,
+        min_score: minScore,
+        date_start: dateStart,
+        date_end: dateEnd,
+        price_min: priceMin,
+        price_max: priceMax,
+        lat, lng, radius,
+        hot: hot || undefined,
+      },
+      result_count: count || 0,
+      search_method: searchMethod,
+      is_premium: isPremium,
+    }).then(null, (err: any) => console.warn('Search analytics insert failed:', err.message))
+  }
+
   trackEvent('listing_search', {
     query: query || 'browse',
     result_count: results.length,
     total_available: count || 0,
     filter_market: marketSlug || 'all',
     filter_hot: hot,
+    filter_event_type: eventType || 'all',
     filter_price_min: priceMin ?? 0,
     filter_price_max: priceMax ?? 0,
     user_type: isPremium ? 'pro' : userId ? 'free' : 'anonymous',
-    search_method: query ? 'fts' : 'browse',
+    search_method: searchMethod,
   }, userId || undefined)
 
   return NextResponse.json({

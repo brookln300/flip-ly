@@ -182,22 +182,25 @@ function ProContent() {
         )}
 
         {/* 3-tier grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ maxWidth: '900px', margin: '0 auto' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ maxWidth: '900px', margin: '0 auto', alignItems: 'stretch' }}>
 
           {/* Free */}
           <div style={{
             background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
             borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
+            display: 'flex', flexDirection: 'column',
           }}>
             <div style={{ fontSize: '13px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Free</div>
             <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-6)' }}>
               $0<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
             </div>
-            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0 }}>
-              <li>15 searches/day</li>
-              <li>1 market</li>
-              <li>Score number only</li>
-              <li>Weekly digest</li>
+            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0, flex: 1 }}>
+              {['15 searches/day', '1 market', 'Score number only', 'Weekly digest'].map(f => (
+                <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--text-dim)', fontSize: '14px', flexShrink: 0, width: '18px', textAlign: 'center' }}>—</span>
+                  {f}
+                </li>
+              ))}
             </ul>
             <a href="/" style={{
               display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
@@ -209,34 +212,50 @@ function ProContent() {
             </a>
           </div>
 
-          {/* Pro — highlighted */}
+          {/* Pro — highlighted with green accent */}
           <div style={{
-            background: 'var(--bg-surface)', border: '1px solid var(--border-active)',
+            background: '#fff', border: '2px solid var(--accent-green)',
             borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
             position: 'relative',
+            boxShadow: '0 8px 32px rgba(22,163,74,0.12), 0 0 0 1px rgba(22,163,74,0.05)',
+            transform: 'scale(1.03)',
+            display: 'flex', flexDirection: 'column',
           }}>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px' }}>Most Popular</div>
-            <div style={{ fontSize: '13px', color: 'var(--accent-green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Pro</div>
+            {/* Most Popular badge */}
+            <div style={{
+              position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
+              background: 'var(--accent-green)', color: '#fff',
+              fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+              padding: '4px 14px', borderRadius: '20px',
+              boxShadow: '0 2px 8px rgba(22,163,74,0.3)',
+            }}>
+              Most Popular
+            </div>
+            <div style={{ fontSize: '13px', color: 'var(--accent-green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px', marginTop: '8px' }}>Pro</div>
             <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
               $5<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>
-              Founding price &middot; Locks in for life
+              <span style={{ textDecoration: 'line-through', opacity: 0.5 }}>$12/mo</span>{' '}
+              Founding price &middot; Locked for life
             </div>
-            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0 }}>
-              <li>Unlimited searches</li>
-              <li>3 markets</li>
-              <li>Full score breakdown</li>
-              <li>Daily + weekly digest</li>
-              <li>3 saved searches</li>
+            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 2.4, listStyle: 'none', padding: 0, flex: 1 }}>
+              {['Unlimited searches', '3 markets', 'Full score breakdown', 'Daily + weekly digest', '3 saved searches'].map(f => (
+                <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+                  {f}
+                </li>
+              ))}
             </ul>
             <button onClick={() => handleUpgrade('pro')} disabled={loading} style={{
-              display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
+              display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '14px 24px',
               background: loading ? 'var(--border-active)' : 'var(--accent-green)', color: '#fff',
-              border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600,
+              border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 600,
               cursor: loading ? 'wait' : 'pointer',
+              boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
+              transition: 'all 0.15s',
             }}>
-              {loading ? 'Loading...' : authStatus !== 'authenticated' ? 'Sign Up for Pro' : 'Start Pro'}
+              {loading ? 'Loading...' : authStatus !== 'authenticated' ? 'Sign Up for Pro' : 'Start Pro — $5/mo'}
             </button>
           </div>
 
@@ -244,52 +263,74 @@ function ProContent() {
           <div style={{
             background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
             borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
+            display: 'flex', flexDirection: 'column',
           }}>
-            <div style={{ fontSize: '13px', color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Power</div>
+            <div style={{ fontSize: '13px', color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Power</div>
             <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
               $19<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>
-              Founding price &middot; Locks in for life
+              <span style={{ textDecoration: 'line-through', opacity: 0.5 }}>$39/mo</span>{' '}
+              Founding price &middot; Locked for life
             </div>
-            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0 }}>
-              <li>Unlimited searches</li>
-              <li>Unlimited markets</li>
-              <li>Breakdown + trends</li>
-              <li>Daily + instant alerts</li>
-              <li>Unlimited saved searches</li>
+            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0, flex: 1 }}>
+              {['Unlimited searches', 'Unlimited markets', 'Breakdown + trends', 'Daily + instant alerts', 'Unlimited saved searches'].map(f => (
+                <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+                  {f}
+                </li>
+              ))}
             </ul>
             <button onClick={() => handleUpgrade('power')} disabled={loading} style={{
               display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
-              background: 'transparent', color: 'var(--text-muted)',
+              background: 'transparent', color: 'var(--text-secondary)',
               border: '1px solid var(--border-active)', borderRadius: '8px',
               fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
+              transition: 'all 0.15s',
             }}>
               {loading ? 'Loading...' : authStatus !== 'authenticated' ? 'Sign Up for Power' : 'Go Power'}
             </button>
           </div>
         </div>
 
-        <p style={{
-          textAlign: 'center', color: 'var(--text-dim)', fontSize: '13px',
-          marginTop: 'var(--space-6)',
+        {/* Trust / urgency strip */}
+        <div style={{
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          gap: '24px', flexWrap: 'wrap',
+          marginTop: 'var(--space-6)', padding: 'var(--space-4) 0',
         }}>
-          All plans include 20+ source coverage and AI scoring. No contracts.
-        </p>
+          <span style={{ fontSize: '13px', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Cancel anytime
+          </span>
+          <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>·</span>
+          <span style={{ fontSize: '13px', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Secure checkout via Stripe
+          </span>
+          <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>·</span>
+          <span style={{ fontSize: '13px', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            One good find pays for a year
+          </span>
+        </div>
 
         {/* Feature comparison */}
         <div style={{
-          maxWidth: '600px', margin: 'var(--space-12) auto 0',
+          maxWidth: '640px', margin: 'var(--space-12) auto 0',
           background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
           borderRadius: '12px', padding: 'var(--space-6)', overflow: 'auto',
         }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '16px', textAlign: 'center' }}>
+            Full comparison
+          </h3>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-default)' }}>
                 <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Feature</th>
                 <th style={{ textAlign: 'center', padding: '8px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Free</th>
                 <th style={{ textAlign: 'center', padding: '8px 0', color: 'var(--accent-green)', fontWeight: 600 }}>Pro</th>
-                <th style={{ textAlign: 'center', padding: '8px 0', color: 'var(--accent-purple)', fontWeight: 600 }}>Power</th>
+                <th style={{ textAlign: 'center', padding: '8px 0', color: '#8b5cf6', fontWeight: 600 }}>Power</th>
               </tr>
             </thead>
             <tbody>
@@ -298,20 +339,135 @@ function ProContent() {
                 ['Markets', '1', '3', 'Unlimited'],
                 ['AI score', 'Number only', 'Full breakdown', 'Breakdown + trends'],
                 ['Digest', 'Weekly', 'Daily + weekly', 'Daily + instant'],
-                ['Saved searches', '--', '3', 'Unlimited'],
+                ['Saved searches', '—', '3', 'Unlimited'],
                 ['Source links', 'Hidden', 'Full access', 'Full access'],
+                ['Daily deals email', '—', '10 deals/day', '10 deals/day'],
+                ['Bookmark deals', '—', 'Unlimited', 'Unlimited'],
               ].map(([feature, free, pro, power], i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                   <td style={{ padding: '10px 0', color: 'var(--text-secondary)' }}>{feature}</td>
-                  <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-dim)' }}>{free}</td>
-                  <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>{pro}</td>
-                  <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-secondary)' }}>{power}</td>
+                  <td style={{ padding: '10px 0', textAlign: 'center', color: free === '—' ? 'var(--border-active)' : 'var(--text-dim)' }}>{free}</td>
+                  <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-secondary)', fontWeight: pro === 'Unlimited' || pro === 'Full access' ? 600 : 400 }}>{pro}</td>
+                  <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-secondary)', fontWeight: power === 'Unlimited' || power === 'Full access' ? 600 : 400 }}>{power}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {/* ═══ FLIP MATH — ROI calculator ═══ */}
+        <div style={{
+          maxWidth: '640px', margin: 'var(--space-12) auto 0',
+          background: '#fff', border: '1px solid var(--border-subtle)',
+          borderRadius: '16px', padding: 'var(--space-8) var(--space-6)',
+          textAlign: 'center',
+        }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+            The math is simple
+          </h3>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '32px' }}>
+            One flip covers your entire year of Pro.
+          </p>
+
+          <div style={{
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            gap: '16px', flexWrap: 'wrap', marginBottom: '32px',
+          }}>
+            {[
+              { label: 'Buy at garage sale', value: '$5', color: 'var(--text-primary)' },
+              { label: '', value: '\u2192', color: 'var(--text-dim)' },
+              { label: 'Sell on eBay', value: '$45', color: 'var(--text-primary)' },
+              { label: '', value: '=', color: 'var(--text-dim)' },
+              { label: 'Profit', value: '$40', color: 'var(--accent-green)' },
+            ].map((step, i) => (
+              <div key={i} style={{ textAlign: 'center', minWidth: step.label ? '80px' : 'auto' }}>
+                <span style={{
+                  fontSize: step.label ? '28px' : '20px', fontWeight: 700,
+                  color: step.color, fontFamily: 'var(--font-mono)',
+                }}>
+                  {step.value}
+                </span>
+                {step.label && (
+                  <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>
+                    {step.label}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div style={{
+            background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)',
+            borderRadius: '10px', padding: '16px', maxWidth: '360px', margin: '0 auto',
+          }}>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+              Pro members see the <strong>full score breakdown</strong> — resale value, demand level, and profit margin — before they drive to the sale.
+              Free users just see the number.
+            </p>
+          </div>
+        </div>
+
+        {/* ═══ FAQ ═══ */}
+        <div style={{ maxWidth: '560px', margin: 'var(--space-12) auto 0' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', textAlign: 'center', marginBottom: '24px' }}>
+            Questions
+          </h3>
+          {[
+            { q: 'What happens when I upgrade?', a: 'Instant access. Your dashboard unlocks full score breakdowns, unlimited searches, and daily deal emails within seconds.' },
+            { q: 'Can I cancel anytime?', a: 'Yes. One click in your Stripe portal. No calls, no hoops. Your access continues until the end of the billing period.' },
+            { q: 'What does "founding price" mean?', a: 'We\'re in early launch. Founding members lock in the current price permanently — even when we raise prices later. Your rate never goes up.' },
+            { q: 'What if I don\'t find anything good?', a: 'We scan 20+ sources every 4 hours across your markets. Most Pro members find their first flip-worthy deal within the first week.' },
+            { q: 'How is the AI score calculated?', a: 'We analyze title keywords, price relative to category averages, demand signals from sold listings, and seasonal trends. Each deal gets a 1-10 score with a breakdown Pro members can see.' },
+          ].map((faq, i) => (
+            <details key={i} style={{
+              borderBottom: '1px solid var(--border-subtle)',
+              padding: '16px 0',
+            }}>
+              <summary style={{
+                fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)',
+                cursor: 'pointer', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                {faq.q}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
+              </summary>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.7, marginTop: '8px', paddingRight: '24px' }}>
+                {faq.a}
+              </p>
+            </details>
+          ))}
+        </div>
+
+        {/* ═══ FINAL CTA ═══ */}
+        <div style={{
+          textAlign: 'center', marginTop: 'var(--space-12)',
+          paddingBottom: 'var(--space-12)',
+        }}>
+          <p style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '8px' }}>
+            Ready to flip smarter?
+          </p>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px' }}>
+            Lock in founding pricing before it&apos;s gone.
+          </p>
+          <button onClick={() => handleUpgrade('pro')} disabled={loading} style={{
+            background: loading ? 'var(--border-active)' : 'var(--accent-green)', color: '#fff',
+            border: 'none', padding: '14px 36px', borderRadius: '10px',
+            fontSize: '16px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
+            boxShadow: '0 2px 12px rgba(22,163,74,0.3)',
+            transition: 'all 0.15s',
+          }}>
+            {loading ? 'Loading...' : 'Start Pro — $5/mo'}
+          </button>
+          <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '12px' }}>
+            Cancel anytime &middot; Secure checkout via Stripe
+          </p>
+        </div>
       </div>
+
+      {/* FAQ toggle animation */}
+      <style>{`
+        details[open] summary svg { transform: rotate(180deg); }
+        details summary::-webkit-details-marker { display: none; }
+      `}</style>
     </div>
   )
 }
