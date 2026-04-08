@@ -853,65 +853,31 @@ export default function Home() {
 
 
 
-      {/* ═══ TRUST STRIP — before/after visual + single value line ═══ */}
+      {/* ═══ TRUST STRIP — value proposition (no image needed) ═══ */}
       {!loggedInUser && (
-        <motion.div
-          initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
-          style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}
-        >
-          <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-10) var(--space-4)', textAlign: 'center' }}>
+        <div style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
+          <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-8) var(--space-4)', textAlign: 'center' }}>
             <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
               Stop checking 5 sites every morning
             </p>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '400px', margin: '0 auto' }}>
               We aggregate, score, and rank — so you can focus on buying and selling.
             </p>
-
-            {/* Before/After visual — drop public/assets/before-after.webp to activate */}
-            <div style={{ marginTop: 'var(--space-6)' }}>
-              <img
-                src="/assets/before-after.webp"
-                alt="Before: 5 browser tabs. After: one flip-ly dashboard."
-                width={800} height={420}
-                style={{
-                  width: '100%', maxWidth: '560px', height: 'auto', borderRadius: '10px',
-                  border: '1px solid var(--border-subtle)',
-                }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
-            </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
-      {/* ═══ HOW SCORING WORKS — entire section hidden until image exists ═══ */}
-      {/* Drop public/assets/score-breakdown.webp to activate */}
+      {/* ═══ HOW SCORING WORKS — text-only until score-breakdown.webp exists ═══ */}
       <motion.div
         initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
-        id="score-section"
         style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}
       >
         <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
           Every deal gets a flip score
         </h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto var(--space-6)' }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto' }}>
           Our AI analyzes demand, margin potential, competition, and sell-through velocity to rate every listing 1&ndash;10.
         </p>
-        <img
-          src="/assets/score-breakdown.webp"
-          alt="AI flip score breakdown showing demand, margin, competition, and velocity signals"
-          width={640} height={420}
-          style={{
-            width: '100%', maxWidth: '540px', height: 'auto', borderRadius: '10px',
-            border: '1px solid var(--border-subtle)',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
-          }}
-          onError={(e) => {
-            // Hide the ENTIRE section (heading + copy + image) if image doesn't exist
-            const section = (e.target as HTMLImageElement).closest('#score-section')
-            if (section) (section as HTMLElement).style.display = 'none'
-          }}
-        />
       </motion.div>
 
       {/* ═══ PRICING — card-based with clear feature differentiation ═══ */}
