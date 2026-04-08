@@ -156,7 +156,7 @@ export default function Home() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password || !signupMarketId) return
+    if (!email || !password) return
     setSigningUp(true)
     setSignupError('')
     try {
@@ -164,7 +164,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email, password, market_id: signupMarketId,
+          email, password,
           utm_source: sessionStorage.getItem('fliply_utm_source') || undefined,
           utm_medium: sessionStorage.getItem('fliply_utm_medium') || undefined,
           utm_campaign: sessionStorage.getItem('fliply_utm_campaign') || undefined,
@@ -1071,6 +1071,40 @@ export default function Home() {
         </div>
       </motion.div>
 
+      {/* ═══ TESTIMONIALS — PLACEHOLDER: Replace with real testimonials when available ═══ */}
+      {!loggedInUser && (
+        <motion.div
+          initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
+          style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* PLACEHOLDER TESTIMONIALS — swap these with real quotes as they come in */}
+            {[
+              { quote: 'Found a $200 dresser scored 9 — flipped it for $475 the same weekend.', author: 'Dallas flipper' },
+              { quote: 'The Thursday digest is my Saturday morning game plan.', author: 'Atlanta member' },
+              { quote: 'Saved me 3 hours of checking Craigslist every morning.', author: 'Phoenix member' },
+            ].map((t, i) => (
+              <div key={i} style={{
+                background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                borderRadius: '10px', padding: '16px 20px',
+              }}>
+                <p style={{
+                  fontSize: '13px', fontStyle: 'italic', color: 'var(--text-muted)',
+                  lineHeight: 1.6, margin: '0 0 6px',
+                }}>
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <p style={{
+                  fontSize: '11px', color: 'var(--text-dim)', margin: 0,
+                  fontFamily: 'var(--font-mono)',
+                }}>
+                  — {t.author}
+                </p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* ═══ WHAT'S NEW + ROADMAP ═══ */}
       <motion.div
