@@ -16,5 +16,16 @@ export async function GET() {
     .eq('id', session.userId)
     .single()
 
-  return NextResponse.json({ user })
+  // Resolve market slug for API calls
+  let market_slug: string | null = null
+  if (user?.market_id) {
+    const { data: market } = await supabase
+      .from('fliply_markets')
+      .select('slug')
+      .eq('id', user.market_id)
+      .single()
+    if (market) market_slug = market.slug
+  }
+
+  return NextResponse.json({ user: user ? { ...user, market_slug } : null })
 }

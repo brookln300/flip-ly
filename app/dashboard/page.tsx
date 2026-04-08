@@ -35,6 +35,7 @@ interface User {
   city: string
   state: string
   market_id: string
+  market_slug?: string
   is_premium: boolean
   created_at: string
 }
@@ -653,6 +654,7 @@ export default function Dashboard() {
   const [markets, setMarkets] = useState<MarketOption[]>([])
   const [showMarketPicker, setShowMarketPicker] = useState(false)
   const [toastMsg, setToastMsg] = useState('')
+  const [activeMarketSlug, setActiveMarketSlug] = useState<string>('')
   const marketRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -675,6 +677,7 @@ export default function Dashboard() {
           } catch {}
         }
         setUser(u)
+        if (u?.market_slug) setActiveMarketSlug(u.market_slug)
         setLoading(false)
       })
       .catch(() => { setLoading(false); window.location.href = '/' })
@@ -682,18 +685,20 @@ export default function Dashboard() {
 
   // ── Load listings + saved deals ──
   useEffect(() => {
-    if (!user) return
+    if (!user || !activeMarketSlug) return
 
-    // Hot deals
-    fetch('/api/listings?hot=true&limit=10')
+    const mkt = encodeURIComponent(activeMarketSlug)
+
+    // Hot deals — filtered to user's market
+    fetch(`/api/listings?hot=true&limit=10&market=${mkt}`)
       .then(r => r.json())
       .then(data => {
         if (data.results) setHotDeals(data.results)
         if (data._meta) setMeta(data._meta)
       }).catch(() => {})
 
-    // All listings
-    fetch('/api/listings?limit=30')
+    // All listings — filtered to user's market
+    fetch(`/api/listings?limit=30&market=${mkt}`)
       .then(r => r.json())
       .then(data => {
         if (data.results) setListings(data.results)
@@ -722,7 +727,7 @@ export default function Dashboard() {
           }
         }).catch(() => {})
     }
-  }, [user])
+  }, [user, activeMarketSlug])
 
   // ── Close market picker on click outside ──
   useEffect(() => {
@@ -771,6 +776,7 @@ export default function Dashboard() {
   // ── Build filter params (shared by search + browse) ──
   const buildFilterParams = useCallback(() => {
     const params = new URLSearchParams()
+    if (activeMarketSlug) params.set('market', activeMarketSlug)
     if (eventTypeFilter !== 'all') params.set('event_type', eventTypeFilter)
     if (quickFilters.has('hot')) params.set('min_score', '7')
     if (quickFilters.has('weekend')) {
@@ -784,7 +790,7 @@ export default function Dashboard() {
       params.set('radius', '25')
     }
     return params
-  }, [eventTypeFilter, quickFilters])
+  }, [eventTypeFilter, quickFilters, activeMarketSlug])
 
   // ── Search ──
   const handleSearch = useCallback(async (e?: React.FormEvent, query?: string) => {
@@ -829,16 +835,17 @@ export default function Dashboard() {
     if (hasFilters && user) {
       fetchFilteredListings()
       setActiveTab('deals')
-    } else if (user && !hasFilters) {
-      // Reset to default browse
-      fetch('/api/listings?limit=30')
+    } else if (user && !hasFilters && activeMarketSlug) {
+      // Reset to default browse — filtered to user's market
+      const mkt = encodeURIComponent(activeMarketSlug)
+      fetch(`/api/listings?limit=30&market=${mkt}`)
         .then(r => r.json())
         .then(data => {
           if (data.results) setListings(data.results)
           if (data.total) setTotalListings(data.total)
         }).catch(() => {})
     }
-  }, [eventTypeFilter, quickFilters, user])
+  }, [eventTypeFilter, quickFilters, user, activeMarketSlug])
 
   // ── Geolocation for "Near Me" ──
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
@@ -977,7 +984,7 @@ export default function Dashboard() {
                   zIndex: 90,
                 }}>
                   {markets.map(m => (
-                    <button key={m.id} onClick={() => { setShowMarketPicker(false); showToast(`Switched to ${m.name}`) }}
+                    <button key={m.id} onClick={() => { setShowMarketPicker(false); setActiveMarketSlug(m.slug); setUser(prev => prev ? { ...prev, city: m.name, market_id: m.id } : prev); showToast(`Switched to ${m.name}`) }}
                       style={{
                         display: 'block', width: '100%', padding: '8px 12px', border: 'none',
                         background: 'none', cursor: 'pointer', textAlign: 'left', borderRadius: '6px',
