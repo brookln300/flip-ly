@@ -103,11 +103,22 @@ export async function scrapeCraigslist(
         }
 
         // Parse price — SAPI returns price in whole dollars, convert to cents for DB
+        // Falls back to extracting prices from title text when SAPI returns -1
         let priceCents: number | null = null
+        let priceHighCents: number | null = null
         let priceText = 'Not listed'
         if (typeof rawPrice === 'number' && rawPrice >= 0) {
           priceCents = rawPrice * 100
+          priceHighCents = priceCents
           priceText = rawPrice === 0 ? 'FREE' : `$${rawPrice}`
+        } else {
+          // SAPI price is -1 — try extracting from title
+          const titlePrice = extractPrice(String(title))
+          if (titlePrice.price_low_cents !== null) {
+            priceCents = titlePrice.price_low_cents
+            priceHighCents = titlePrice.price_high_cents
+            priceText = titlePrice.price_text
+          }
         }
 
         // Build posting URL
@@ -126,7 +137,7 @@ export async function scrapeCraigslist(
           description: location || null,
           price_text: priceText,
           price_low_cents: priceCents,
-          price_high_cents: priceCents,
+          price_high_cents: priceHighCents,
           city: cityFromHostname,
           zip_code: zipCode,
           latitude,
