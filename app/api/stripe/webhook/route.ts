@@ -43,11 +43,14 @@ export async function POST(req: NextRequest) {
         const customerId = session.customer as string
 
         if (userId) {
-          // Activate Pro in database
+          const tier = session.metadata?.tier || 'pro'
+
+          // Activate subscription in database
           await supabase
             .from('fliply_users')
             .update({
               is_premium: true,
+              subscription_tier: tier,
               stripe_customer_id: customerId,
               stripe_subscription_id: subscriptionId,
             })
@@ -65,8 +68,6 @@ export async function POST(req: NextRequest) {
             .select('email')
             .eq('id', userId)
             .single()
-
-          const tier = session.metadata?.tier || 'pro'
 
           // Send Pro upgrade confirmation email
           if (proUser?.email) {
@@ -122,35 +123,60 @@ export async function POST(req: NextRequest) {
         const userId = subscription.metadata?.fliply_user_id
 
         if (userId) {
-          await supabase
+          // Don't downgrade admin users — they have manual access
+          const { data: cancelUser } = await supabase
             .from('fliply_users')
-            .update({
-              is_premium: false,
-              stripe_subscription_id: null,
-            })
+            .select('subscription_tier')
             .eq('id', userId)
+            .single()
+
+          if (cancelUser?.subscription_tier !== 'admin') {
+            await supabase
+              .from('fliply_users')
+              .update({
+                is_premium: false,
+                subscription_tier: null,
+                stripe_subscription_id: null,
+              })
+              .eq('id', userId)
+          } else {
+            // Admin: just clear the Stripe sub ID, keep access
+            await supabase
+              .from('fliply_users')
+              .update({ stripe_subscription_id: null })
+              .eq('id', userId)
+          }
 
           trackEvent('pro_subscription_cancelled', {
             subscription_id: subscription.id,
           }, userId)
 
-          console.log(`[Stripe] Pro cancelled for user ${userId}`)
+          console.log(`[Stripe] Subscription cancelled for user ${userId} (tier: ${cancelUser?.subscription_tier})`)
 
           sendTelegramAlert([
-            `😢 <b>Pro Cancelled</b>`,
+            `<b>Subscription Cancelled</b>`,
             `User: ${userId}`,
-            `The lobster is disappointed.`,
+            `Was tier: ${cancelUser?.subscription_tier || 'pro'}`,
           ].join('\n'))
         } else {
-          // Fallback: find by customer ID
+          // Fallback: find by customer ID — skip admin users
           const customerId = subscription.customer as string
-          await supabase
+          const { data: custUser } = await supabase
             .from('fliply_users')
-            .update({
-              is_premium: false,
-              stripe_subscription_id: null,
-            })
+            .select('subscription_tier')
             .eq('stripe_customer_id', customerId)
+            .single()
+
+          if (custUser?.subscription_tier !== 'admin') {
+            await supabase
+              .from('fliply_users')
+              .update({
+                is_premium: false,
+                subscription_tier: null,
+                stripe_subscription_id: null,
+              })
+              .eq('stripe_customer_id', customerId)
+          }
 
           console.log(`[Stripe] Pro cancelled for customer ${customerId}`)
         }

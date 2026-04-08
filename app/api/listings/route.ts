@@ -37,10 +37,10 @@ export async function GET(req: NextRequest) {
     userId = session.userId
     const { data: user } = await supabase
       .from('fliply_users')
-      .select('is_premium')
+      .select('is_premium, subscription_tier')
       .eq('id', session.userId)
       .single()
-    isPremium = user?.is_premium || false
+    isPremium = user?.is_premium || ['pro', 'power', 'admin'].includes(user?.subscription_tier)
   }
 
   // ── Rate limiting for non-premium users ──
