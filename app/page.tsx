@@ -55,7 +55,7 @@ export default function Home() {
   const [searchMarket, setSearchMarket] = useState('')
   const [marketsData, setMarketsData] = useState<Record<string, { id: string; slug: string; name: string }[]>>({})
   const [marketsLoading, setMarketsLoading] = useState(true)
-  const [featuredMarketName, setFeaturedMarketName] = useState('DFW')
+  const [featuredMarketName, setFeaturedMarketName] = useState('Dallas / Fort Worth')
   const [searching, setSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [realListings, setRealListings] = useState<any[]>([])
@@ -75,7 +75,7 @@ export default function Home() {
 
   // Fetch featured deals
   useEffect(() => {
-    let marketSlug = 'dfw'
+    let marketSlug = 'dallas-tx'
     if (loggedInUser?.market_id && Object.keys(marketsData).length > 0) {
       for (const markets of Object.values(marketsData)) {
         const found = markets.find(m => m.id === loggedInUser.market_id)
