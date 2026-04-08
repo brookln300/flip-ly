@@ -1520,6 +1520,7 @@ export default function Dashboard() {
                   {activeTab === 'saved' ? 'No saved deals yet. Tap the bookmark icon to save deals.' :
                    activeTab === 'search' ? 'No results found. Try a different search.' :
                    (eventTypeFilter !== 'all' || quickFilters.size > 0) ? 'No deals match these filters. Try adjusting.' :
+                   hotDeals.length === 0 && !loading ? 'No 8+ deals right now. We check every 4 hours — check back soon.' :
                    'Scanning for deals...'}
                 </p>
               </div>

@@ -699,7 +699,7 @@ export default function Home() {
             </div>
 
             {/* Event type quick filters */}
-            <div className="flex gap-2 mt-3 overflow-x-auto pb-1 justify-center" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1 justify-center" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {[
                 { label: '🏠 Garage Sales', q: 'garage sale' },
                 { label: '🏛️ Estate Sales', q: 'estate sale' },
@@ -878,7 +878,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* ═══ HOW SCORING WORKS — text-only until score-breakdown.webp exists ═══ */}
+      {/* ═══ HOW SCORING WORKS — visual breakdown ═══ */}
       <motion.div
         initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
         style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}
@@ -886,9 +886,34 @@ export default function Home() {
         <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
           Every deal gets a flip score
         </h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto' }}>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto var(--space-6)' }}>
           Our AI analyzes demand, margin potential, competition, and sell-through velocity to rate every listing 1&ndash;10.
         </p>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px',
+          maxWidth: '480px', margin: '0 auto',
+        }}>
+          {[
+            { icon: '📈', label: 'Demand', desc: 'How fast does this category sell?' },
+            { icon: '💰', label: 'Margin', desc: 'Price vs typical resale value' },
+            { icon: '🏷️', label: 'Competition', desc: 'How many similar listings exist?' },
+            { icon: '⚡', label: 'Velocity', desc: 'Days-to-sell estimate' },
+          ].map(f => (
+            <div key={f.label} style={{
+              background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+              borderRadius: '10px', padding: '14px 8px',
+            }}>
+              <div style={{ fontSize: '20px', marginBottom: '6px' }}>{f.icon}</div>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }}>{f.label}</p>
+              <p style={{ fontSize: '10px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+        <style>{`
+          @media (max-width: 480px) {
+            .score-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          }
+        `}</style>
       </motion.div>
 
       {/* ═══ PRICING — card-based with clear feature differentiation ═══ */}
