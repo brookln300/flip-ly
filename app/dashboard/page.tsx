@@ -92,6 +92,9 @@ const DASH_CSS = `
     .dash-stats-grid { grid-template-columns: repeat(2, 1fr) !important }
     .dash-bottom-grid { grid-template-columns: 1fr !important }
     .dash-action { opacity: 1 }
+    .dash-row { padding: 10px 8px !important; gap: 8px !important; }
+    .dash-score-tip > div:first-child { width: 36px !important; height: 36px !important; }
+    .dash-img-thumb { width: 36px !important; height: 36px !important; }
   }
 `
 

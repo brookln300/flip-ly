@@ -246,6 +246,7 @@ export default function Home() {
     return (
       <div>
         <div
+          className="deal-row"
           style={{
             display: 'flex', alignItems: 'center', gap: '12px',
             padding: '12px 0',
@@ -255,7 +256,7 @@ export default function Home() {
           onClick={() => canExpand && setExpandedDeal(expandedDeal === i ? null : i)}
         >
           {/* Category icon */}
-          <div style={{
+          <div className="deal-icon" style={{
             width: '40px', height: '40px', borderRadius: '8px', flexShrink: 0,
             background: 'var(--bg-surface)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -266,7 +267,7 @@ export default function Home() {
 
           {/* ScoreBadge */}
           {hasRealScore ? (
-            <div style={{
+            <div className="deal-score" style={{
               width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
               background: `${scoreColor(deal.deal_score)}15`,
               border: `1px solid ${scoreColor(deal.deal_score)}25`,
@@ -279,6 +280,7 @@ export default function Home() {
             </div>
           ) : isScoreGated ? (
             <div
+              className="deal-score"
               onClick={(e) => { e.stopPropagation(); setShowSignup(true) }}
               style={{
                 width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
@@ -292,7 +294,7 @@ export default function Home() {
               <span style={{ fontSize: '14px' }}>🔒</span>
             </div>
           ) : (
-            <div style={{
+            <div className="deal-score" style={{
               width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
               background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -371,7 +373,7 @@ export default function Home() {
 
         {/* Deal reason — shown for top results with real reasons */}
         {showExpand && expandedDeal === i && hasReason && (
-          <div style={{
+          <div className="deal-expanded" style={{
             padding: '8px 0 12px 52px',
             borderBottom: '1px solid var(--border-subtle)',
           }}>
@@ -594,6 +596,12 @@ export default function Home() {
           .hero-split > div:first-child > div {
             justify-content: center !important;
           }
+        }
+        @media (max-width: 480px) {
+          .deal-row { gap: 8px !important; }
+          .deal-row .deal-icon { display: none !important; }
+          .deal-row .deal-score { width: 32px !important; height: 32px !important; }
+          .deal-expanded { padding-left: 0 !important; }
         }
       `}</style>
 
@@ -985,7 +993,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="grid-cols-1 sm:grid-cols-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Recently shipped */}
           <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
