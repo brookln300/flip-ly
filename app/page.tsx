@@ -567,13 +567,16 @@ export default function Home() {
               loop
               muted
               playsInline
-              src="/hero-demo.webm"
+              poster="/hero-poster.jpg"
               style={{
                 width: '110%', height: 'auto',
                 margin: '-3% 0 -4% -5%',
                 display: 'block',
               }}
-            />
+            >
+              <source src="/hero-demo.webm" type="video/webm" />
+              <source src="/hero-demo.mp4" type="video/mp4" />
+            </video>
           </div>
 
         </div>

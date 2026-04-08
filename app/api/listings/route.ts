@@ -400,6 +400,7 @@ export async function GET(req: NextRequest) {
     _meta: {
       real_data: true,
       scraped_sources: ['craigslist', 'eventbrite'],
+      search_method: searchMethod,
       freshness: {
         newest: newestListing?.toISOString() || null,
         oldest: oldestListing?.toISOString() || null,
