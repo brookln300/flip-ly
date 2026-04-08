@@ -1269,16 +1269,6 @@ export default function Home() {
                   <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" required className="cl-input" />
                     <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="password (6+ chars)" required minLength={6} className="cl-input" />
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <select value={signupState} onChange={e => { setSignupState(e.target.value); setSignupMarketId('') }} required className="cl-input" style={{ flex: 1, cursor: 'pointer' }}>
-                        <option value="">State *</option>
-                        {Object.keys(marketsData).sort().map(st => (<option key={st} value={st}>{st}</option>))}
-                      </select>
-                      <select value={signupMarketId} onChange={e => setSignupMarketId(e.target.value)} required className="cl-input" style={{ flex: 1, cursor: 'pointer' }} disabled={!signupState}>
-                        <option value="">Area *</option>
-                        {(marketsData[signupState] || []).map(m => (<option key={m.id} value={m.id}>{m.name}</option>))}
-                      </select>
-                    </div>
                     {signupError && <p style={{ fontSize: '12px', color: 'var(--accent-red)' }}>{signupError}</p>}
                     <button type="submit" disabled={signingUp} style={{
                       width: '100%', padding: '12px', fontWeight: 700, fontSize: '16px',
