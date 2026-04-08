@@ -457,6 +457,7 @@ export default function Home() {
         </a>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <a href="/blog" className="hidden sm:inline" style={{ color: 'var(--text-muted)', fontSize: '13px', textDecoration: 'none', padding: '6px 12px' }}>Blog</a>
+          <a href="#whats-new" className="hidden sm:inline" style={{ color: 'var(--text-muted)', fontSize: '13px', textDecoration: 'none', padding: '6px 12px' }}>What&apos;s New</a>
           <a href="#pricing" className="hidden sm:inline" style={{ color: 'var(--text-muted)', fontSize: '13px', textDecoration: 'none', padding: '6px 12px' }}>Pricing</a>
           {loggedInUser ? (
             <a href="/dashboard" style={{
@@ -998,6 +999,97 @@ export default function Home() {
             return days > 0 ? `Founding member pricing — locked in for life · ${days} days left` : 'Founding pricing ends soon'
           })()}
         </p>
+      </motion.div>
+
+
+      {/* ═══ WHAT'S NEW + ROADMAP ═══ */}
+      <motion.div
+        id="whats-new"
+        variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}
+        style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)', borderRadius: '20px', padding: '5px 14px', marginBottom: '12px' }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--accent-green)', boxShadow: '0 0 8px rgba(22,163,74,0.4)', animation: 'pulse 2s ease-in-out infinite' }} />
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent-green)' }}>Actively Building</span>
+          </div>
+          <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>What&apos;s new &amp; what&apos;s next</h2>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', maxWidth: '380px', margin: '0 auto' }}>
+            We ship weekly. Your feedback shapes what we build.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="grid-cols-1 sm:grid-cols-2">
+          {/* Recently shipped */}
+          <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '16px' }}>&#x2705;</span>
+              <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Recently shipped</h3>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[
+                { label: 'Weekend Route Planner', desc: 'Save deals, get a proximity-sorted driving route with Google Maps directions', tag: 'NEW' },
+                { label: 'AI Deal Scoring', desc: 'Every listing scored 1-10 for flip potential with reasoning', tag: null },
+                { label: 'Advanced Filters', desc: '8 event types, date range, score threshold, and geo search', tag: null },
+                { label: 'Weekly Digest Email', desc: 'Saturday/Sunday deal roundup delivered Thursday — Pro gets it 6 hours early', tag: null },
+                { label: 'Expandable Listings', desc: 'Click any deal to see AI description, tags, address, and directions', tag: null },
+              ].map(item => (
+                <div key={item.label} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <span style={{ color: 'var(--accent-green)', fontSize: '13px', marginTop: '1px', flexShrink: 0 }}>&#x2713;</span>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</span>
+                      {item.tag && <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--accent-green)', background: 'rgba(22,163,74,0.08)', borderRadius: '4px', padding: '1px 5px', letterSpacing: '0.5px' }}>{item.tag}</span>}
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Coming soon */}
+          <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '16px' }}>&#x1F6A7;</span>
+              <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Coming soon</h3>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {[
+                { label: 'Real-Time Deal Alerts', desc: 'Get notified the moment a high-score deal drops in your area', tier: 'Pro' },
+                { label: 'Saved Search Notifications', desc: 'Save a search query and get alerts when new matches appear', tier: 'Pro' },
+                { label: 'Mobile-First Redesign', desc: 'Swipe-friendly cards, bottom nav, one-thumb operation', tier: 'All' },
+                { label: 'City SEO Pages', desc: '"Best estate sales in Dallas this weekend" — auto-generated from real data', tier: 'All' },
+                { label: 'More Sources', desc: 'Facebook Marketplace, OfferUp, Nextdoor, and local permit feeds', tier: 'All' },
+              ].map(item => (
+                <div key={item.label} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <span style={{ color: 'var(--text-dim)', fontSize: '13px', marginTop: '1px', flexShrink: 0 }}>&#x25CB;</span>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</span>
+                      <span style={{ fontSize: '9px', fontWeight: 600, color: item.tier === 'Pro' ? 'var(--accent-green)' : 'var(--text-dim)', background: item.tier === 'Pro' ? 'rgba(22,163,74,0.08)' : 'var(--bg-surface)', borderRadius: '4px', padding: '1px 5px' }}>{item.tier}</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Early access callout */}
+        <div style={{
+          marginTop: '20px', padding: '16px 20px', borderRadius: '12px',
+          background: 'linear-gradient(135deg, rgba(22,163,74,0.04) 0%, rgba(22,163,74,0.02) 100%)',
+          border: '1px solid rgba(22,163,74,0.12)',
+          textAlign: 'center',
+        }}>
+          <p style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>
+            You&apos;re early. We launched weeks ago and ship improvements daily.{' '}
+            <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>Founding members lock in current pricing for life</span>{' '}
+            &mdash; it goes up as we add more sources and features.
+          </p>
+        </div>
       </motion.div>
 
 

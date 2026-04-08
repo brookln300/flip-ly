@@ -60,6 +60,9 @@ export async function scrapeCraigslist(
 
     const hostname = config.hostname || 'dallas'
 
+    // Map CL hostname to display city name
+    const cityFromHostname = hostnameToCity(hostname)
+
     for (const item of items) {
       try {
         // Item array format (SAPI v8):
@@ -124,7 +127,7 @@ export async function scrapeCraigslist(
           price_text: priceText,
           price_low_cents: priceCents,
           price_high_cents: priceCents,
-          city: location,
+          city: cityFromHostname,
           zip_code: zipCode,
           latitude,
           longitude,
@@ -155,6 +158,29 @@ export async function scrapeCraigslist(
   }
 
   return result
+}
+
+/**
+ * Map CL hostname to display city name.
+ * Falls back to title-casing the hostname if not in map.
+ */
+const CL_HOSTNAME_CITIES: Record<string, string> = {
+  dallas: 'Dallas', houston: 'Houston', austin: 'Austin', sanantonio: 'San Antonio',
+  losangeles: 'Los Angeles', seattle: 'Seattle', phoenix: 'Phoenix', miami: 'Miami',
+  chicago: 'Chicago', denver: 'Denver', portland: 'Portland', atlanta: 'Atlanta',
+  sfbay: 'San Francisco', sandiego: 'San Diego', minneapolis: 'Minneapolis',
+  tampa: 'Tampa', nashville: 'Nashville', boston: 'Boston', newyork: 'New York',
+  philadelphia: 'Philadelphia', detroit: 'Detroit', stlouis: 'St. Louis',
+  kansascity: 'Kansas City', raleigh: 'Raleigh', charlotte: 'Charlotte',
+  columbus: 'Columbus', indianapolis: 'Indianapolis', jacksonville: 'Jacksonville',
+  memphis: 'Memphis', oklahomacity: 'Oklahoma City', lasvegas: 'Las Vegas',
+  saltlakecity: 'Salt Lake City', sacramento: 'Sacramento', orangecounty: 'Orange County',
+  inlandempire: 'Inland Empire', fortworth: 'Fort Worth', bgky: 'Bowling Green',
+}
+
+function hostnameToCity(hostname: string): string {
+  return CL_HOSTNAME_CITIES[hostname.toLowerCase()] ||
+    hostname.charAt(0).toUpperCase() + hostname.slice(1)
 }
 
 /**
