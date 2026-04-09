@@ -5,6 +5,7 @@ import SearchSection from './components/SearchSection'
 import FeaturedDeals from './components/FeaturedDeals'
 import AuthModals from './components/AuthModals'
 import FeedbackWidget from './components/FeedbackWidget'
+import RetroPortalButton from './components/RetroPortalButton'
 import FadeIn from './components/FadeIn'
 import HeroCTA from './components/HeroCTA'
 
@@ -558,7 +559,7 @@ export default async function Home() {
             </div>
           </div>
           <div style={{ position: 'relative', height: '12px', marginTop: '4px' }}>
-            <a href="/lobster-hunt" onClick={e => e.stopPropagation()} style={{ width: '16px', height: '16px', background: 'transparent', cursor: 'default', position: 'absolute', right: '23%', top: '0', zIndex: 60, display: 'block' }}>
+            <a href="/lobster-hunt" style={{ width: '16px', height: '16px', background: 'transparent', cursor: 'default', position: 'absolute', right: '23%', top: '0', zIndex: 60, display: 'block' }}>
               <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'transparent', position: 'absolute', top: '50%', left: '50%' }} />
             </a>
           </div>
@@ -567,6 +568,7 @@ export default async function Home() {
         {/* Client-side modals and widgets */}
         <AuthModals />
         <FeedbackWidget />
+        <RetroPortalButton />
       </main>
     </SignupProvider>
   )
