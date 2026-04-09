@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { trackEvent } from '../../lib/analytics'
 import { getSession } from '../../lib/auth'
 import { getClientIp } from '../../lib/get-ip'
+import { isPremiumUser } from '../../lib/user-tier'
 
 const FREE_SEARCH_LIMIT = 15  // per day
 const FREE_RESULTS_CAP = 10   // max results per query for free users
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
       .select('is_premium, subscription_tier')
       .eq('id', session.userId)
       .single()
-    isPremium = user?.is_premium || ['pro', 'power', 'admin'].includes(user?.subscription_tier)
+    isPremium = isPremiumUser(user)
   }
 
   // ── Rate limiting for non-premium users ──

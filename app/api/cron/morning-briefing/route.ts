@@ -41,8 +41,9 @@ export async function GET(req: NextRequest) {
       supabase.from('fliply_users').select('subscription_tier').eq('is_premium', true),
     ])
 
-    // Calculate MRR: Pro=$5, Power=$19
+    // Calculate MRR: Pro=$5, Power=$19 (exclude admin — not paying customers)
     const mrr = (premiumUsers || []).reduce((sum, u) => {
+      if (u.subscription_tier === 'admin') return sum
       return sum + (u.subscription_tier === 'power' ? 19 : 5)
     }, 0)
 

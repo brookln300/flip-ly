@@ -7,6 +7,7 @@ import { trackEvent } from '../../../lib/analytics'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { sendEmail } from '../../../lib/email/send'
 import { getUnsubscribeUrl } from '../../../lib/unsubscribe'
+import { isPremiumUser } from '../../../lib/user-tier'
 
 function addUtm(url: string, source: string, medium: string, campaign: string, content?: string): string {
   try {
@@ -126,7 +127,7 @@ export async function GET(req: NextRequest) {
       // Test mode: send to specific email
       const { data } = await supabase
         .from('fliply_users')
-        .select('id, email, city, state, market_id, is_premium')
+        .select('id, email, city, state, market_id, is_premium, subscription_tier')
         .eq('email', testEmail.toLowerCase())
         .limit(1)
       users = data || []
@@ -136,7 +137,7 @@ export async function GET(req: NextRequest) {
     } else {
       let userQuery = supabase
         .from('fliply_users')
-        .select('id, email, city, state, market_id, is_premium')
+        .select('id, email, city, state, market_id, is_premium, subscription_tier')
         .or('unsubscribed.is.null,unsubscribed.eq.false')
 
       if (tier === 'pro') userQuery = userQuery.eq('is_premium', true)
@@ -211,7 +212,7 @@ export async function GET(req: NextRequest) {
       }
 
       try {
-        const isPro = user.is_premium
+        const isPro = isPremiumUser(user)
         const subjectPool = isPro ? SUBJECTS_PRO : SUBJECTS_FREE
         const subjectTemplate = subjectPool[Math.floor(Math.random() * subjectPool.length)]
         const subject = subjectTemplate

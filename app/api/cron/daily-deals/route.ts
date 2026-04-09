@@ -6,6 +6,7 @@ import { supabase } from '../../../lib/supabase'
 import { sendEmail } from '../../../lib/email/send'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { getUnsubscribeUrl } from '../../../lib/unsubscribe'
+import { isPremiumUser } from '../../../lib/user-tier'
 
 /**
  * Daily Deals Email — Auto-deploys from Resend with current listings.
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
     // Fetch all non-unsubscribed users
     const { data: users, error: userErr } = await supabase
       .from('fliply_users')
-      .select('id, email, city, state, market_id, is_premium')
+      .select('id, email, city, state, market_id, is_premium, subscription_tier')
       .or('unsubscribed.is.null,unsubscribed.eq.false')
 
     if (userErr || !users?.length) {
@@ -94,7 +95,7 @@ export async function GET(req: NextRequest) {
       const listings = user.market_id ? (listingsByMarket[user.market_id] || []) : []
       if (listings.length === 0) { skipped++; continue }
 
-      const isPro = user.is_premium
+      const isPro = isPremiumUser(user)
       const city = user.city || 'your area'
       const maxListings = isPro ? 10 : 3
 

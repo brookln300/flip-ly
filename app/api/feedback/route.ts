@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../lib/supabase'
 import { getSession, requireAdmin } from '../../lib/auth'
+import { getUserTier } from '../../lib/user-tier'
 
 // GET /api/feedback?key=<admin_key>&status=new&limit=50
 export async function GET(req: NextRequest) {
@@ -100,14 +101,14 @@ export async function POST(req: NextRequest) {
   if (session) {
     const { data: user } = await supabase
       .from('fliply_users')
-      .select('id, email, is_premium, market_id')
+      .select('id, email, is_premium, subscription_tier, market_id')
       .eq('id', session.userId)
       .single()
 
     if (user) {
       userId = user.id
       email = user.email
-      userTier = user.is_premium ? 'pro' : 'free'
+      userTier = getUserTier(user)
 
       if (user.market_id) {
         const { data: m } = await supabase

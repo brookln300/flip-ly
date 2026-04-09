@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     // Get user from DB
     const { data: user } = await supabase
       .from('fliply_users')
-      .select('id, email, is_premium, stripe_customer_id')
+      .select('id, email, is_premium, subscription_tier, stripe_customer_id')
       .eq('id', session.userId)
       .single()
 
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    if (user.is_premium) {
+    if (user.is_premium && user.subscription_tier !== 'admin') {
       return NextResponse.json({ error: 'Already a Pro member' }, { status: 400 })
     }
 

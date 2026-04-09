@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect, useRef } from 'react'
 
 function ProContent() {
   const params = useSearchParams()
@@ -10,6 +10,9 @@ function ProContent() {
   const { data: authSession, status: authStatus } = useSession()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const tierParam = params.get('tier')
+  const isPower = tierParam === 'power'
+  const autoTriggered = useRef(false)
 
   const handleUpgrade = async (tier: 'pro' | 'power') => {
     if (authStatus !== 'authenticated') {
@@ -62,6 +65,14 @@ function ProContent() {
       setLoading(false)
     }
   }
+
+  // Auto-trigger checkout if arriving from landing page with ?tier=power
+  useEffect(() => {
+    if (isPower && authStatus === 'authenticated' && !loading && !autoTriggered.current) {
+      autoTriggered.current = true
+      handleUpgrade('power')
+    }
+  }, [isPower, authStatus, loading])
 
   // POST-CHECKOUT SUCCESS
   if (status === 'success') {
@@ -176,7 +187,7 @@ function ProContent() {
             margin: '0 auto var(--space-8)', textAlign: 'center',
           }}>
             <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-              <a href="/?signup=pro" style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>Sign up or log in</a> first to choose a plan.
+              <a href={isPower ? '/?signup=pro&next=/pro?tier=power' : '/?signup=pro'} style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>Sign up or log in</a> first to choose a plan.
             </p>
           </div>
         )}
@@ -448,14 +459,14 @@ function ProContent() {
           <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px' }}>
             Lock in founding pricing before it&apos;s gone.
           </p>
-          <button onClick={() => handleUpgrade('pro')} disabled={loading} style={{
-            background: loading ? 'var(--border-active)' : 'var(--accent-green)', color: '#fff',
+          <button onClick={() => handleUpgrade(isPower ? 'power' : 'pro')} disabled={loading} style={{
+            background: loading ? 'var(--border-active)' : isPower ? '#8b5cf6' : 'var(--accent-green)', color: '#fff',
             border: 'none', padding: '14px 36px', borderRadius: '10px',
             fontSize: '16px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
-            boxShadow: '0 2px 12px rgba(22,163,74,0.3)',
+            boxShadow: isPower ? '0 2px 12px rgba(139,92,246,0.3)' : '0 2px 12px rgba(22,163,74,0.3)',
             transition: 'all 0.15s',
           }}>
-            {loading ? 'Loading...' : 'Start Pro — $5/mo'}
+            {loading ? 'Loading...' : isPower ? 'Go Power — $19/mo' : 'Start Pro — $5/mo'}
           </button>
           <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '12px' }}>
             Cancel anytime &middot; Secure checkout via Stripe

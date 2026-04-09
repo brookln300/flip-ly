@@ -118,6 +118,86 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription
+        const subStatus = subscription.status
+        let userId = subscription.metadata?.fliply_user_id
+        const tier = subscription.metadata?.tier || 'pro'
+
+        // Fallback: look up user by stripe_customer_id if no metadata
+        if (!userId) {
+          const customerId = subscription.customer as string
+          const { data: custLookup } = await supabase
+            .from('fliply_users')
+            .select('id')
+            .eq('stripe_customer_id', customerId)
+            .single()
+          if (custLookup) userId = custLookup.id
+        }
+
+        if (userId) {
+          // Protect admin users from any downgrade
+          const { data: subUser } = await supabase
+            .from('fliply_users')
+            .select('subscription_tier')
+            .eq('id', userId)
+            .single()
+
+          const isAdmin = subUser?.subscription_tier === 'admin'
+
+          if (subStatus === 'active') {
+            // Re-activate or confirm active — always safe
+            if (!isAdmin) {
+              await supabase
+                .from('fliply_users')
+                .update({ is_premium: true, subscription_tier: tier })
+                .eq('id', userId)
+            }
+          } else if (subStatus === 'past_due' || subStatus === 'unpaid') {
+            // Cut access until payment resolves (except admins)
+            if (!isAdmin) {
+              await supabase
+                .from('fliply_users')
+                .update({ is_premium: false })
+                .eq('id', userId)
+            }
+          }
+          // canceled status: do nothing — let customer.subscription.deleted handle full cleanup
+
+          trackEvent('subscription_status_updated', {
+            subscription_id: subscription.id,
+            status: subStatus,
+          }, userId)
+
+          console.log(`[Stripe] Subscription updated for user ${userId}: status=${subStatus}, admin=${isAdmin}`)
+
+          if (subStatus === 'past_due') {
+            sendTelegramAlert([
+              `<b>Subscription Past Due!</b>`,
+              `User: ${userId}`,
+              `Status: ${subStatus}`,
+              `Tier: ${subUser?.subscription_tier || tier}`,
+            ].join('\n'))
+          } else if (subStatus !== 'active') {
+            sendTelegramAlert([
+              `<b>Subscription Status Change</b>`,
+              `User: ${userId}`,
+              `Status: ${subStatus}`,
+              `Tier: ${subUser?.subscription_tier || tier}`,
+            ].join('\n'))
+          }
+        } else {
+          console.warn(`[Stripe] subscription.updated for unknown customer: ${subscription.customer}`)
+          sendTelegramAlert([
+            `<b>Orphaned Subscription Update</b>`,
+            `Customer: ${subscription.customer}`,
+            `Status: ${subStatus}`,
+            `Sub ID: ${subscription.id}`,
+          ].join('\n'))
+        }
+        break
+      }
+
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
         const userId = subscription.metadata?.fliply_user_id
@@ -176,9 +256,15 @@ export async function POST(req: NextRequest) {
                 stripe_subscription_id: null,
               })
               .eq('stripe_customer_id', customerId)
+          } else {
+            // Admin: just clear the Stripe sub ID, keep access
+            await supabase
+              .from('fliply_users')
+              .update({ stripe_subscription_id: null })
+              .eq('stripe_customer_id', customerId)
           }
 
-          console.log(`[Stripe] Pro cancelled for customer ${customerId}`)
+          console.log(`[Stripe] Pro cancelled for customer ${customerId} (tier: ${custUser?.subscription_tier})`)
         }
         break
       }
@@ -230,6 +316,14 @@ export async function POST(req: NextRequest) {
             `<b>Payment Failed</b>`,
             `User: ${failedUser.email}`,
             `Invoice: ${invoice.id || 'unknown'}`,
+          ].join('\n'))
+        } else {
+          console.warn(`[Stripe] invoice.payment_failed for unknown customer: ${customerId}`)
+          sendTelegramAlert([
+            `<b>Orphaned Payment Failed</b>`,
+            `Customer: ${customerId}`,
+            `Invoice: ${invoice.id || 'unknown'}`,
+            `No matching user found in fliply_users`,
           ].join('\n'))
         }
         break
