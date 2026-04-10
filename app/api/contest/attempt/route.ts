@@ -26,9 +26,6 @@ import {
  * Good luck.
  */
 
-// SHA-256 hash of the real password — the plaintext exists NOWHERE in this codebase
-const WINNER_HASH = '5a4e9b8f2c1d3e7a6b0c4d8e9f1a2b3c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a'
-
 function sha256(input: string): string {
   return createHash('sha256').update(input.toLowerCase().trim()).digest('hex')
 }

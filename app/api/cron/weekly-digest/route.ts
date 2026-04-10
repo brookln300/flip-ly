@@ -140,8 +140,8 @@ export async function GET(req: NextRequest) {
         .select('id, email, city, state, market_id, is_premium, subscription_tier')
         .or('unsubscribed.is.null,unsubscribed.eq.false')
 
-      if (tier === 'pro') userQuery = userQuery.eq('is_premium', true)
-      else if (tier === 'free') userQuery = userQuery.eq('is_premium', false)
+      if (tier === 'pro') userQuery = userQuery.in('subscription_tier', ['pro', 'power', 'admin'])
+      else if (tier === 'free') userQuery = userQuery.not('subscription_tier', 'in', '("pro","power","admin")')
 
       const { data, error } = await userQuery
       if (error || !data?.length) {

@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const email = new URL(req.url).searchParams.get('email')
-  if (!email) return NextResponse.json({ error: 'email param required' })
+  if (!email) return NextResponse.json({ error: 'email param required' }, { status: 400 })
 
   // Find user
   const { data: users } = await supabase
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     .eq('email', email)
     .limit(1)
 
-  if (!users?.length) return NextResponse.json({ error: `User ${email} not found` })
+  if (!users?.length) return NextResponse.json({ error: `User ${email} not found` }, { status: 404 })
 
   // Find welcome sequence
   const { data: seqs } = await supabase
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     .eq('is_active', true)
     .limit(1)
 
-  if (!seqs?.length) return NextResponse.json({ error: 'No active welcome sequence' })
+  if (!seqs?.length) return NextResponse.json({ error: 'No active welcome sequence' }, { status: 404 })
 
   const variant = Math.random() < 0.5 ? 'a' : 'b'
 

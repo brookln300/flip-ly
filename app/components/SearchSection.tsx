@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import DealRow from './DealRow'
 import { useSignup } from './SignupContext'
 
@@ -20,12 +20,12 @@ export default function SearchSection({ markets }: {
   const [loggedInUser, setLoggedInUser] = useState<any>(null)
 
   // Check auth once for deal row gating
-  useState(() => {
+  useEffect(() => {
     fetch('/api/auth/me')
       .then(res => res.ok ? res.json() : null)
       .then(data => { if (data?.user) setLoggedInUser(data.user) })
       .catch(() => {})
-  })
+  }, [])
 
   const sortedMarketOptions = useMemo(() => {
     return Object.keys(markets).sort().flatMap(st =>

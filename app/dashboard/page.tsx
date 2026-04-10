@@ -37,6 +37,7 @@ interface User {
   market_id: string
   market_slug?: string
   is_premium: boolean
+  subscription_tier?: string | null
   created_at: string
 }
 
@@ -666,6 +667,10 @@ export default function Dashboard() {
     setTimeout(() => setToastMsg(''), 2000)
   }
 
+  // Derived tier helpers — handles is_premium + subscription_tier correctly
+  const isPremium = user ? (user.is_premium === true || ['pro', 'power', 'admin'].includes(user.subscription_tier as string)) : false
+  const tierLabel = user?.subscription_tier === 'admin' ? 'Admin' : user?.subscription_tier === 'power' ? 'Power' : isPremium ? 'Pro' : 'Free'
+
   // ── Load user ──
   useEffect(() => {
     fetch('/api/auth/me')
@@ -719,7 +724,7 @@ export default function Dashboard() {
       }).catch(() => {})
 
     // Markets (for Pro switcher)
-    if (user.is_premium) {
+    if (isPremium) {
       fetch('/api/markets')
         .then(r => r.json())
         .then(data => {
@@ -951,28 +956,28 @@ export default function Dashboard() {
             </a>
             <span style={{ color: 'var(--border-default)', fontSize: '14px' }}>/</span>
             <span style={{ color: 'var(--text-muted)', fontSize: '13px', fontFamily: font, fontWeight: 500 }}>Dashboard</span>
-            {user.is_premium && (
-              <span style={{ background: 'var(--accent-green)', color: '#fff', padding: '2px 7px', borderRadius: '4px', fontSize: '9px', fontWeight: 700, fontFamily: font, letterSpacing: '0.06em' }}>PRO</span>
+            {isPremium && (
+              <span style={{ background: tierLabel === 'Power' ? '#7C3AED' : tierLabel === 'Admin' ? '#DC2626' : 'var(--accent-green)', color: '#fff', padding: '2px 7px', borderRadius: '4px', fontSize: '9px', fontWeight: 700, fontFamily: font, letterSpacing: '0.06em' }}>{tierLabel.toUpperCase()}</span>
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* ── Market switcher (Pro) ── */}
             <div ref={marketRef} style={{ position: 'relative' }}>
               <button
-                onClick={() => user.is_premium && markets.length > 0 ? setShowMarketPicker(!showMarketPicker) : null}
+                onClick={() => isPremium && markets.length > 0 ? setShowMarketPicker(!showMarketPicker) : null}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '5px', background: 'none', border: 'none',
-                  cursor: user.is_premium ? 'pointer' : 'default', padding: '4px 8px', borderRadius: '6px',
+                  cursor: isPremium ? 'pointer' : 'default', padding: '4px 8px', borderRadius: '6px',
                   transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => { if (user.is_premium) e.currentTarget.style.background = 'var(--bg-surface)' }}
+                onMouseEnter={e => { if (isPremium) e.currentTarget.style.background = 'var(--bg-surface)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
               >
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
                 <span style={{ color: 'var(--text-secondary)', fontSize: '12px', fontFamily: font, fontWeight: 500 }}>{marketLabel}</span>
-                {user.is_premium && markets.length > 0 && (
+                {isPremium && markets.length > 0 && (
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--text-dim)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="6 9 12 15 18 9"/>
                   </svg>
@@ -1028,7 +1033,7 @@ export default function Dashboard() {
                 Scanning {marketLabel} for deals{dataAge ? ` · Updated ${dataAge}` : ''}
               </p>
             </div>
-            {!user.is_premium && (
+            {!isPremium && (
               <a href="/pro" className="dash-btn" style={{
                 background: 'var(--accent-green)', color: '#fff', padding: '9px 20px',
                 borderRadius: '9px', fontSize: '12px', fontWeight: 600, fontFamily: font,
@@ -1229,7 +1234,7 @@ export default function Dashboard() {
 
           // Pro gating: free users see first 2 stops
           const FREE_STOP_LIMIT = 2
-          const isPro = user.is_premium
+          const isPro = isPremium
           const visibleStops = isPro ? routeStops : routeStops.slice(0, FREE_STOP_LIMIT)
           const gatedStops = isPro ? [] : routeStops.slice(FREE_STOP_LIMIT)
 
@@ -1530,7 +1535,7 @@ export default function Dashboard() {
                   listing={listing}
                   isSaved={savedIds.has(listing.id)}
                   onToggleSave={() => toggleSave(listing.id)}
-                  isPro={user.is_premium}
+                  isPro={isPremium}
                 />
               </div>
             ))}
@@ -1540,7 +1545,7 @@ export default function Dashboard() {
             <div style={{ marginTop: '12px', textAlign: 'center' }}>
               <p style={{ color: 'var(--text-muted)', fontSize: '11px', fontFamily: font }}>
                 {totalListings - displayListings.length} more deals available
-                {!user.is_premium && (
+                {!isPremium && (
                   <> &middot; <a href="/pro" style={{ color: 'var(--accent-green)', textDecoration: 'none', fontWeight: 600 }}>Unlock all</a></>
                 )}
               </p>
@@ -1558,7 +1563,7 @@ export default function Dashboard() {
             </div>
             <p style={{ color: 'var(--text-secondary)', fontSize: '12px', fontFamily: font, marginBottom: '3px' }}>Scanning {marketLabel}</p>
             <p style={{ color: 'var(--text-dim)', fontSize: '11px', fontFamily: font, marginBottom: '12px' }}>Delivered every Thursday at 12:00 PM CDT</p>
-            {user.is_premium ? (
+            {isPremium ? (
               <div style={{ background: 'rgba(22,163,74,0.04)', border: '1px solid rgba(22,163,74,0.1)', borderRadius: '8px', padding: '8px 12px' }}>
                 <p style={{ color: 'var(--accent-green)', fontSize: '11px', fontFamily: font, fontWeight: 500 }}>Your digest arrives 6 hours before free users.</p>
               </div>
@@ -1576,7 +1581,7 @@ export default function Dashboard() {
               {[
                 { l: 'Email', v: user.email },
                 { l: 'Market', v: marketLabel },
-                { l: 'Plan', v: user.is_premium ? 'Pro' : 'Free', accent: user.is_premium },
+                { l: 'Plan', v: tierLabel, accent: isPremium },
                 { l: 'Saved deals', v: String(savedIds.size) },
                 { l: 'Member since', v: joinDate },
               ].map(row => (
@@ -1586,7 +1591,7 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            {user.is_premium && (
+            {isPremium && (
               <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
                 <a href="/pro" style={{ color: 'var(--text-muted)', fontSize: '11px', textDecoration: 'none', fontFamily: font, fontWeight: 500 }}>Manage subscription &rarr;</a>
               </div>

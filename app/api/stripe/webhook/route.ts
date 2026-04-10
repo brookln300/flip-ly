@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
         const customerId = session.customer as string
 
         if (userId) {
-          const tier = session.metadata?.tier || 'pro'
+          const rawTier = session.metadata?.tier || 'pro'
+          const tier = ['pro', 'power'].includes(rawTier) ? rawTier : 'pro'
 
           // Activate subscription in database
           await supabase
@@ -122,7 +123,8 @@ export async function POST(req: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription
         const subStatus = subscription.status
         let userId = subscription.metadata?.fliply_user_id
-        const tier = subscription.metadata?.tier || 'pro'
+        const rawTier = subscription.metadata?.tier || 'pro'
+        const tier = ['pro', 'power'].includes(rawTier) ? rawTier : 'pro'
 
         // Fallback: look up user by stripe_customer_id if no metadata
         if (!userId) {
