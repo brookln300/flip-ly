@@ -106,11 +106,41 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.25); }
 
+/* ── FOCUS ─────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent-green);
+  outline-offset: 2px;
+}
+
+/* ── ANIMATIONS ───────────────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 /* ── RESPONSIVE ────────────────────────────────────────── */
 @media (max-width: 768px) {
   button { min-height: 44px; }
   .cl-input { font-size: 16px; } /* prevents iOS zoom on focus */
   footer { transform: none !important; }
+  .hero-split {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+  .hero-split > div:first-child {
+    text-align: center !important;
+  }
+  .hero-split > div:first-child > div {
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .deal-row { gap: 8px !important; }
+  .deal-row .deal-icon { display: none !important; }
+  .deal-row .deal-score { width: 32px !important; height: 32px !important; }
+  .deal-expanded { padding-left: 0 !important; }
+  .score-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
 /* Respect reduced motion preference */

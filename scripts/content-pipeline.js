@@ -30,6 +30,7 @@ const CONFIG = {
     channels: {
       tiktok: '69ca5331af47dacb696cc208',
       instagram: '69ca5314af47dacb696cc1c0',
+      twitter: '69ca5360af47dacb696cc283',
     },
     orgId: '69ca52f9b0e4ce6b3c7c42dc',
     placeholderImage: 'https://krjbjdaeoluzfsgkheen.supabase.co/storage/v1/object/public/social-images/placeholder-add-media.png',
@@ -42,6 +43,7 @@ const CONFIG = {
     timeSlots: {
       tiktok:    [11, 15, 19, 21],  // 11am, 3pm, 7pm, 9pm
       instagram: [9, 12, 17, 20],   // 9am, 12pm, 5pm, 8pm
+      twitter:   [8, 12, 17, 19],   // 8am, 12pm, 5pm, 7pm
     },
   },
 };
@@ -95,9 +97,12 @@ function getPromptById(promptList, id) {
 async function generateCaption(promptText, platform) {
   console.log(`  [CAPTION] Writing ${platform} caption...`);
 
-  const utm = platform === 'tiktok'
-    ? 'utm_source=tiktok&utm_medium=social&utm_campaign=sideb'
-    : 'utm_source=instagram&utm_medium=social&utm_campaign=sidea';
+  const utmMap = {
+    tiktok: 'utm_source=tiktok&utm_medium=social&utm_campaign=sideb',
+    instagram: 'utm_source=instagram&utm_medium=social&utm_campaign=sidea',
+    twitter: 'utm_source=twitter&utm_medium=social&utm_campaign=sidec',
+  };
+  const utm = utmMap[platform] || utmMap.instagram;
 
   const systemPrompt = `You write social media captions for flip-ly.net, a garage sale and estate sale deal-finding platform.
 Your tone is: chaotic, nostalgic, 90s internet humor, lobster-obsessed, deal-obsessed.
@@ -107,9 +112,12 @@ IMPORTANT: Any time you link to flip-ly.net, use this exact URL: flip-ly.net?${u
 Never use a bare flip-ly.net link without UTM params.
 Never be cringe. Be genuinely funny. Channel early internet energy.`;
 
-  const userMsg = platform === 'tiktok'
-    ? `Write a short, punchy TikTok caption for this content: "${promptText}". Keep it under 150 chars. Make it scroll-stopping.`
-    : `Write an Instagram caption for this content: "${promptText}". Can be longer (up to 300 chars). Include 3-5 hashtags. Be witty.`;
+  const userMsgMap = {
+    tiktok: `Write a short, punchy TikTok caption for this content: "${promptText}". Keep it under 150 chars. Make it scroll-stopping.`,
+    instagram: `Write an Instagram caption for this content: "${promptText}". Can be longer (up to 300 chars). Include 3-5 hashtags. Be witty.`,
+    twitter: `Write a tweet for this content: "${promptText}". Keep it under 280 chars total. Punchy, one hashtag max. Link to flip-ly.net.`,
+  };
+  const userMsg = userMsgMap[platform] || userMsgMap.instagram;
 
   const res = await httpRequest(
     'https://api.anthropic.com/v1/messages',
@@ -135,9 +143,11 @@ Never be cringe. Be genuinely funny. Channel early internet energy.`;
 
   let caption = res.data.content[0].text;
 
-  // Enforce TikTok 150 char limit
+  // Enforce platform char limits
   if (platform === 'tiktok' && caption.length > 150) {
     caption = caption.substring(0, 147) + '...';
+  } else if (platform === 'twitter' && caption.length > 280) {
+    caption = caption.substring(0, 277) + '...';
   }
 
   return caption;
@@ -202,10 +212,12 @@ async function createBufferPostDraft(text, scheduledAt, platform, promptId, prom
   const channelId = CONFIG.buffer.channels[platform];
   const tag = platform === 'tiktok' ? 'TikTok' : 'IG';
 
-  // Enforce TikTok 150 char limit for post drafts too
+  // Enforce platform char limits for post drafts too
   let postText = text;
   if (platform === 'tiktok' && postText.length > 150) {
     postText = postText.substring(0, 147) + '...';
+  } else if (platform === 'twitter' && postText.length > 280) {
+    postText = postText.substring(0, 277) + '...';
   }
 
   const mutation = `mutation CreatePost($input: PostInput!) {
@@ -300,8 +312,8 @@ function generateSchedule(totalDrafts) {
   startDate.setDate(startDate.getDate() + 1);
   startDate.setHours(0, 0, 0, 0);
 
-  const platforms = ['tiktok', 'instagram'];
-  let draftsPerPlatform = Math.ceil(totalDrafts / 2);
+  const platforms = ['tiktok', 'instagram', 'twitter'];
+  let draftsPerPlatform = Math.ceil(totalDrafts / platforms.length);
 
   for (const platform of platforms) {
     let draftCount = 0;

@@ -76,23 +76,12 @@ Delivered via:
 
 `enrich-listing.ts` batches 5 listings per Haiku call with a system prompt that outputs structured JSON: description, deal_score (1-10), deal_score_reason, tags, resale_flag. Scoring factors: price anomaly (30%), motivation signals (20%), brand detection (20%), listing quality (15%), freshness (15%).
 
-### Authentication (CRITICAL — read before touching any auth code)
+### Authentication
 
-Dual auth system — this is the #1 source of bugs:
-- **Custom JWT** (`app/lib/auth.ts`) — PRIMARY auth for email/password. Creates JWT stored as httpOnly cookie `flip-session`. Used by ALL API routes via `getSession()`.
-- **NextAuth** (`app/lib/next-auth.ts`) — ONLY for Google OAuth sessions. Uses its own session cookie.
-- **`/api/auth/me`** — the ONLY reliable way to check auth status from the frontend. Works for BOTH auth methods. Always use this, never `useSession()` alone.
-- **NEVER use `useSession()` as the sole auth check** on pages that need to work for email/password users. It only sees NextAuth sessions (Google OAuth). Email/password users will appear "unauthenticated". Use `/api/auth/me` fetch instead.
-- The `/pro` page, `/dashboard`, and any gated UI must use the `/api/auth/me` pattern.
-
-### Stripe Integration
-
-- Checkout: `POST /api/stripe/checkout` — reads custom JWT via `getSession()`, creates Stripe checkout session
-- Webhook: `POST /api/stripe/webhook` — handles `checkout.session.completed`, `subscription.updated`, `subscription.deleted`, `invoice.payment_failed`
-- Portal: `POST /api/stripe/portal` — manages existing subscriptions
-- Webhook sets `is_premium=true` + `subscription_tier` in DB on successful checkout
-- Admin users (`subscription_tier='admin'`) are protected from all downgrade webhooks
-- Post-checkout: always poll `/api/auth/me` for activation confirmation (webhook may lag 1-5s)
+Dual auth system:
+- **NextAuth** (`app/lib/next-auth.ts`) — handles Google OAuth sessions
+- **Custom JWT** (`app/lib/auth.ts`) — handles email/password signup/login, creates JWT stored as httpOnly cookie `fliply_token`
+- Both coexist: `api/auth/me` checks JWT first, falls back to NextAuth session
 
 ### Key Database Tables
 
