@@ -1,22 +1,52 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import { Suspense, useState, useEffect, useRef } from 'react'
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react'
+
+interface UserData {
+  id: string
+  email: string
+  is_premium: boolean
+  subscription_tier: string | null
+}
 
 function ProContent() {
   const params = useSearchParams()
   const status = params.get('status')
-  const { data: authSession, status: authStatus } = useSession()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [user, setUser] = useState<UserData | null>(null)
+  const [authChecked, setAuthChecked] = useState(false)
   const tierParam = params.get('tier')
   const isPower = tierParam === 'power'
   const autoTriggered = useRef(false)
 
+  // Fetch user via custom JWT (works for ALL auth methods)
+  const fetchUser = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/me')
+      const data = await res.json()
+      if (data.user) {
+        setUser(data.user)
+      } else {
+        setUser(null)
+      }
+    } catch {
+      setUser(null)
+    }
+    setAuthChecked(true)
+  }, [])
+
+  useEffect(() => {
+    fetchUser()
+  }, [fetchUser])
+
+  const isAuthenticated = authChecked && user !== null
+  const isAlreadyPro = user?.is_premium === true || ['pro', 'power', 'admin'].includes(user?.subscription_tier || '')
+
   const handleUpgrade = async (tier: 'pro' | 'power') => {
-    if (authStatus !== 'authenticated') {
-      window.location.href = '/?signup=pro'
+    if (!isAuthenticated) {
+      window.location.href = isPower ? '/?signup=pro&next=/pro?tier=power' : '/?signup=pro'
       return
     }
     setLoading(true)
@@ -43,7 +73,7 @@ function ProContent() {
   }
 
   const handleManage = async () => {
-    if (authStatus !== 'authenticated') {
+    if (!isAuthenticated) {
       window.location.href = '/?signup=pro'
       return
     }
@@ -68,14 +98,33 @@ function ProContent() {
 
   // Auto-trigger checkout if arriving from landing page with ?tier=power
   useEffect(() => {
-    if (isPower && authStatus === 'authenticated' && !loading && !autoTriggered.current) {
+    if (isPower && isAuthenticated && !isAlreadyPro && !loading && !autoTriggered.current) {
       autoTriggered.current = true
       handleUpgrade('power')
     }
-  }, [isPower, authStatus, loading])
+  }, [isPower, isAuthenticated, isAlreadyPro, loading])
 
-  // POST-CHECKOUT SUCCESS
+  // POST-CHECKOUT SUCCESS — poll for webhook completion
   if (status === 'success') {
+    const [activated, setActivated] = useState(false)
+    const pollCount = useRef(0)
+
+    useEffect(() => {
+      const poll = setInterval(async () => {
+        pollCount.current++
+        try {
+          const res = await fetch('/api/auth/me')
+          const data = await res.json()
+          if (data.user?.is_premium) {
+            setActivated(true)
+            clearInterval(poll)
+          }
+        } catch {}
+        if (pollCount.current >= 15) clearInterval(poll) // Stop after 30s
+      }, 2000)
+      return () => clearInterval(poll)
+    }, [])
+
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
         <div style={{ textAlign: 'center', padding: '0 32px', maxWidth: '32rem' }}>
@@ -91,10 +140,12 @@ function ProContent() {
             fontSize: '30px', fontWeight: 700, color: 'var(--text-primary)',
             marginBottom: '16px',
           }}>
-            You're in.
+            You&apos;re in.
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
-            Your founding price is locked for life. Full score breakdowns, unlimited searches, and daily digests are now active.
+            {activated
+              ? 'Your founding price is locked for life. Full score breakdowns, unlimited searches, and daily digests are now active.'
+              : 'Activating your subscription... This takes just a moment.'}
           </p>
           <a href="/dashboard" style={{
             display: 'inline-block', padding: '12px 24px',
@@ -130,6 +181,103 @@ function ProContent() {
     )
   }
 
+  // ALREADY PRO — show manage subscription view
+  if (authChecked && isAlreadyPro) {
+    const tierLabel = user?.subscription_tier === 'power' ? 'Power' : user?.subscription_tier === 'admin' ? 'Admin' : 'Pro'
+    return (
+      <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+        <header style={{
+          padding: 'var(--space-3) var(--space-4)',
+          borderBottom: '1px solid var(--border-subtle)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 4l5 5h-3v4h-4V9H7l5-5z" fill="var(--accent-green)"/>
+              <path d="M7 16a7 7 0 0 0 10 0" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" fill="none"/>
+            </svg>
+            <span style={{ fontSize: '18px', color: 'var(--text-primary)', fontWeight: 700, letterSpacing: '-0.03em' }}>
+              FLIP-LY
+            </span>
+          </a>
+        </header>
+
+        <div style={{ maxWidth: '32rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4)', textAlign: 'center' }}>
+          <div style={{
+            width: '64px', height: '64px', borderRadius: '50%',
+            background: 'rgba(34,197,94,0.1)', border: '2px solid var(--accent-green)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px', fontSize: '28px', color: 'var(--accent-green)',
+          }}>
+            &#x2713;
+          </div>
+          <h1 style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '12px' }}>
+            You&apos;re on {tierLabel}
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.7, marginBottom: '32px' }}>
+            Your founding price is locked for life. Full score breakdowns, unlimited searches, and daily digests are active.
+          </p>
+
+          {error && (
+            <div style={{
+              background: 'rgba(239,68,68,0.05)', border: '1px solid var(--accent-red)',
+              borderRadius: '8px', padding: '12px 16px', marginBottom: '16px',
+            }}>
+              <p style={{ color: 'var(--accent-red)', fontSize: '13px' }}>{error}</p>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+            <button onClick={handleManage} disabled={loading} style={{
+              display: 'inline-block', padding: '12px 24px',
+              background: 'var(--accent-green)', color: '#fff',
+              border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 600,
+              cursor: loading ? 'wait' : 'pointer', minWidth: '220px',
+            }}>
+              {loading ? 'Loading...' : 'Manage Subscription'}
+            </button>
+            <a href="/dashboard" style={{
+              color: 'var(--accent-green)', textDecoration: 'underline', fontSize: '14px',
+            }}>
+              Go to Dashboard
+            </a>
+          </div>
+
+          {user?.subscription_tier !== 'power' && user?.subscription_tier !== 'admin' && (
+            <div style={{
+              marginTop: '48px', padding: '24px',
+              background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+              borderRadius: '12px',
+            }}>
+              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
+                Upgrade to Power?
+              </p>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+                Unlimited markets, instant alerts, and trend data — $19/mo founding price.
+              </p>
+              <button onClick={() => handleUpgrade('power')} disabled={loading} style={{
+                padding: '10px 20px', background: '#8b5cf6', color: '#fff',
+                border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
+                cursor: loading ? 'wait' : 'pointer',
+              }}>
+                {loading ? 'Loading...' : 'Upgrade to Power'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Loading state while checking auth
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+        <div style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Loading...</div>
+      </div>
+    )
+  }
+
   // DEFAULT: 3-TIER PRICING PAGE
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
@@ -148,13 +296,15 @@ function ProContent() {
             FLIP-LY
           </span>
         </a>
-        <button onClick={handleManage} style={{
-          background: 'none', border: '1px solid var(--border-active)',
-          borderRadius: '6px', color: 'var(--text-dim)', fontSize: '12px',
-          padding: '6px 14px', cursor: 'pointer',
-        }}>
-          Manage subscription
-        </button>
+        {isAuthenticated && (
+          <button onClick={handleManage} style={{
+            background: 'none', border: '1px solid var(--border-active)',
+            borderRadius: '6px', color: 'var(--text-dim)', fontSize: '12px',
+            padding: '6px 14px', cursor: 'pointer',
+          }}>
+            Manage subscription
+          </button>
+        )}
       </header>
 
       <div style={{ maxWidth: '56rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4)' }}>
@@ -180,7 +330,7 @@ function ProContent() {
           </div>
         )}
 
-        {authStatus !== 'authenticated' && (
+        {!isAuthenticated && (
           <div style={{
             background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
             borderRadius: '8px', padding: '12px 16px', maxWidth: '400px',
@@ -266,7 +416,7 @@ function ProContent() {
               boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
               transition: 'all 0.15s',
             }}>
-              {loading ? 'Loading...' : authStatus !== 'authenticated' ? 'Sign Up for Pro' : 'Start Pro — $5/mo'}
+              {loading ? 'Loading...' : !isAuthenticated ? 'Sign Up for Pro' : 'Start Pro — $5/mo'}
             </button>
           </div>
 
@@ -299,7 +449,7 @@ function ProContent() {
               fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
               transition: 'all 0.15s',
             }}>
-              {loading ? 'Loading...' : authStatus !== 'authenticated' ? 'Sign Up for Power' : 'Go Power'}
+              {loading ? 'Loading...' : !isAuthenticated ? 'Sign Up for Power' : 'Go Power'}
             </button>
           </div>
         </div>
