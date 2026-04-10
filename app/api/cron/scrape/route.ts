@@ -8,7 +8,8 @@ import { trackEvent } from '../../../lib/analytics'
 import { scrapeCraigslist } from '../../../lib/scrapers/craigslist'
 import { scrapeEventbrite } from '../../../lib/scrapers/eventbrite'
 import { scrapeWithAI } from '../../../lib/scrapers/ai-extract'
-import type { ScraperResult, CraigslistConfig, EventbriteConfig, AiExtractConfig } from '../../../lib/scrapers/types'
+import { scrapeEstateSalesNet } from '../../../lib/scrapers/estatesales-net'
+import type { ScraperResult, CraigslistConfig, EventbriteConfig, AiExtractConfig, EstateSalesNetConfig } from '../../../lib/scrapers/types'
 
 export async function GET(req: NextRequest) {
   // Auth: require CRON_SECRET for automated + manual triggers
@@ -65,6 +66,9 @@ export async function GET(req: NextRequest) {
               source_name: source.name,
               source_hint: 'City government garage sale permit page',
             })
+            break
+          case 'estatesales_net':
+            result = await scrapeEstateSalesNet(source.id, source.market_id, source.config as EstateSalesNetConfig)
             break
           case 'local_site':
             // Claude-discovered local sites use the same AI extraction pipeline

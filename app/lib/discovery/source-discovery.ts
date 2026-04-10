@@ -34,6 +34,9 @@ async function _activateMarketSources(marketId: string) {
 
   const marketName = market.display_name || market.name
 
+  // Auto-create EstateSales.NET source if none exists for this market
+  await _ensureEstateSalesNetSource(market.id, marketName, market.state)
+
   // Activate all pre-seeded sources for this market
   const { data: activated } = await supabase
     .from('fliply_sources')
@@ -73,4 +76,45 @@ async function _activateMarketSources(marketId: string) {
     state: market.state,
     sources_activated: count,
   })
+}
+
+/**
+ * Ensure an EstateSales.NET source exists for a market.
+ * Derives the city slug from market name (e.g. "Dallas / Fort Worth" → "Dallas").
+ * Idempotent — skips if source already exists.
+ */
+async function _ensureEstateSalesNetSource(
+  marketId: string,
+  marketName: string,
+  state: string
+) {
+  // Check if one already exists
+  const { count } = await supabase
+    .from('fliply_sources')
+    .select('id', { count: 'exact', head: true })
+    .eq('market_id', marketId)
+    .eq('source_type', 'estatesales_net')
+
+  if (count && count > 0) return
+
+  // Derive city slug: take first city name, replace spaces with hyphens
+  // "Dallas / Fort Worth" → "Dallas", "Salt Lake City" → "Salt-Lake-City"
+  const primaryCity = marketName.split(/[\/,]/, 1)[0].trim()
+  const citySlug = primaryCity.replace(/\s+/g, '-')
+
+  const { error } = await supabase.from('fliply_sources').insert({
+    market_id: marketId,
+    name: `EstateSales.NET - ${primaryCity}`,
+    source_type: 'estatesales_net',
+    config: { state, city_slug: citySlug },
+    scrape_frequency_hours: 8,
+    is_active: true,
+    is_approved: true,
+  })
+
+  if (error) {
+    console.error(`[DISCOVERY] Failed to create EstateSales.NET source for ${marketName}:`, error.message)
+  } else {
+    console.log(`[DISCOVERY] Auto-created EstateSales.NET source for ${primaryCity}, ${state}`)
+  }
 }

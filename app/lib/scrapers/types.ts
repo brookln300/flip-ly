@@ -31,3 +31,9 @@ export interface AiExtractConfig {
   max_pages?: number
   pagination_hint?: string
 }
+
+export interface EstateSalesNetConfig {
+  state: string           // e.g. "TX"
+  city_slug: string       // e.g. "Dallas", "Fort-Worth"
+  extra_slugs?: string[]  // Additional city slugs for metro areas
+}
