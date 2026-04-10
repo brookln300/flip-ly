@@ -34,7 +34,7 @@ interface EnrichmentResult {
 
 /**
  * Enrich a batch of listings with AI descriptions, scores, and tags.
- * Processes up to 5 listings per Haiku call (~$0.003 per batch).
+ * Processes up to 10 listings per Haiku call (~$0.005 per batch).
  */
 export async function enrichListingBatch(listings: {
   id: string
@@ -62,7 +62,7 @@ Source: ${l.source_type || 'unknown'}`
   const { parsed } = await callHaiku<EnrichmentResult[]>({
     system: SYSTEM_PROMPT,
     userMessage: `Analyze these ${listings.length} listings. Return a JSON array with one object per listing, in order.\n\n${userMessage}`,
-    maxTokens: 2000,
+    maxTokens: 4000,
   })
 
   if (!parsed || !Array.isArray(parsed)) {
@@ -105,30 +105,164 @@ Source: ${l.source_type || 'unknown'}`
 }
 
 /**
- * Process all unenriched listings in batches of 5.
+ * Process a chunk of listings in parallel batches.
+ * Runs CONCURRENCY batches simultaneously for speed.
  */
-export async function enrichAllPending(): Promise<{ enriched: number; batches: number }> {
-  // Fetch ALL unenriched listings, oldest first, so none get orphaned
-  const { data: pending } = await supabase
+async function processChunk(listings: any[], batchSize: number, concurrency: number): Promise<number> {
+  let totalEnriched = 0
+  const batches: any[][] = []
+
+  for (let i = 0; i < listings.length; i += batchSize) {
+    batches.push(listings.slice(i, i + batchSize))
+  }
+
+  // Process in waves of CONCURRENCY parallel batches
+  for (let w = 0; w < batches.length; w += concurrency) {
+    const wave = batches.slice(w, w + concurrency)
+    const results = await Promise.allSettled(
+      wave.map(batch => enrichListingBatch(batch))
+    )
+    for (const r of results) {
+      if (r.status === 'fulfilled') totalEnriched += r.value
+    }
+  }
+
+  return totalEnriched
+}
+
+/**
+ * Pre-filter: Aggressively fast-classify Eventbrite events that are NOT
+ * garage sales, estate sales, or resale events. Eventbrite avg deal_score
+ * is 2.3 — only 2% produce high-value listings. Don't waste AI calls.
+ *
+ * Only Eventbrite listings with sale/resale keywords get sent to AI.
+ * Everything else gets auto-scored as a generic event.
+ */
+async function fastClassifyBulkEvents(): Promise<number> {
+  // Keywords that indicate this Eventbrite event IS worth AI-enriching
+  const resaleSignals = [
+    'garage sale', 'yard sale', 'estate sale', 'moving sale',
+    'flea market', 'swap meet', 'rummage sale', 'thrift',
+    'antique', 'vintage', 'collectible', 'auction',
+    'liquidation', 'clearance', 'everything must go',
+    'barn sale', 'tag sale', 'community sale',
+    'furniture', 'tools', 'electronics',
+  ]
+
+  // Fetch ALL unenriched Eventbrite listings (aggressive — process up to 500)
+  const { data: bulkEvents } = await supabase
+    .from('fliply_listings')
+    .select('id, title, description, source_type')
+    .is('enriched_at', null)
+    .eq('source_type', 'eventbrite_api')
+    .order('scraped_at', { ascending: true })
+    .limit(500)
+
+  if (!bulkEvents || bulkEvents.length === 0) return 0
+
+  let fastScored = 0
+  for (const listing of bulkEvents) {
+    const titleLower = (listing.title || '').toLowerCase()
+    const descLower = (listing.description || '').toLowerCase()
+    const combined = titleLower + ' ' + descLower
+
+    // If it matches ANY resale signal, let AI handle it
+    const hasResaleSignal = resaleSignals.some(s => combined.includes(s))
+
+    if (!hasResaleSignal) {
+      // No resale signal = generic event, skip AI entirely
+      const { error } = await supabase.from('fliply_listings').update({
+        ai_description: listing.title,
+        deal_score: 2,
+        deal_score_reason: 'Non-resale event — no garage sale, estate sale, or flip indicators',
+        ai_tags: [],
+        event_type: 'event',
+        is_hot: false,
+        enriched_at: new Date().toISOString(),
+      }).eq('id', listing.id)
+
+      if (!error) fastScored++
+    }
+  }
+
+  if (fastScored > 0) {
+    console.log(`[ENRICH] Fast-classified ${fastScored} non-resale Eventbrite events (skipped AI)`)
+  }
+  return fastScored
+}
+
+/**
+ * Process all unenriched listings with priority queue and parallel batching.
+ *
+ * Priority order:
+ *   1. Listings with event_date within 48 hours (time-sensitive)
+ *   2. Non-eventbrite listings (higher value density)
+ *   3. Everything else (oldest first)
+ *
+ * Throughput: ~10 listings/batch × 3 concurrent = 30 listings per wave
+ * At 200ms avg API response: ~500 listings per minute
+ */
+export async function enrichAllPending(options?: {
+  maxListings?: number
+  batchSize?: number
+  concurrency?: number
+}): Promise<{ enriched: number; fastClassified: number; batches: number }> {
+  const MAX_LISTINGS = options?.maxListings ?? 500
+  const BATCH_SIZE = options?.batchSize ?? 10
+  const CONCURRENCY = options?.concurrency ?? 3
+
+  // Phase 0: Fast-classify obvious generic events (no AI cost)
+  const fastClassified = await fastClassifyBulkEvents()
+
+  // Phase 1: Priority — time-sensitive listings (event within 48h)
+  const { data: urgent } = await supabase
+    .from('fliply_listings')
+    .select('id, title, description, price_text, price_low_cents, city, state, event_date, source_type')
+    .is('enriched_at', null)
+    .gte('event_date', new Date().toISOString().split('T')[0])
+    .lte('event_date', new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0])
+    .order('event_date', { ascending: true })
+    .limit(Math.floor(MAX_LISTINGS * 0.3))
+
+  // Phase 2: HIGH VALUE — Craigslist, AI extract, estate sales, local sites
+  // These sources avg 5.5+ deal score vs Eventbrite's 2.3. Process them first.
+  const remaining = MAX_LISTINGS - (urgent?.length || 0)
+  const { data: highValue } = await supabase
+    .from('fliply_listings')
+    .select('id, title, description, price_text, price_low_cents, city, state, event_date, source_type')
+    .is('enriched_at', null)
+    .in('source_type', ['craigslist_rss', 'ai_extract', 'local_site', 'city_permits'])
+    .order('scraped_at', { ascending: true })
+    .limit(Math.floor(remaining * 0.8))  // 80% of remaining capacity to high-value sources
+
+  // Phase 3: Remaining Eventbrite (only ones that passed the resale signal filter)
+  const finalRemaining = remaining - (highValue?.length || 0)
+  const { data: overflow } = await supabase
     .from('fliply_listings')
     .select('id, title, description, price_text, price_low_cents, city, state, event_date, source_type')
     .is('enriched_at', null)
     .order('scraped_at', { ascending: true })
-    .limit(200)
+    .limit(Math.min(finalRemaining, 50))  // Cap Eventbrite overflow at 50 per run
 
-  if (!pending || pending.length === 0) return { enriched: 0, batches: 0 }
-
-  let totalEnriched = 0
-  let batches = 0
-
-  // Process in batches of 5
-  for (let i = 0; i < pending.length; i += 5) {
-    const batch = pending.slice(i, i + 5)
-    const count = await enrichListingBatch(batch)
-    totalEnriched += count
-    batches++
+  // Deduplicate (a listing could appear in multiple phases)
+  const seen = new Set<string>()
+  const allListings: any[] = []
+  for (const list of [urgent || [], highValue || [], overflow || []]) {
+    for (const item of list) {
+      if (!seen.has(item.id)) {
+        seen.add(item.id)
+        allListings.push(item)
+      }
+    }
   }
 
-  console.log(`[ENRICH] ${totalEnriched} listings enriched in ${batches} batches`)
-  return { enriched: totalEnriched, batches }
+  if (allListings.length === 0) {
+    return { enriched: 0, fastClassified, batches: 0 }
+  }
+
+  const totalEnriched = await processChunk(allListings, BATCH_SIZE, CONCURRENCY)
+  const totalBatches = Math.ceil(allListings.length / BATCH_SIZE)
+
+  console.log(`[ENRICH] ${totalEnriched} enriched (${fastClassified} fast-classified) in ${totalBatches} batches | ${allListings.length} processed`)
+  return { enriched: totalEnriched, fastClassified, batches: totalBatches }
 }

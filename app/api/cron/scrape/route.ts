@@ -8,7 +8,6 @@ import { trackEvent } from '../../../lib/analytics'
 import { scrapeCraigslist } from '../../../lib/scrapers/craigslist'
 import { scrapeEventbrite } from '../../../lib/scrapers/eventbrite'
 import { scrapeWithAI } from '../../../lib/scrapers/ai-extract'
-import { enrichAllPending } from '../../../lib/ai/enrich-listing'
 import type { ScraperResult, CraigslistConfig, EventbriteConfig, AiExtractConfig } from '../../../lib/scrapers/types'
 
 export async function GET(req: NextRequest) {
@@ -110,8 +109,8 @@ export async function GET(req: NextRequest) {
       results.push({ source: source.name, result })
     }
 
-    // Run AI enrichment on new listings
-    const enrichResult = await enrichAllPending()
+    // Enrichment now runs on its own cron (/api/cron/enrich every 30 min)
+    // This frees the scrape cron to focus on ingestion within its 300s timeout
 
     // Telegram summary
     const totalInserted = results.reduce((sum, r) => sum + r.result.inserted, 0)
@@ -119,13 +118,19 @@ export async function GET(req: NextRequest) {
     const totalErrors = results.reduce((sum, r) => sum + r.result.errors.length, 0)
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
 
+    // Check enrichment backlog for awareness
+    const { count: enrichBacklog } = await supabase
+      .from('fliply_listings')
+      .select('id', { count: 'exact', head: true })
+      .is('enriched_at', null)
+
     const summary = [
       `<b>Scrape Complete</b> (${elapsed}s)`,
       `Sources: ${results.length}`,
       `New listings: ${totalInserted}`,
       `Deduped: ${totalSkipped}`,
       `Errors: ${totalErrors}`,
-      `AI enriched: ${enrichResult.enriched} (${enrichResult.batches} batches)`,
+      `Enrich backlog: ${enrichBacklog || 0} (separate cron)`,
     ]
     if (totalErrors > 0) {
       summary.push(``, `Errors:`)
@@ -138,7 +143,7 @@ export async function GET(req: NextRequest) {
       sources_scraped: results.length,
       listings_inserted: totalInserted,
       listings_deduped: totalSkipped,
-      listings_enriched: enrichResult.enriched,
+      enrich_backlog: enrichBacklog || 0,
       elapsed_seconds: parseFloat(elapsed),
     })
 
@@ -149,7 +154,7 @@ export async function GET(req: NextRequest) {
       total_inserted: totalInserted,
       total_skipped: totalSkipped,
       total_errors: totalErrors,
-      enriched: enrichResult.enriched,
+      enrich_backlog: enrichBacklog || 0,
       results: results.map((r) => ({ source: r.source, ...r.result })),
     })
   } catch (err: any) {

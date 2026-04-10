@@ -5,6 +5,10 @@
       "schedule": "0 2,6,10,14,18,22 * * *"
     },
     {
+      "path": "/api/cron/enrich",
+      "schedule": "15,45 * * * *"
+    },
+    {
       "path": "/api/cron/weekly-digest?tier=pro",
       "schedule": "0 17 * * 4"
     },
