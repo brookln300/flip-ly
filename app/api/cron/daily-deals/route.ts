@@ -90,6 +90,7 @@ export async function GET(req: NextRequest) {
     let sent = 0
     let skipped = 0
     let failed = 0
+    const emailSendLogs: any[] = []
 
     for (const user of users) {
       const listings = user.market_id ? (listingsByMarket[user.market_id] || []) : []
@@ -117,20 +118,27 @@ export async function GET(req: NextRequest) {
 
         if (sendErr) throw new Error(sendErr)
 
-        await supabase.from('email_sends').insert({
+        emailSendLogs.push({
           user_id: user.id,
           to_email: user.email.toLowerCase(),
           subject,
           template_key: isPro ? 'daily_deals_pro' : 'daily_deals_free',
           resend_message_id: msgId || null,
           status: 'sent',
-        }).then(null, () => {})
+        })
 
         sent++
       } catch (err: any) {
         failed++
         console.error(`[DAILY-DEALS] Failed for ${user.email}: ${err.message}`)
       }
+    }
+
+    // Batch insert all email_sends logs at once (instead of per-user)
+    if (emailSendLogs.length > 0) {
+      await supabase.from('email_sends').insert(emailSendLogs).then(null, (err: any) =>
+        console.error('[DAILY-DEALS] email_sends batch insert failed:', err.message)
+      )
     }
 
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)

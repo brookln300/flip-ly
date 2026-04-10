@@ -74,14 +74,14 @@ export async function GET(req: NextRequest) {
     const { count: clExpiredCount } = await supabase
       .from('fliply_listings')
       .select('*', { count: 'exact', head: true })
-      .like('source_url', '%craigslist%')
+      .eq('source_type', 'craigslist_rss')
       .lt('scraped_at', clMaxAge)
 
     if (clExpiredCount && clExpiredCount > 0) {
       await supabase
         .from('fliply_listings')
         .delete()
-        .like('source_url', '%craigslist%')
+        .eq('source_type', 'craigslist_rss')
         .lt('scraped_at', clMaxAge)
     }
 

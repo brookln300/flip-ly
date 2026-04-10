@@ -65,14 +65,14 @@ export async function GET(req: NextRequest) {
     const { count: prePurged } = await supabase
       .from('fliply_listings')
       .select('*', { count: 'exact', head: true })
-      .like('source_url', '%craigslist%')
+      .eq('source_type', 'craigslist_rss')
       .lt('scraped_at', sevenDaysAgo)
 
     if (prePurged && prePurged > 0) {
       await supabase
         .from('fliply_listings')
         .delete()
-        .like('source_url', '%craigslist%')
+        .eq('source_type', 'craigslist_rss')
         .lt('scraped_at', sevenDaysAgo)
       totalDead += prePurged
     }

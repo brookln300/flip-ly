@@ -260,6 +260,9 @@ export async function GET(req: NextRequest) {
       if (marketId) dbQuery = dbQuery.eq('market_id', marketId)
       if (hot) dbQuery = dbQuery.eq('is_hot', true)
 
+      // Exclude non-resale events (concerts, yoga classes, etc.) from browse results
+      dbQuery = dbQuery.or('event_type.is.null,event_type.neq.event')
+
       const todayBrowse = new Date().toISOString().split('T')[0]
       const maxAgeBrowse = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       dbQuery = dbQuery.or(`event_date.is.null,event_date.gte.${todayBrowse}`)
