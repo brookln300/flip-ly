@@ -17,9 +17,11 @@ function ProContent() {
   const [error, setError] = useState('')
   const [user, setUser] = useState<UserData | null>(null)
   const [authChecked, setAuthChecked] = useState(false)
+  const [activated, setActivated] = useState(false)
   const tierParam = params.get('tier')
   const isPower = tierParam === 'power'
   const autoTriggered = useRef(false)
+  const pollCount = useRef(0)
 
   // Fetch user via custom JWT (works for ALL auth methods)
   const fetchUser = useCallback(async () => {
@@ -105,26 +107,24 @@ function ProContent() {
   }, [isPower, isAuthenticated, isAlreadyPro, loading])
 
   // POST-CHECKOUT SUCCESS — poll for webhook completion
+  useEffect(() => {
+    if (status !== 'success') return
+    const poll = setInterval(async () => {
+      pollCount.current++
+      try {
+        const res = await fetch('/api/auth/me')
+        const data = await res.json()
+        if (data.user?.is_premium) {
+          setActivated(true)
+          clearInterval(poll)
+        }
+      } catch {}
+      if (pollCount.current >= 15) clearInterval(poll)
+    }, 2000)
+    return () => clearInterval(poll)
+  }, [status])
+
   if (status === 'success') {
-    const [activated, setActivated] = useState(false)
-    const pollCount = useRef(0)
-
-    useEffect(() => {
-      const poll = setInterval(async () => {
-        pollCount.current++
-        try {
-          const res = await fetch('/api/auth/me')
-          const data = await res.json()
-          if (data.user?.is_premium) {
-            setActivated(true)
-            clearInterval(poll)
-          }
-        } catch {}
-        if (pollCount.current >= 15) clearInterval(poll) // Stop after 30s
-      }, 2000)
-      return () => clearInterval(poll)
-    }, [])
-
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
         <div style={{ textAlign: 'center', padding: '0 32px', maxWidth: '32rem' }}>
