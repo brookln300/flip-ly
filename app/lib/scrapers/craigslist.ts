@@ -60,8 +60,9 @@ export async function scrapeCraigslist(
 
     const hostname = config.hostname || 'dallas'
 
-    // Map CL hostname to display city name
+    // Map CL hostname to display city + state
     const cityFromHostname = hostnameToCity(hostname)
+    const stateFromHostname = hostnameToState(hostname)
 
     for (const item of items) {
       try {
@@ -139,6 +140,7 @@ export async function scrapeCraigslist(
           price_low_cents: priceCents,
           price_high_cents: priceHighCents,
           city: cityFromHostname,
+          state: stateFromHostname,
           zip_code: zipCode,
           latitude,
           longitude,
@@ -175,23 +177,35 @@ export async function scrapeCraigslist(
  * Map CL hostname to display city name.
  * Falls back to title-casing the hostname if not in map.
  */
-const CL_HOSTNAME_CITIES: Record<string, string> = {
-  dallas: 'Dallas', houston: 'Houston', austin: 'Austin', sanantonio: 'San Antonio',
-  losangeles: 'Los Angeles', seattle: 'Seattle', phoenix: 'Phoenix', miami: 'Miami',
-  chicago: 'Chicago', denver: 'Denver', portland: 'Portland', atlanta: 'Atlanta',
-  sfbay: 'San Francisco', sandiego: 'San Diego', minneapolis: 'Minneapolis',
-  tampa: 'Tampa', nashville: 'Nashville', boston: 'Boston', newyork: 'New York',
-  philadelphia: 'Philadelphia', detroit: 'Detroit', stlouis: 'St. Louis',
-  kansascity: 'Kansas City', raleigh: 'Raleigh', charlotte: 'Charlotte',
-  columbus: 'Columbus', indianapolis: 'Indianapolis', jacksonville: 'Jacksonville',
-  memphis: 'Memphis', oklahomacity: 'Oklahoma City', lasvegas: 'Las Vegas',
-  saltlakecity: 'Salt Lake City', sacramento: 'Sacramento', orangecounty: 'Orange County',
-  inlandempire: 'Inland Empire', fortworth: 'Fort Worth', bgky: 'Bowling Green',
+const CL_HOSTNAME_MAP: Record<string, { city: string; state: string }> = {
+  dallas: { city: 'Dallas', state: 'TX' }, houston: { city: 'Houston', state: 'TX' },
+  austin: { city: 'Austin', state: 'TX' }, sanantonio: { city: 'San Antonio', state: 'TX' },
+  fortworth: { city: 'Fort Worth', state: 'TX' },
+  losangeles: { city: 'Los Angeles', state: 'CA' }, sfbay: { city: 'San Francisco', state: 'CA' },
+  sandiego: { city: 'San Diego', state: 'CA' }, sacramento: { city: 'Sacramento', state: 'CA' },
+  orangecounty: { city: 'Orange County', state: 'CA' }, inlandempire: { city: 'Inland Empire', state: 'CA' },
+  seattle: { city: 'Seattle', state: 'WA' }, portland: { city: 'Portland', state: 'OR' },
+  phoenix: { city: 'Phoenix', state: 'AZ' }, miami: { city: 'Miami', state: 'FL' },
+  tampa: { city: 'Tampa', state: 'FL' }, jacksonville: { city: 'Jacksonville', state: 'FL' },
+  chicago: { city: 'Chicago', state: 'IL' }, denver: { city: 'Denver', state: 'CO' },
+  atlanta: { city: 'Atlanta', state: 'GA' }, minneapolis: { city: 'Minneapolis', state: 'MN' },
+  nashville: { city: 'Nashville', state: 'TN' }, memphis: { city: 'Memphis', state: 'TN' },
+  boston: { city: 'Boston', state: 'MA' }, newyork: { city: 'New York', state: 'NY' },
+  philadelphia: { city: 'Philadelphia', state: 'PA' }, detroit: { city: 'Detroit', state: 'MI' },
+  stlouis: { city: 'St. Louis', state: 'MO' }, kansascity: { city: 'Kansas City', state: 'MO' },
+  raleigh: { city: 'Raleigh', state: 'NC' }, charlotte: { city: 'Charlotte', state: 'NC' },
+  columbus: { city: 'Columbus', state: 'OH' }, indianapolis: { city: 'Indianapolis', state: 'IN' },
+  oklahomacity: { city: 'Oklahoma City', state: 'OK' }, lasvegas: { city: 'Las Vegas', state: 'NV' },
+  saltlakecity: { city: 'Salt Lake City', state: 'UT' }, bgky: { city: 'Bowling Green', state: 'KY' },
 }
 
 function hostnameToCity(hostname: string): string {
-  return CL_HOSTNAME_CITIES[hostname.toLowerCase()] ||
+  return CL_HOSTNAME_MAP[hostname.toLowerCase()]?.city ||
     hostname.charAt(0).toUpperCase() + hostname.slice(1)
+}
+
+function hostnameToState(hostname: string): string | null {
+  return CL_HOSTNAME_MAP[hostname.toLowerCase()]?.state || null
 }
 
 /**
