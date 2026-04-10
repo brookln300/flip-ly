@@ -49,8 +49,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    // Block if user already has the same or higher tier (but allow pro → power upgrade)
     if (user.is_premium && user.subscription_tier !== 'admin') {
-      return NextResponse.json({ error: 'Already a Pro member' }, { status: 400 })
+      const tierRank: Record<string, number> = { free: 0, pro: 1, power: 2 }
+      const currentRank = tierRank[user.subscription_tier || 'free'] ?? 0
+      const targetRank = tierRank[tier] ?? 0
+      if (targetRank <= currentRank) {
+        return NextResponse.json(
+          { error: `Already on ${user.subscription_tier} plan` },
+          { status: 400 }
+        )
+      }
     }
 
     // Reuse existing Stripe customer or create new
