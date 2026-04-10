@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-const BOT_TOKEN = '8353016152:AAGea8NdbAOTW062ilIhUwIX-ZNFXM34LC4'
-const KEITH_CHAT_ID = '7235586057'
-const TODOIST_TOKEN = 'b062509bead997212339a205bd697e0818223b61'
+const BOT_TOKEN = process.env.CLAWDIRECTOR_BOT_TOKEN!
+const KEITH_CHAT_ID = process.env.CLAWDIRECTOR_CHAT_ID!
+const TODOIST_TOKEN = process.env.TODOIST_TOKEN!
 const TODOIST_API = 'https://api.todoist.com/api/v1'
 const OK = NextResponse.json({ ok: true })
 
