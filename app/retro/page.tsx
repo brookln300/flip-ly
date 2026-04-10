@@ -857,7 +857,7 @@ export default function RetroPage() {
             >
               🔍 START SEARCHING NOW!!
             </button>
-            <a href="/signup" className="retro-btn retro-btn-pink" style={{ fontSize: '14px', padding: '8px 24px', textDecoration: 'none' }}>
+            <a href="/?signup=pro" className="retro-btn retro-btn-pink" style={{ fontSize: '14px', padding: '8px 24px', textDecoration: 'none' }}>
               ✉️ GET FREE ACCOUNT!!
             </a>
           </div>
@@ -1129,7 +1129,7 @@ export default function RetroPage() {
             <div style={{ padding: '20px', textAlign: 'center' }}>
               <p style={{ color: '#555', fontFamily: 'Comic Sans MS', fontSize: '13px' }}>
                 🤖 Our robots are still scanning!! Check back soon or{' '}
-                <a href="/signup" style={{ color: '#0FFF50' }}>sign up for alerts</a>!
+                <a href="/?signup=pro" style={{ color: '#0FFF50' }}>sign up for alerts</a>!
               </p>
             </div>
           ) : (
@@ -1203,7 +1203,7 @@ export default function RetroPage() {
                       style={{ width: '100%', marginTop: '8px', fontSize: '10px' }}
                       onClick={() => {
                         if (window.confirm('U need a PRO account to see the source link!! Want to sign up FREE?')) {
-                          window.location.href = '/signup'
+                          window.location.href = '/?signup=pro'
                         }
                       }}
                     >
@@ -1353,7 +1353,7 @@ export default function RetroPage() {
                   <div key={f} style={{ color: '#c0c0c0', fontFamily: 'Comic Sans MS', fontSize: '11px', textAlign: 'left' }}>{f}</div>
                 ))}
               </div>
-              <a href="/signup" className="retro-btn retro-btn-blue" style={{ display: 'block', textDecoration: 'none' }}>
+              <a href="/?signup=pro" className="retro-btn retro-btn-blue" style={{ display: 'block', textDecoration: 'none' }}>
                 GET FREE ACCOUNT!!
               </a>
             </div>
@@ -1497,7 +1497,7 @@ export default function RetroPage() {
             />
             <button
               className="retro-btn retro-btn-lime"
-              onClick={() => alert('Plz use our main signup page!! We dont want ur email to get lost in cyberspace!! :D\n\nClick OK to go to /signup')}
+              onClick={() => { alert('Plz use our main signup page!! We dont want ur email to get lost in cyberspace!! :D'); window.location.href = '/?signup=pro' }}
             >
               ✉️ SIGN UP!!
             </button>
