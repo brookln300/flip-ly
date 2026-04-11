@@ -110,7 +110,7 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
             {deal.hot && (
-              <span style={{ background: '#fef2f2', color: '#dc2626', padding: '1px 5px', fontSize: '9px', fontWeight: 700, borderRadius: '3px', letterSpacing: '0.04em', flexShrink: 0 }}>HOT</span>
+              <span style={{ background: '#fef6ee', color: '#c2410c', padding: '1px 5px', fontSize: '9px', fontWeight: 700, borderRadius: '3px', letterSpacing: '0.04em', flexShrink: 0 }}>HOT</span>
             )}
             {deal.event_type && deal.event_type !== 'listing' && (
               <span style={{

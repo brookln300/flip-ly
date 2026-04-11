@@ -120,16 +120,16 @@ export default function SearchSection({ markets }: {
       )}
 
       {/* Search form — full width, grows with viewport */}
-      <div style={{ width: '100%', padding: 'var(--space-10) var(--space-4) 0' }}>
+      <div style={{ width: '100%', padding: 'var(--space-10) var(--space-4) 0', background: 'linear-gradient(180deg, #fffbf5 0%, var(--bg-primary) 100%)' }}>
         <div id="search" style={{ maxWidth: '900px', width: '100%', margin: '0 auto' }}>
           <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)', marginBottom: 'var(--space-4)' }}>
             Try it — search your area for free
           </p>
           <form onSubmit={handleSearch}>
             <div style={{
-              background: '#ffffff', border: '1px solid var(--border-default)',
+              background: '#fffdf9', border: '1px solid var(--border-default)',
               borderRadius: '16px', padding: '20px 24px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)',
+              boxShadow: '0 4px 24px rgba(160,120,60,0.08), 0 0 0 1px rgba(180,140,80,0.06)',
               transition: 'box-shadow 0.2s ease',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
