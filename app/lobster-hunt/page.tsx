@@ -338,6 +338,7 @@ export default async function LobsterHuntPage() {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))',
             gap: 'var(--space-6, 24px)',
+            alignItems: 'start',
           }}>
             {/* Left: Top Agents */}
             <div style={{
