@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect, useRef, useCallback } from 'react'
+import ShellTrigger from '../components/ShellTrigger'
 
 interface UserData {
   id: string
@@ -637,6 +638,7 @@ export default function ProPage() {
   return (
     <Suspense fallback={<div style={{ background: 'var(--bg-primary)', minHeight: '100vh' }} />}>
       <ProContent />
+      <ShellTrigger variant="modern" />
     </Suspense>
   )
 }
