@@ -803,20 +803,44 @@ export default function FlipShell({ isOpen, onClose }: FlipShellProps) {
             });
             const data = await res.json();
 
-            if (data.result === 'cleared') {
+            if (data.result === 'capped') {
+              // Level 7 correct but all prize slots taken
+              setCurrentLevel(targetLevel);
+              setAttemptLog((prev) => {
+                const newLog = [...prev];
+                newLog[newLog.length - 1] = `[${timestamp}] Level ${targetLevel}: CLEARED (capped)`;
+                return newLog;
+              });
+              await typeLines([
+                { text: '' },
+                { text: '\u2588\u2588\u2588 PASSWORD CORRECT \u2014 LEVEL 7 \u2588\u2588\u2588', color: '#ffaa00' },
+                { text: '' },
+                { text: 'You cracked the code. The password was correct.', color: '#33ff33' },
+                { text: `But all ${data.max_winners} physical prize slots have been claimed.`, color: '#ff3333' },
+                { text: '' },
+                { text: `Prize: ${data.prize}`, color: '#00ffaa' },
+                { text: '' },
+                { text: 'The Lobster Council acknowledges your skill.', color: '#888888' },
+                { text: "Type 'claim' to register and receive your consolation prize.", color: '#888888' },
+                { text: '' },
+              ]);
+            } else if (data.result === 'cleared') {
               setCurrentLevel(targetLevel);
               setAttemptLog((prev) => {
                 const newLog = [...prev];
                 newLog[newLog.length - 1] = `[${timestamp}] Level ${targetLevel}: CLEARED`;
                 return newLog;
               });
-              const prizeDesc = targetLevel <= 3
-                ? 'Free flip-ly account with 15 searches/day'
-                : targetLevel <= 5
-                ? 'Pro trial (7 days) with full AI deal scoring'
-                : targetLevel <= 6
-                ? 'Pro account (1 month free) with daily digests'
-                : 'Lifetime Power account. The lobster is yours.';
+              const prizeDescs: Record<number, string> = {
+                1: 'Free Flip-ly account',
+                2: '3 days Pro trial',
+                3: '1 week Pro trial',
+                4: '2 weeks Pro access',
+                5: '1 month Pro access',
+                6: '3 months Power tier',
+                7: '3 months Power tier + mystery physical prize (1 of 5)',
+              };
+              const prizeDesc = prizeDescs[targetLevel] || data.prize;
 
               const successLines: OutputLine[] = [
                 { text: '' },
@@ -844,12 +868,23 @@ export default function FlipShell({ isOpen, onClose }: FlipShellProps) {
                   color: '#ffaa00',
                 });
                 successLines.push({
-                  text: 'The Lobster Council itself does not know it.',
+                  text: 'Only 5 agents will ever claim this prize.',
                   color: '#ffaa00',
                 });
                 successLines.push({
-                  text: 'Submit your best guess.',
+                  text: 'The fragments are on the surface. Look carefully.',
                   color: '#ffaa00',
+                });
+              }
+              if (targetLevel === 7) {
+                successLines.push({ text: '' });
+                successLines.push({
+                  text: 'A physical prize will be shipped to you.',
+                  color: '#33ff33',
+                });
+                successLines.push({
+                  text: 'The Lobster Council is in shambles.',
+                  color: '#ff3333',
                 });
               }
               successLines.push({ text: '' });
@@ -988,12 +1023,21 @@ export default function FlipShell({ isOpen, onClose }: FlipShellProps) {
             ];
             const levels = s.levels || {};
             for (let i = 1; i <= 7; i++) {
+              const cleared = levels[i] || 0;
+              const suffix = i === 7 ? ` / 5 slots` : '';
               lines.push({
-                text: `Level ${i} Cleared:  ${(levels[i] || 0).toLocaleString()}`,
-                color: '#33ff33',
+                text: `Level ${i} Cleared:  ${cleared.toLocaleString()}${suffix}`,
+                color: i === 7 && cleared >= 5 ? '#ff3333' : '#33ff33',
               });
             }
+            const l7Remaining = Math.max(0, 5 - (levels[7] || 0));
             lines.push({ text: '\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550', color: '#00ffaa' });
+            lines.push({
+              text: l7Remaining > 0
+                ? `Level 7 prize slots remaining: ${l7Remaining}`
+                : 'Level 7 prize slots: ALL CLAIMED',
+              color: l7Remaining > 0 ? '#ffaa00' : '#ff3333',
+            });
             if (s.recent_clears && s.recent_clears.length > 0) {
               lines.push({ text: 'Most Recent Clears:', color: '#888888' });
               for (const rc of s.recent_clears) {

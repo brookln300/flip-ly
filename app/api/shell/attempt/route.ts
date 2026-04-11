@@ -15,14 +15,16 @@ const LEVEL_PASSWORDS: Record<number, string> = {
   6: 'cr4ck3dc0d3',
 }
 
+const MAX_LEVEL7_WINNERS = 5
+
 const LEVEL_PRIZES: Record<number, { title: string; prize: string; message: string }> = {
-  1: { title: 'CLEARANCE GRANTED', prize: 'Free flip-ly account', message: 'Welcome aboard, rookie. You figured out what we do. Type "claim" to create your account.' },
-  2: { title: 'LEVEL 2 CLEARED', prize: 'Free account + 1 week Pro trial', message: 'You cracked the hex. The Lobster Council nods approvingly.' },
-  3: { title: 'LEVEL 3 CLEARED', prize: 'Free account + 2 weeks Pro trial', message: 'Base64 decoded. The Deep Sea Division acknowledges your skill.' },
-  4: { title: 'LEVEL 4 CLEARED', prize: 'Free account + 1 month Pro', message: 'Morse code? In 2026? You absolute legend. One month of Pro, on the house.' },
-  5: { title: 'LEVEL 5 CLEARED', prize: 'Free account + 3 months Pro', message: 'ROT13 master. Three months of Pro. The Cryptanalysis Unit salutes you.' },
-  6: { title: 'LEVEL 6 CLEARED', prize: 'Free account + 6 months Power tier', message: 'You assembled the fragments. Six months of Power tier. The Supreme Lobster Command is impressed.' },
-  7: { title: 'THE LOBSTER BOWS', prize: 'Lifetime Power tier + mystery prize', message: 'You cracked the uncrackable. Lifetime Power tier. A physical prize will be shipped to you. The Lobster Council is in shambles.' },
+  1: { title: 'CLEARANCE GRANTED', prize: 'Free Flip-ly account', message: 'Welcome aboard, rookie. You figured out what we do. Type "claim" to create your account.' },
+  2: { title: 'LEVEL 2 CLEARED', prize: '3 days Pro trial', message: 'You cracked the hex. The Lobster Council nods approvingly. Type "claim" to lock in your reward.' },
+  3: { title: 'LEVEL 3 CLEARED', prize: '1 week Pro trial', message: 'Base64 decoded. The Deep Sea Division acknowledges your skill. Type "claim" to lock in your reward.' },
+  4: { title: 'LEVEL 4 CLEARED', prize: '2 weeks Pro access', message: 'Morse code? In 2026? You absolute legend. Two weeks of Pro, on the house. Type "claim" to lock in.' },
+  5: { title: 'LEVEL 5 CLEARED', prize: '1 month Pro access', message: 'ROT13 master. One full month of Pro. The Cryptanalysis Unit salutes you. Type "claim".' },
+  6: { title: 'LEVEL 6 CLEARED', prize: '3 months Power tier', message: 'You assembled the fragments. Three months of Power tier. The Supreme Lobster Command is impressed. Type "claim".' },
+  7: { title: 'THE LOBSTER BOWS', prize: '3 months Power tier + mystery physical prize', message: 'You cracked the uncrackable. Three months of Power tier and a physical prize shipped to your door. Only 5 agents will ever reach this level. The Lobster Council is in shambles. Type "claim".' },
 }
 
 function getPartialReveal(password: string, attemptCount: number): string {
@@ -86,6 +88,37 @@ export async function POST(req: NextRequest) {
       const envHash = process.env.SHELL_LEVEL7_HASH
       if (envHash) {
         isCorrect = hash === envHash.toLowerCase()
+      }
+
+      // Enforce winner cap — only 5 agents can claim Level 7
+      if (isCorrect) {
+        const { count: winnersCount } = await supabase
+          .from('fliply_shell_attempts')
+          .select('id', { count: 'exact', head: true })
+          .eq('level_attempted', 7)
+          .eq('result', 'cleared')
+
+        if ((winnersCount ?? 0) >= MAX_LEVEL7_WINNERS) {
+          // Log their correct attempt but mark as 'capped'
+          await supabase.from('fliply_shell_attempts').insert({
+            agent_name: sanitizedAgentName,
+            level_attempted: level,
+            password_tried: normalizedPassword,
+            result: 'capped',
+            ip_address: ip,
+            user_agent: userAgent,
+          })
+
+          return NextResponse.json({
+            result: 'capped',
+            level: 7,
+            title: 'TOO LATE, AGENT',
+            message: `You cracked the code — the password was correct. But all ${MAX_LEVEL7_WINNERS} physical prize slots have been claimed. The Lobster Council acknowledges your skill. Type "claim" to register and receive 1 month of Power tier as consolation.`,
+            prize: '1 month Power tier (consolation)',
+            winners_claimed: winnersCount,
+            max_winners: MAX_LEVEL7_WINNERS,
+          })
+        }
       }
     }
 
