@@ -100,6 +100,35 @@ body {
   color: var(--text-dim);
 }
 
+/* ── SKIP LINK ────────────────────────────────────────── */
+.skip-to-main {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 12px 24px;
+  background: var(--accent-green);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 0 0 8px 0;
+  text-decoration: none;
+}
+.skip-to-main:focus {
+  left: 0;
+}
+
+/* ── PRICING CTA HOVER ────────────────────────────────── */
+.pricing-cta-pro:hover {
+  background: #15803d !important;
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.2);
+}
+.pricing-cta-power:hover {
+  border-color: var(--accent-purple) !important;
+  color: var(--accent-purple) !important;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.1);
+}
+
 /* ── SCROLLBAR ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }

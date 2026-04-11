@@ -45,7 +45,7 @@ export default function HomeHeader() {
               alignItems: 'center',
               gap: '5px',
               padding: '5px 12px',
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: 600,
               fontFamily: 'var(--font-mono)',
               letterSpacing: '0.04em',

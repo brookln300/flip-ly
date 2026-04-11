@@ -34,7 +34,7 @@ export default function EstateSaleFlippingGuide() {
         <div style={{ marginBottom: '48px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <span style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--accent-green)', fontWeight: 600 }}>Strategy</span>
-            <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>April 5, 2026 · 6 min read</span>
+            <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>April 5, 2026 · 6 min read</span>
           </div>
           <h1 style={{
             fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 700, color: 'var(--text-primary)',

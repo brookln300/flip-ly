@@ -46,7 +46,7 @@ export default function BlogIndex() {
                 fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px',
                 color: 'var(--accent-green)', fontWeight: 600,
               }}>{post.tag}</span>
-              <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>
                 {post.date} · {post.readTime}
               </span>
             </div>

@@ -8,6 +8,7 @@ import RetroPortalButton from './components/RetroPortalButton'
 import ShellTrigger from './components/ShellTrigger'
 import FadeIn from './components/FadeIn'
 import HeroCTA from './components/HeroCTA'
+import { TrendingUp, DollarSign, Tags, Zap, CircleCheck, Construction, Check, Circle } from 'lucide-react'
 
 /* ══════════════════════════════════════════════════════════
    Server-side data fetching — runs at request time, no waterfall
@@ -97,7 +98,7 @@ export default async function Home() {
            Where machines read: the first fragment waits (d33p).
            Where styles whisper: the second fragment hides.
            Combine them. The deep claw opens the final door. */}
-      <main className="min-h-screen relative" style={{ background: 'var(--bg-primary)' }}>
+      <main id="main" className="min-h-screen relative" style={{ background: 'var(--bg-primary)' }}>
 
         <HomeHeader />
 
@@ -147,7 +148,7 @@ export default async function Home() {
                 ].map(s => (
                   <div key={s.label}>
                     <span style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em', minWidth: '60px', display: 'inline-block' }}>{s.value}</span>
-                    <span style={{ display: 'block', fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>{s.label}</span>
+                    <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>{s.label}</span>
                   </div>
                 ))}
               </div>
@@ -184,6 +185,9 @@ export default async function Home() {
           </div>
         </div>
 
+        {/* ═══ SEARCH — client island (directly below hero per marketplace pattern) ═══ */}
+        <SearchSection markets={markets} />
+
         {/* ═══ HOW IT WORKS — server rendered static content ═══ */}
         <FadeIn style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-10) var(--space-4)' }}>
@@ -210,20 +214,17 @@ export default async function Home() {
               ))}
             </div>
             {/* Source logos */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px', flexWrap: 'wrap', opacity: 0.4, marginTop: '28px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px', flexWrap: 'wrap', opacity: 0.6, marginTop: '28px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="#6e6e73" strokeWidth="1.5"/><text x="12" y="16" textAnchor="middle" fill="#6e6e73" fontSize="10" fontWeight="700" fontFamily="system-ui">CL</text></svg>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-              <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>+ 14 more</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>+ 14 more</span>
             </div>
           </div>
         </FadeIn>
-
-        {/* ═══ SEARCH — client island ═══ */}
-        <SearchSection markets={markets} />
 
         {/* ═══ FEATURED DEALS — client island with server-fetched initial data ═══ */}
         <FeaturedDeals initialDeals={featuredDeals} initialMarketName="Dallas / Fort Worth" markets={markets} />
@@ -286,18 +287,23 @@ export default async function Home() {
             maxWidth: '480px', margin: '0 auto',
           }}>
             {[
-              { icon: '📈', label: 'Demand', desc: 'How fast does this category sell?' },
-              { icon: '💰', label: 'Margin', desc: 'Price vs typical resale value' },
-              { icon: '🏷️', label: 'Competition', desc: 'How many similar listings exist?' },
-              { icon: '⚡', label: 'Velocity', desc: 'Days-to-sell estimate' },
+              { icon: 'demand', label: 'Demand', desc: 'How fast does this category sell?' },
+              { icon: 'margin', label: 'Margin', desc: 'Price vs typical resale value' },
+              { icon: 'competition', label: 'Competition', desc: 'How many similar listings exist?' },
+              { icon: 'velocity', label: 'Velocity', desc: 'Days-to-sell estimate' },
             ].map(f => (
               <div key={f.label} style={{
                 background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
                 borderRadius: '10px', padding: '14px 8px',
               }}>
-                <div style={{ fontSize: '20px', marginBottom: '6px' }}>{f.icon}</div>
+                <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'center' }}>
+                  {f.icon === 'demand' && <TrendingUp size={20} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />}
+                  {f.icon === 'margin' && <DollarSign size={20} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />}
+                  {f.icon === 'competition' && <Tags size={20} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />}
+                  {f.icon === 'velocity' && <Zap size={20} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />}
+                </div>
                 <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }}>{f.label}</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{f.desc}</p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -331,12 +337,12 @@ export default async function Home() {
             }}>
               <div style={{
                 position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)',
-                background: 'var(--accent-green)', color: '#fff', fontSize: '11px', fontWeight: 700,
+                background: 'var(--accent-green)', color: '#fff', fontSize: '12px', fontWeight: 700,
                 padding: '3px 12px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.05em',
               }}>Most popular</div>
               <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-green)', marginBottom: '4px' }}>Pro</p>
               {stats.totalUsers > 0 && (
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 2px', fontFamily: 'var(--font-mono)' }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 2px', fontFamily: 'var(--font-mono)' }}>
                   Join {stats.totalUsers.toLocaleString()} members
                 </p>
               )}
@@ -345,7 +351,7 @@ export default async function Home() {
                 <span style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>$5</span>
                 <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>/mo</span>
               </div>
-              <p style={{ fontSize: '11px', color: 'var(--accent-green)', marginBottom: '16px', fontWeight: 600 }}>Founding price &middot; Locked for life</p>
+              <p style={{ fontSize: '12px', color: 'var(--accent-green)', marginBottom: '16px', fontWeight: 600 }}>Founding price &middot; Locked for life</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                 <span><strong>Unlimited</strong> searches</span>
                 <span>3 markets</span>
@@ -353,10 +359,11 @@ export default async function Home() {
                 <span>Full score breakdowns</span>
                 <span>Direct source links</span>
               </div>
-              <a href="/pro" style={{
+              <a href="/pro" className="pricing-cta-pro" style={{
                 display: 'block', width: '100%', marginTop: '20px', padding: '10px', fontSize: '13px', fontWeight: 700,
                 background: 'var(--accent-green)', color: '#fff', border: 'none', textAlign: 'center',
                 borderRadius: '8px', cursor: 'pointer', textDecoration: 'none',
+                transition: 'background 0.2s, box-shadow 0.2s',
               }}>Upgrade to Pro</a>
             </div>
             {/* Power */}
@@ -367,7 +374,7 @@ export default async function Home() {
                 <span style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>$19</span>
                 <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>/mo</span>
               </div>
-              <p style={{ fontSize: '11px', color: 'var(--accent-purple)', marginBottom: '16px', fontWeight: 600 }}>Founding price &middot; Locked for life</p>
+              <p style={{ fontSize: '12px', color: 'var(--accent-purple)', marginBottom: '16px', fontWeight: 600 }}>Founding price &middot; Locked for life</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text-muted)' }}>
                 <span>Everything in Pro</span>
                 <span><strong>Unlimited</strong> markets</span>
@@ -375,10 +382,11 @@ export default async function Home() {
                 <span>Category intelligence</span>
                 <span>Priority support</span>
               </div>
-              <a href="/pro?tier=power" style={{
+              <a href="/pro?tier=power" className="pricing-cta-power" style={{
                 display: 'block', width: '100%', marginTop: '20px', padding: '10px', fontSize: '13px', fontWeight: 600,
                 background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border-default)', textAlign: 'center',
                 borderRadius: '8px', cursor: 'pointer', textDecoration: 'none',
+                transition: 'border-color 0.2s, color 0.2s, box-shadow 0.2s',
               }}>Go Power</a>
             </div>
           </div>
@@ -411,34 +419,6 @@ export default async function Home() {
           </div>
         </FadeIn>
 
-        {/* ═══ TESTIMONIALS ═══ */}
-        <FadeIn style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {[
-              { quote: 'Found a $200 dresser scored 9 — flipped it for $475 the same weekend.', author: 'Dallas flipper' },
-              { quote: 'The Thursday digest is my Saturday morning game plan.', author: 'Atlanta member' },
-              { quote: 'Saved me 3 hours of checking Craigslist every morning.', author: 'Phoenix member' },
-            ].map((t, i) => (
-              <div key={i} style={{
-                background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-                borderRadius: '10px', padding: '16px 20px',
-              }}>
-                <p style={{
-                  fontSize: '13px', fontStyle: 'italic', color: 'var(--text-muted)',
-                  lineHeight: 1.6, margin: '0 0 6px',
-                }}>
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <p style={{
-                  fontSize: '11px', color: 'var(--text-dim)', margin: 0,
-                  fontFamily: 'var(--font-mono)',
-                }}>
-                  — {t.author}
-                </p>
-              </div>
-            ))}
-          </div>
-        </FadeIn>
 
         {/* ═══ WHAT'S NEW + ROADMAP ═══ */}
         <FadeIn id="whats-new" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
@@ -456,8 +436,8 @@ export default async function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <span style={{ fontSize: '16px' }}>&#x2705;</span>
-                <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Recently shipped</h3>
+                <CircleCheck size={18} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />
+                <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Recently shipped</h3>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[
@@ -468,11 +448,11 @@ export default async function Home() {
                   { label: 'Expandable Listings', desc: 'Click any deal to see AI description, tags, address, and directions', tag: null },
                 ].map(item => (
                   <div key={item.label} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                    <span style={{ color: 'var(--accent-green)', fontSize: '13px', marginTop: '1px', flexShrink: 0 }}>&#x2713;</span>
+                    <Check size={14} color="var(--accent-green)" strokeWidth={2.5} style={{ marginTop: '1px', flexShrink: 0 }} aria-hidden="true" />
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</span>
-                        {item.tag && <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--accent-green)', background: 'rgba(22,163,74,0.08)', borderRadius: '4px', padding: '1px 5px', letterSpacing: '0.5px' }}>{item.tag}</span>}
+                        {item.tag && <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--accent-green)', background: 'rgba(22,163,74,0.08)', borderRadius: '4px', padding: '1px 5px', letterSpacing: '0.5px' }}>{item.tag}</span>}
                       </div>
                       <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{item.desc}</p>
                     </div>
@@ -483,8 +463,8 @@ export default async function Home() {
 
             <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                <span style={{ fontSize: '16px' }}>&#x1F6A7;</span>
-                <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Coming soon</h3>
+                <Construction size={18} color="var(--accent-amber)" strokeWidth={2} aria-hidden="true" />
+                <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Coming soon</h3>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[
@@ -495,11 +475,11 @@ export default async function Home() {
                   { label: 'More Sources', desc: 'Facebook Marketplace, OfferUp, Nextdoor, and local permit feeds', tier: 'All' },
                 ].map(item => (
                   <div key={item.label} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                    <span style={{ color: 'var(--text-dim)', fontSize: '13px', marginTop: '1px', flexShrink: 0 }}>&#x25CB;</span>
+                    <Circle size={14} color="var(--text-dim)" strokeWidth={2} style={{ marginTop: '1px', flexShrink: 0 }} aria-hidden="true" />
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</span>
-                        <span style={{ fontSize: '9px', fontWeight: 600, color: item.tier === 'Pro' ? 'var(--accent-green)' : 'var(--text-dim)', background: item.tier === 'Pro' ? 'rgba(22,163,74,0.08)' : 'var(--bg-surface)', borderRadius: '4px', padding: '1px 5px' }}>{item.tier}</span>
+                        <span style={{ fontSize: '10px', fontWeight: 600, color: item.tier === 'Pro' ? 'var(--accent-green)' : 'var(--text-dim)', background: item.tier === 'Pro' ? 'rgba(22,163,74,0.08)' : 'var(--bg-surface)', borderRadius: '4px', padding: '1px 5px' }}>{item.tier}</span>
                       </div>
                       <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{item.desc}</p>
                     </div>

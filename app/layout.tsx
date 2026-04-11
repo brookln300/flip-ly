@@ -131,6 +131,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
+        <a href="#main" className="skip-to-main">Skip to main content</a>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

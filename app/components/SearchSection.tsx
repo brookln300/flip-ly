@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { Home, Landmark, Tent, Package, Hammer, Gift } from 'lucide-react'
 import DealRow from './DealRow'
 import { useSignup } from './SignupContext'
 
@@ -18,6 +19,29 @@ export default function SearchSection({ markets }: {
   const [searchGate, setSearchGate] = useState<any>(null)
   const [expandedDeal, setExpandedDeal] = useState<number | null>(null)
   const [loggedInUser, setLoggedInUser] = useState<any>(null)
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  const popularSearches = [
+    'furniture', 'vintage', 'tools', 'electronics', 'kitchen',
+    'garage sale', 'estate sale', 'free items', 'antique',
+    'appliances', 'collectibles', 'power tools', 'vinyl records',
+    'mid century', 'jewelry', 'bikes', 'kids toys', 'books',
+  ]
+
+  // Debounced suggestions
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSuggestions([])
+      return
+    }
+    const timer = setTimeout(() => {
+      const q = searchQuery.toLowerCase()
+      const matches = popularSearches.filter(s => s.includes(q) && s !== q).slice(0, 5)
+      setSuggestions(matches)
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   // Check auth once for deal row gating
   useEffect(() => {
@@ -78,7 +102,7 @@ export default function SearchSection({ markets }: {
             {searchGate.searches_remaining <= 0 ? 'Searches reset at midnight' : `${searchGate.searches_remaining}/${searchGate.searches_max} today`}
           </span>
           {searchGate.searches_remaining <= 5 && searchGate.searches_remaining > 0 && (
-            <a href="/pro" style={{ display: 'block', marginTop: '4px', color: 'var(--text-muted)', fontSize: '11px', textDecoration: 'underline', textUnderlineOffset: '2px' }}>Go unlimited</a>
+            <a href="/pro" style={{ display: 'block', marginTop: '4px', color: 'var(--text-muted)', fontSize: '12px', textDecoration: 'underline', textUnderlineOffset: '2px' }}>Go unlimited</a>
           )}
         </div>
       )}
@@ -109,15 +133,45 @@ export default function SearchSection({ markets }: {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input
-                  type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Search tools, vintage, furniture..."
-                  aria-label="Search deals"
-                  style={{
-                    width: '100%', padding: '8px 0', border: 'none', outline: 'none',
-                    fontSize: '16px', color: 'var(--text-primary)', background: 'transparent',
-                  }}
-                />
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <input
+                    type="text" value={searchQuery}
+                    onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true) }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    placeholder="Search tools, vintage, furniture..."
+                    aria-label="Search deals"
+                    autoComplete="off"
+                    style={{
+                      width: '100%', padding: '8px 0', border: 'none', outline: 'none',
+                      fontSize: '16px', color: 'var(--text-primary)', background: 'transparent',
+                    }}
+                  />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: '-28px', right: '-16px',
+                      background: '#fff', border: '1px solid var(--border-default)',
+                      borderRadius: '10px', marginTop: '6px', padding: '4px 0',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.08)', zIndex: 50,
+                    }}>
+                      {suggestions.map(s => (
+                        <button key={s} type="button"
+                          onMouseDown={() => { setSearchQuery(s); setShowSuggestions(false); handleSearch(undefined, s) }}
+                          style={{
+                            display: 'block', width: '100%', padding: '8px 16px', border: 'none',
+                            background: 'transparent', textAlign: 'left', cursor: 'pointer',
+                            fontSize: '14px', color: 'var(--text-secondary)',
+                            transition: 'background 0.1s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <select value={searchMarket} onChange={e => setSearchMarket(e.target.value)} aria-label="Select market area" style={{
@@ -143,21 +197,22 @@ export default function SearchSection({ markets }: {
 
             <div className="flex gap-2 mt-3 overflow-x-auto pb-1 justify-center" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {[
-                { label: '🏠 Garage Sales', q: 'garage sale' },
-                { label: '🏛️ Estate Sales', q: 'estate sale' },
-                { label: '🎪 Flea Markets', q: 'flea market' },
-                { label: '📦 Moving Sales', q: 'moving sale' },
-                { label: '🔨 Auctions', q: 'auction' },
-                { label: '🆓 Free Items', q: 'free' },
+                { label: 'Garage Sales', q: 'garage sale', icon: Home },
+                { label: 'Estate Sales', q: 'estate sale', icon: Landmark },
+                { label: 'Flea Markets', q: 'flea market', icon: Tent },
+                { label: 'Moving Sales', q: 'moving sale', icon: Package },
+                { label: 'Auctions', q: 'auction', icon: Hammer },
+                { label: 'Free Items', q: 'free', icon: Gift },
               ].map(tag => (
                 <button key={tag.q} type="button" onClick={() => { setSearchQuery(tag.q); handleSearch(undefined, tag.q) }} style={{
                   padding: '5px 14px', border: '1px solid var(--border-subtle)', borderRadius: '20px',
                   fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', cursor: 'pointer', flexShrink: 0,
-                  transition: 'all 0.15s', fontWeight: 500,
+                  transition: 'all 0.15s', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '5px',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(22,163,74,0.4)'; e.currentTarget.style.color = 'var(--accent-green)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-muted)' }}
                 >
+                  <tag.icon size={13} strokeWidth={2} aria-hidden="true" />
                   {tag.label}
                 </button>
               ))}

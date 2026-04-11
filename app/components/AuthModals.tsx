@@ -174,7 +174,7 @@ export default function AuthModals() {
             >
               Sign up with email
             </button>
-            <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '12px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '12px' }}>
               Free forever. No credit card needed.
             </p>
           </div>

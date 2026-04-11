@@ -103,7 +103,7 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
             background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-dim)' }}>--</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--text-dim)' }}>--</span>
           </div>
         )}
 
