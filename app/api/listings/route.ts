@@ -6,9 +6,30 @@ import { trackEvent } from '../../lib/analytics'
 import { getSession } from '../../lib/auth'
 import { getClientIp } from '../../lib/get-ip'
 import { isPremiumUser } from '../../lib/user-tier'
+import {
+  incrementSearchCount,
+  getSearchCount,
+  recordLimitHit,
+  getCachedUserTier,
+  setCachedUserTier,
+  getMarketId,
+  setMarketId,
+  isRedisHealthy,
+  hashQuery,
+  recordSearchQuery,
+  storeSearchResults,
+  getPriceBand,
+  getPricePosition,
+} from '../../lib/redis'
+import type { PriceBand } from '../../lib/redis'
 
 const FREE_SEARCH_LIMIT = 15  // per day
 const FREE_RESULTS_CAP = 10   // max results per query for free users
+
+function sanitizeForPostgrest(text: string): string {
+  // Remove characters that break PostgREST .or() filter parsing
+  return text.replace(/[,%_().*]/g, ' ').replace(/\s+/g, ' ').trim()
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -29,19 +50,39 @@ export async function GET(req: NextRequest) {
   const lng = searchParams.get('lng') ? parseFloat(searchParams.get('lng')!) : null
   const radius = searchParams.get('radius') ? parseFloat(searchParams.get('radius')!) : null
 
-  // ── Auth + Premium check ──
+  // ── Auth + Premium check (Redis-cached) ──
   const session = await getSession()
   let isPremium = false
   let userId: string | null = null
+  const redisUp = await isRedisHealthy()
 
   if (session?.userId) {
     userId = session.userId
-    const { data: user } = await supabase
-      .from('fliply_users')
-      .select('is_premium, subscription_tier')
-      .eq('id', session.userId)
-      .single()
-    isPremium = isPremiumUser(user)
+
+    // Try Redis cache first (avoids Supabase round-trip on every request)
+    const cached = redisUp ? await getCachedUserTier(session.userId) : null
+    if (cached) {
+      isPremium = cached.isPremium
+    } else {
+      const { data: user } = await supabase
+        .from('fliply_users')
+        .select('is_premium, subscription_tier, market_id')
+        .eq('id', session.userId)
+        .single()
+      isPremium = isPremiumUser(user)
+
+      // Cache for 15 min so subsequent requests skip Supabase
+      if (redisUp && user) {
+        setCachedUserTier({
+          userId: session.userId,
+          email: session.email,
+          isPremium,
+          tier: user.subscription_tier || 'free',
+          marketId: user.market_id || null,
+          marketSlug: null, // filled lazily on market lookup
+        }).catch(() => {}) // fire-and-forget
+      }
+    }
   }
 
   // ── Rate limiting for non-premium users ──
@@ -50,94 +91,145 @@ export async function GET(req: NextRequest) {
   let searchesRemaining = FREE_SEARCH_LIMIT
 
   if (isSearch && !isPremium) {
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
+    const identifier = userId || getClientIp(req)
 
-    if (userId) {
-      const { count } = await supabase
-        .from('fliply_search_log')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId)
-        .gte('searched_at', todayStart.toISOString())
-      searchesUsed = count || 0
+    if (redisUp) {
+      // Redis path: O(1) INCR instead of Supabase COUNT + INSERT
+      searchesUsed = await getSearchCount(identifier)
+
+      if (searchesUsed >= FREE_SEARCH_LIMIT) {
+        // Track weekly limit-hits for smart paywall nudge emails
+        const weeklyHits = await recordLimitHit(identifier)
+        trackEvent('search_rate_limited', {
+          query,
+          searches_today: searchesUsed,
+          user_type: userId ? 'free' : 'anonymous',
+          weekly_limit_hits: weeklyHits,
+        }, userId || undefined)
+
+        return NextResponse.json({
+          results: [],
+          total: 0,
+          query,
+          offset,
+          limit,
+          _gate: {
+            limited: true,
+            reason: 'daily_limit',
+            searches_used: searchesUsed,
+            searches_remaining: 0,
+            searches_max: FREE_SEARCH_LIMIT,
+            is_premium: false,
+            weekly_limit_hits: weeklyHits,
+          },
+          _meta: { real_data: true, scraped_sources: ['craigslist', 'eventbrite'] },
+        })
+      }
+
+      // Increment count (this IS the log — replaces the Supabase insert)
+      searchesUsed = await incrementSearchCount(identifier)
+      searchesRemaining = Math.max(0, FREE_SEARCH_LIMIT - searchesUsed)
+
+      // Fire-and-forget Supabase log for analytics (non-blocking)
+      const logPayload = userId ? { user_id: userId, query } : { anon_ip: getClientIp(req), query }
+      supabase.from('fliply_search_log').insert(logPayload).then(null, () => {})
     } else {
-      const ip = getClientIp(req)
-      const { count } = await supabase
-        .from('fliply_search_log')
-        .select('*', { count: 'exact', head: true })
-        .eq('anon_ip', ip)
-        .gte('searched_at', todayStart.toISOString())
-      searchesUsed = count || 0
+      // Fallback: original Supabase path if Redis is down
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+
+      if (userId) {
+        const { count } = await supabase
+          .from('fliply_search_log')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .gte('searched_at', todayStart.toISOString())
+        searchesUsed = count || 0
+      } else {
+        const ip = getClientIp(req)
+        const { count } = await supabase
+          .from('fliply_search_log')
+          .select('*', { count: 'exact', head: true })
+          .eq('anon_ip', ip)
+          .gte('searched_at', todayStart.toISOString())
+        searchesUsed = count || 0
+      }
+
+      searchesRemaining = Math.max(0, FREE_SEARCH_LIMIT - searchesUsed)
+
+      if (searchesUsed >= FREE_SEARCH_LIMIT) {
+        trackEvent('search_rate_limited', {
+          query,
+          searches_today: searchesUsed,
+          user_type: userId ? 'free' : 'anonymous',
+        }, userId || undefined)
+
+        return NextResponse.json({
+          results: [],
+          total: 0,
+          query,
+          offset,
+          limit,
+          _gate: {
+            limited: true,
+            reason: 'daily_limit',
+            searches_used: searchesUsed,
+            searches_remaining: 0,
+            searches_max: FREE_SEARCH_LIMIT,
+            is_premium: false,
+          },
+          _meta: { real_data: true, scraped_sources: ['craigslist', 'eventbrite'] },
+        })
+      }
+
+      if (userId) {
+        await supabase.from('fliply_search_log').insert({ user_id: userId, query })
+      } else {
+        const ip = getClientIp(req)
+        await supabase.from('fliply_search_log').insert({ anon_ip: ip, query })
+      }
+
+      searchesUsed += 1
+      searchesRemaining = Math.max(0, FREE_SEARCH_LIMIT - searchesUsed)
     }
-
-    searchesRemaining = Math.max(0, FREE_SEARCH_LIMIT - searchesUsed)
-
-    if (searchesUsed >= FREE_SEARCH_LIMIT) {
-      trackEvent('search_rate_limited', {
-        query,
-        searches_today: searchesUsed,
-        user_type: userId ? 'free' : 'anonymous',
-      }, userId || undefined)
-
-      return NextResponse.json({
-        results: [],
-        total: 0,
-        query,
-        offset,
-        limit,
-        _gate: {
-          limited: true,
-          reason: 'daily_limit',
-          searches_used: searchesUsed,
-          searches_remaining: 0,
-          searches_max: FREE_SEARCH_LIMIT,
-          is_premium: false,
-        },
-        _meta: { real_data: true, scraped_sources: ['craigslist', 'eventbrite'] },
-      })
-    }
-
-    // Log this search
-    if (userId) {
-      await supabase.from('fliply_search_log').insert({ user_id: userId, query })
-    } else {
-      const ip = getClientIp(req)
-      await supabase.from('fliply_search_log').insert({ anon_ip: ip, query })
-    }
-
-    searchesUsed += 1
-    searchesRemaining = Math.max(0, FREE_SEARCH_LIMIT - searchesUsed)
   }
 
   // ── Query listings ──
   const effectiveLimit = isPremium ? limit : Math.min(limit, FREE_RESULTS_CAP)
 
-  // Resolve market filter — invalid slug returns 0 results instead of all
+  // Resolve market filter — Redis-cached slug-to-ID lookup
   let marketId: string | null = null
   if (marketSlug) {
-    const { data: market } = await supabase
-      .from('fliply_markets')
-      .select('id')
-      .eq('slug', marketSlug)
-      .single()
-    if (market) {
-      marketId = market.id
-    } else {
-      return NextResponse.json({
-        results: [],
-        total: 0,
-        query,
-        offset,
-        limit,
-        _gate: {
-          limited: false,
-          searches_used: searchesUsed,
-          searches_remaining: searchesRemaining,
-          searches_max: FREE_SEARCH_LIMIT,
-          is_premium: isPremium,
-        },
-        _meta: { real_data: true, scraped_sources: ['craigslist', 'eventbrite'], search_method: 'invalid_market' },
-      })
+    // Try Redis cache first (413 markets rarely change)
+    marketId = redisUp ? await getMarketId(marketSlug) : null
+
+    if (!marketId) {
+      const { data: market } = await supabase
+        .from('fliply_markets')
+        .select('id')
+        .eq('slug', marketSlug)
+        .single()
+      if (market) {
+        marketId = market.id
+        // Cache for next time
+        if (redisUp) setMarketId(marketSlug, market.id).catch(() => {})
+      } else {
+        return NextResponse.json({
+          results: [],
+          total: 0,
+          query,
+          offset,
+          limit,
+          _gate: {
+            limited: false,
+            searches_used: searchesUsed,
+            searches_remaining: searchesRemaining,
+            searches_max: FREE_SEARCH_LIMIT,
+            is_premium: isPremium,
+          },
+          _meta: { real_data: true, scraped_sources: ['craigslist', 'eventbrite'], search_method: 'invalid_market' },
+        })
+      }
     }
   }
 
@@ -200,7 +292,7 @@ export async function GET(req: NextRequest) {
         .select('*', { count: 'exact' })
         .range(offset, offset + effectiveLimit - 1)
 
-      const safeQuery = query.replace(/%/g, '\\%').replace(/_/g, '\\_')
+      const safeQuery = sanitizeForPostgrest(query)
       dbQuery = dbQuery.or(
         `title.ilike.%${safeQuery}%,description.ilike.%${safeQuery}%,ai_description.ilike.%${safeQuery}%,ai_tags.cs.{${safeQuery.toLowerCase()}}`
       )
@@ -288,6 +380,51 @@ export async function GET(req: NextRequest) {
 
   const filtered = listings || []
 
+  // ── Price context: annotate listings with category price positioning ──
+  const priceContextMap = new Map<string, { position: string; vsMedian: number; tag: string; median: number }>()
+  if (isPremium && redisUp && marketId && filtered.length > 0) {
+    // Build a deduplicated set of tags we need to look up
+    const tagsToLookup = new Set<string>()
+    for (const l of filtered) {
+      const tags: string[] = l.ai_tags || []
+      if (l.price_low_cents && l.price_low_cents > 0 && tags.length > 0) {
+        tagsToLookup.add(tags[0]) // primary tag only
+      }
+    }
+
+    // Batch-fetch price bands for all needed tags (one Redis call per tag)
+    const bandCache = new Map<string, PriceBand | null>()
+    await Promise.all(
+      Array.from(tagsToLookup).map(async (tag) => {
+        try {
+          const band = await getPriceBand(marketId, tag)
+          bandCache.set(tag, band)
+        } catch {
+          bandCache.set(tag, null)
+        }
+      })
+    )
+
+    // Compute price position for each listing
+    for (const l of filtered) {
+      const tags: string[] = l.ai_tags || []
+      const price = l.price_low_cents
+      if (!price || price <= 0 || tags.length === 0) continue
+
+      const primaryTag = tags[0]
+      const band = bandCache.get(primaryTag)
+      if (!band) continue
+
+      const { position, vsMedian } = getPricePosition(price, band)
+      priceContextMap.set(l.id, {
+        position,
+        vsMedian,
+        tag: primaryTag,
+        median: band.median,
+      })
+    }
+  }
+
   // ── Freshness metadata ──
   const newestListing = filtered.length > 0
     ? new Date(Math.max(...filtered.map((l: any) => new Date(l.scraped_at).getTime())))
@@ -337,6 +474,7 @@ export async function GET(req: NextRequest) {
         lng: l.longitude,
         price_cents: l.price_low_cents || null,
         distance_miles: l.distance_miles || null,
+        price_context: priceContextMap.get(l.id) || null,
       }
     }
 
@@ -416,6 +554,17 @@ export async function GET(req: NextRequest) {
     user_type: isPremium ? 'pro' : userId ? 'free' : 'anonymous',
     search_method: searchMethod,
   }, userId || undefined)
+
+  // ── Search Replay: record query + result set for "Since You Last Searched" (non-blocking) ──
+  if (userId && query && redisUp) {
+    const qHash = hashQuery(query)
+    const resultIds = filtered.map((l: any) => l.id)
+    // Fire-and-forget: don't block the response
+    Promise.all([
+      recordSearchQuery(userId, qHash, query),
+      storeSearchResults(userId, qHash, resultIds),
+    ]).catch(() => {})
+  }
 
   return NextResponse.json({
     results,

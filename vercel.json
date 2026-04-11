@@ -47,6 +47,14 @@
     {
       "path": "/api/cron/daily-deals",
       "schedule": "0 15 * * 1-5"
+    },
+    {
+      "path": "/api/cron/price-bands",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/resale-radar",
+      "schedule": "0 */2 * * *"
     }
   ]
 }

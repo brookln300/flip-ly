@@ -82,6 +82,7 @@ Source: ${l.source_type || 'unknown'}`
       deal_score_reason: result.deal_score_reason,
       ai_tags: result.tags || [],
       event_type: result.event_type || null,
+      resale_flag: result.resale_flag || false,
       is_hot: result.deal_score >= 8,
       enriched_at: new Date().toISOString(),
     }

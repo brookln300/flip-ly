@@ -5,6 +5,7 @@ import { trackEvent } from '../../../lib/analytics'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { sendEmail } from '../../../lib/email/send'
 import { getProUpgradeEmail, getPaymentFailedEmail } from '../../../lib/email/drip-templates'
+import { tryClaimFoundingSlot, invalidateUserTier, isRedisHealthy } from '../../../lib/redis'
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -60,6 +61,17 @@ export async function POST(req: NextRequest) {
           trackEvent('pro_subscription_activated', {
             subscription_id: subscriptionId,
           }, userId)
+
+          // Redis: invalidate cached session (tier just changed) + decrement founding slots
+          if (await isRedisHealthy()) {
+            invalidateUserTier(userId).catch(() => {})
+            const { firstClaim, remaining } = await tryClaimFoundingSlot(session.id).catch(() => ({ firstClaim: false, remaining: -1 }))
+            if (firstClaim) {
+              console.log(`[Stripe] Founding slot claimed — ${remaining} remaining`)
+            } else if (remaining >= 0) {
+              console.log(`[Stripe] Duplicate webhook for session ${session.id} — slot already claimed`)
+            }
+          }
 
           console.log(`[Stripe] Pro activated for user ${userId}`)
 
@@ -165,6 +177,11 @@ export async function POST(req: NextRequest) {
             }
           }
           // canceled status: do nothing — let customer.subscription.deleted handle full cleanup
+
+          // Invalidate Redis session cache — tier just changed
+          if (await isRedisHealthy()) {
+            invalidateUserTier(userId).catch(() => {})
+          }
 
           trackEvent('subscription_status_updated', {
             subscription_id: subscription.id,
