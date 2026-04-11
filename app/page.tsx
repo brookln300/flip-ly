@@ -132,7 +132,7 @@ export default async function Home() {
                 fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6,
                 maxWidth: '420px', marginBottom: 'var(--space-5)',
               }}>
-                We scan 20+ marketplaces and score every deal by resale potential &mdash; so you don&apos;t have to.
+                We scan Craigslist, OfferUp, EstateSales.net, Eventbrite &amp; more &mdash; every 4 hours &mdash; and score every deal by resale potential.
               </p>
 
               {/* CTA row — client component for signup trigger */}

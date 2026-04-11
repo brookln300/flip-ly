@@ -28,7 +28,7 @@ export default function HeroCTA({ variant }: { variant?: 'free-tier' }) {
         onMouseOver={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)' }}
         onMouseOut={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)' }}
       >
-        Start finding deals — free
+        Start finding deals — free, no card
       </button>
       <a href="#search" style={{
         fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none',

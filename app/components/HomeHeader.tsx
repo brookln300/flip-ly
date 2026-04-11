@@ -39,8 +39,9 @@ export default function HomeHeader() {
           <a href="#pricing" className="hidden sm:inline" style={{ color: 'var(--text-muted)', fontSize: '13px', textDecoration: 'none', padding: '6px 12px' }}>Pricing</a>
           <button
             onClick={() => setShellOpen(true)}
-            className="hidden sm:inline-flex"
+            title="The Lobster Protocol"
             style={{
+              display: 'inline-flex',
               alignItems: 'center',
               gap: '5px',
               padding: '5px 12px',
@@ -68,8 +69,8 @@ export default function HomeHeader() {
               e.currentTarget.style.boxShadow = 'none'
             }}
           >
-            <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#00ff41', boxShadow: '0 0 4px #00ff41', flexShrink: 0 }} />
-            <span>LOBSTER PROTOCOL</span>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00ff41', boxShadow: '0 0 4px #00ff41', flexShrink: 0 }} />
+            <span className="hidden sm:inline">LOBSTER PROTOCOL</span>
           </button>
           {loggedInUser ? (
             <a href="/dashboard" style={{
