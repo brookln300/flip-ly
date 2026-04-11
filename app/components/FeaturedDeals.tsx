@@ -54,7 +54,7 @@ export default function FeaturedDeals({ initialDeals, initialMarketName, markets
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
                 Top deals in {featuredMarketName}
               </h2>
-              <span style={{ fontSize: '12px', color: '#a68942', fontFamily: 'var(--font-mono)', background: 'rgba(180,140,60,0.08)', padding: '3px 8px', borderRadius: '4px', border: '1px solid rgba(180,140,60,0.12)' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', background: 'var(--bg-surface)', padding: '3px 8px', borderRadius: '4px' }}>
                 live
               </span>
             </div>

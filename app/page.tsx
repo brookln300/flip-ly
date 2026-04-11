@@ -181,9 +181,9 @@ export default async function Home() {
                 <div key={item.step} style={{ textAlign: 'center' }}>
                   <div style={{
                     width: '44px', height: '44px', borderRadius: '12px', margin: '0 auto 12px',
-                    background: '#fffdf8', border: '1px solid var(--border-default)',
+                    background: '#ffffff', border: '1px solid var(--border-default)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 1px 4px rgba(160,120,60,0.06)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                   }}>
                     {item.icon === 'search' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>}
                     {item.icon === 'chart' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>}
@@ -196,12 +196,12 @@ export default async function Home() {
             </div>
             {/* Source logos */}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px', flexWrap: 'wrap', opacity: 0.6, marginTop: '28px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="#8b7d6b" strokeWidth="1.5"/><text x="12" y="16" textAnchor="middle" fill="#8b7d6b" fontSize="10" fontWeight="700" fontFamily="system-ui">CL</text></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b7d6b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b7d6b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b7d6b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b7d6b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b7d6b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="#6e6e73" strokeWidth="1.5"/><text x="12" y="16" textAnchor="middle" fill="#6e6e73" fontSize="10" fontWeight="700" fontFamily="system-ui">CL</text></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
               <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>+ 14 more</span>
             </div>
           </div>
@@ -214,7 +214,7 @@ export default async function Home() {
         {(stats.dealsScoredThisWeek > 0 || stats.totalUsers > 0) && (
           <div style={{
             background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)',
-            borderBottom: '1px solid var(--border-subtle)', padding: '18px var(--space-4)',
+            borderBottom: '1px solid var(--border-subtle)', padding: '14px var(--space-4)',
             textAlign: 'center',
           }}>
             <p style={{
@@ -241,9 +241,9 @@ export default async function Home() {
         )}
 
         {/* ═══ TRUST STRIP ═══ */}
-        <div style={{ background: 'linear-gradient(180deg, #faf7f0 0%, #f5f2eb 100%)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
+        <div style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-8) var(--space-4)', textAlign: 'center' }}>
-            <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px', letterSpacing: '-0.01em' }}>
+            <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
               Stop checking 5 sites every morning
             </p>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '400px', margin: '0 auto' }}>
@@ -256,7 +256,7 @@ export default async function Home() {
         </div>
 
         {/* ═══ HOW SCORING WORKS ═══ */}
-        <FadeIn style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center', background: '#fdfbf7' }}>
+        <FadeIn style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
             Every deal gets a flip score
           </h2>
@@ -274,9 +274,8 @@ export default async function Home() {
               { icon: 'velocity', label: 'Velocity', desc: 'Days-to-sell estimate' },
             ].map(f => (
               <div key={f.label} style={{
-                background: '#fffdf8', border: '1px solid var(--border-subtle)',
+                background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
                 borderRadius: '10px', padding: '14px 8px',
-                boxShadow: '0 2px 8px rgba(160,130,80,0.06)',
               }}>
                 <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'center' }}>
                   {f.icon === 'demand' && <TrendingUp size={20} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />}
@@ -292,7 +291,7 @@ export default async function Home() {
         </FadeIn>
 
         {/* ═══ PRICING ═══ */}
-        <FadeIn id="pricing" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0', background: 'linear-gradient(180deg, #fdfbf7 0%, #f9f5ed 100%)' }}>
+        <FadeIn id="pricing" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
           <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
             <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>Simple pricing</h2>
             <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>One good find pays for a year of Pro.</p>
@@ -312,9 +311,9 @@ export default async function Home() {
             </div>
             {/* Pro */}
             <div style={{
-              background: '#fffef9', borderRadius: '12px', padding: '24px',
+              background: '#ffffff', borderRadius: '12px', padding: '24px',
               border: '2px solid var(--accent-green)',
-              boxShadow: '0 4px 20px rgba(160,130,80,0.12), 0 0 0 1px rgba(34,139,34,0.08)',
+              boxShadow: '0 4px 24px rgba(22,163,74,0.08)',
               position: 'relative',
             }}>
               <div style={{
@@ -416,7 +415,7 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div style={{ background: '#fffcf7', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 8px rgba(180,130,60,0.06), 0 1px 2px rgba(180,130,60,0.04)' }}>
+            <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                 <CircleCheck size={18} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />
                 <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Recently shipped</h3>
@@ -443,7 +442,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div style={{ background: '#fffcf7', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 8px rgba(180,130,60,0.06), 0 1px 2px rgba(180,130,60,0.04)' }}>
+            <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                 <Construction size={18} color="var(--accent-amber)" strokeWidth={2} aria-hidden="true" />
                 <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Coming soon</h3>
@@ -474,8 +473,8 @@ export default async function Home() {
           {/* Early access callout */}
           <div style={{
             marginTop: '20px', padding: '16px 20px', borderRadius: '12px',
-            background: 'linear-gradient(135deg, rgba(22,163,74,0.04) 0%, rgba(210,170,90,0.04) 100%)',
-            border: '1px solid rgba(22,163,74,0.10)',
+            background: 'linear-gradient(135deg, rgba(22,163,74,0.04) 0%, rgba(22,163,74,0.02) 100%)',
+            border: '1px solid rgba(22,163,74,0.12)',
             textAlign: 'center',
           }}>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>
@@ -487,11 +486,11 @@ export default async function Home() {
         </FadeIn>
 
         {/* FOOTER */}
-        <footer style={{ borderTop: '1px solid var(--border-subtle)', padding: 'var(--space-12) var(--space-4) var(--space-8)', marginTop: 'var(--space-16)', background: 'linear-gradient(180deg, transparent 0%, rgba(245,235,220,0.3) 100%)' }}>
+        <footer style={{ borderTop: '1px solid var(--border-subtle)', padding: 'var(--space-12) var(--space-4) var(--space-8)', marginTop: 'var(--space-16)' }}>
           <div style={{ maxWidth: '70rem', margin: '0 auto' }}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-8" style={{ marginBottom: 'var(--space-8)' }}>
               <div>
-                <h4 style={{ color: '#5c4f3a', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Product</h4>
+                <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Product</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <a href="#search" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Search</a>
                   <a href="#pricing" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Pricing</a>
@@ -499,14 +498,14 @@ export default async function Home() {
                 </div>
               </div>
               <div>
-                <h4 style={{ color: '#5c4f3a', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Company</h4>
+                <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Company</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <a href="/about" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>About</a>
                   <a href="mailto:hello@flip-ly.net" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Contact</a>
                 </div>
               </div>
               <div>
-                <h4 style={{ color: '#5c4f3a', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Legal</h4>
+                <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Legal</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <a href="/privacy" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Privacy</a>
                   <a href="/terms" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Terms</a>
@@ -514,7 +513,7 @@ export default async function Home() {
                 </div>
               </div>
               <div>
-                <h4 style={{ color: '#5c4f3a', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Social</h4>
+                <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Social</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>X / Twitter</a>
                   <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Instagram</a>
