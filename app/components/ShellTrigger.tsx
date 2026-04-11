@@ -20,24 +20,25 @@ export default function ShellTrigger({ variant = 'modern' }: { variant?: 'modern
     <>
       {/* The hidden pixel trigger */}
       {variant === 'modern' ? (
+        /* Fixed position near the 90s Mode button (bottom-right) */
         <div
           onClick={() => setIsOpen(true)}
           aria-hidden="true"
           style={{
-            position: 'absolute',
-            bottom: '6px',
-            left: '38%',
-            width: '6px',
-            height: '6px',
+            position: 'fixed',
+            bottom: '30px',
+            right: '138px',
+            width: '5px',
+            height: '5px',
             borderRadius: '50%',
             background: 'transparent',
             cursor: 'default',
-            zIndex: 50,
+            zIndex: 49,
             transition: 'all 0.3s ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(51, 255, 51, 0.15)'
-            e.currentTarget.style.boxShadow = '0 0 4px rgba(51, 255, 51, 0.1)'
+            e.currentTarget.style.background = 'rgba(51, 255, 51, 0.18)'
+            e.currentTarget.style.boxShadow = '0 0 6px rgba(51, 255, 51, 0.12)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'transparent'

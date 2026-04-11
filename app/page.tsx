@@ -4,7 +4,6 @@ import HomeHeader from './components/HomeHeader'
 import SearchSection from './components/SearchSection'
 import FeaturedDeals from './components/FeaturedDeals'
 import AuthModals from './components/AuthModals'
-import FeedbackWidget from './components/FeedbackWidget'
 import RetroPortalButton from './components/RetroPortalButton'
 import ShellTrigger from './components/ShellTrigger'
 import FadeIn from './components/FadeIn'
@@ -569,14 +568,13 @@ export default async function Home() {
             <a href="/lobster-hunt" style={{ width: '16px', height: '16px', background: 'transparent', cursor: 'default', position: 'absolute', right: '23%', top: '0', zIndex: 60, display: 'block' }}>
               <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'transparent', position: 'absolute', top: '50%', left: '50%' }} />
             </a>
-            <ShellTrigger variant="modern" />
           </div>
         </footer>
 
         {/* Client-side modals and widgets */}
         <AuthModals />
-        <FeedbackWidget />
         <RetroPortalButton />
+        <ShellTrigger variant="modern" />
       </main>
     </SignupProvider>
   )
