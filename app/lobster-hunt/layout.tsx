@@ -1,17 +1,17 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Lobster Hunt — 7 Decoys. 1 Real Password. 1 Lobster Dinner.',
-  description: 'Hidden clues in hex, base64, morse, and NATO alphabet. Can you crack the real password? The Hall of Almost awaits.',
+  title: 'The Lobster Protocol — Live Leaderboard | Flip-ly',
+  description: 'Live leaderboard for the Lobster Protocol easter egg challenge. Every attempt is tracked. Every agent is watched.',
   openGraph: {
-    title: 'Lobster Hunt — Can You Crack It?',
-    description: '7 decoy passwords. 1 real one. 1 lobster dinner delivered to your door. The clues are hidden in the source code.',
+    title: 'The Lobster Protocol — Live Leaderboard',
+    description: '7 levels. 5 winners. Every attempt is tracked. Can you crack the Lobster Protocol?',
     images: [{ url: '/og-lobster-hunt.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lobster Hunt — Can You Crack It?',
-    description: '7 decoys. 1 real password. 1 lobster dinner. Hidden in the source code of flip-ly.net.',
+    title: 'The Lobster Protocol — Live Leaderboard',
+    description: '7 levels. 5 winners. Every attempt is tracked. Can you crack the Lobster Protocol?',
     images: ['/og-lobster-hunt.png'],
   },
 }
