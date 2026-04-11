@@ -158,7 +158,7 @@ export default function ContestRules() {
                   <PrizeRow level="4" prize="2 weeks Pro access" />
                   <PrizeRow level="5" prize="1 month Pro access" />
                   <PrizeRow level="6" prize="3 months Power tier" />
-                  <PrizeRow level="7" prize="3 months Power tier + mystery physical prize (limited to 5 winners)" highlight />
+                  <PrizeRow level="7" prize="3 months Power tier + 3D-printed Lobster Trophy (limited to 5 winners)" highlight />
                 </tbody>
               </table>
             </div>

@@ -838,7 +838,7 @@ export default function FlipShell({ isOpen, onClose }: FlipShellProps) {
                 4: '2 weeks Pro access',
                 5: '1 month Pro access',
                 6: '3 months Power tier',
-                7: '3 months Power tier + mystery physical prize (1 of 5)',
+                7: '3 months Power tier + 3D-printed Lobster Trophy (1 of 5)',
               };
               const prizeDesc = prizeDescs[targetLevel] || data.prize;
 
@@ -879,7 +879,7 @@ export default function FlipShell({ isOpen, onClose }: FlipShellProps) {
               if (targetLevel === 7) {
                 successLines.push({ text: '' });
                 successLines.push({
-                  text: 'A physical prize will be shipped to you.',
+                  text: 'A custom 3D-printed Lobster Trophy will be shipped to you.',
                   color: '#33ff33',
                 });
                 successLines.push({

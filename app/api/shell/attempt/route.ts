@@ -24,7 +24,7 @@ const LEVEL_PRIZES: Record<number, { title: string; prize: string; message: stri
   4: { title: 'LEVEL 4 CLEARED', prize: '2 weeks Pro access', message: 'Morse code? In 2026? You absolute legend. Two weeks of Pro, on the house. Type "claim" to lock in.' },
   5: { title: 'LEVEL 5 CLEARED', prize: '1 month Pro access', message: 'ROT13 master. One full month of Pro. The Cryptanalysis Unit salutes you. Type "claim".' },
   6: { title: 'LEVEL 6 CLEARED', prize: '3 months Power tier', message: 'You assembled the fragments. Three months of Power tier. The Supreme Lobster Command is impressed. Type "claim".' },
-  7: { title: 'THE LOBSTER BOWS', prize: '3 months Power tier + mystery physical prize', message: 'You cracked the uncrackable. Three months of Power tier and a physical prize shipped to your door. Only 5 agents will ever reach this level. The Lobster Council is in shambles. Type "claim".' },
+  7: { title: 'THE LOBSTER BOWS', prize: '3 months Power tier + 3D-printed Lobster Trophy', message: 'You cracked the uncrackable. Three months of Power tier and a custom 3D-printed Lobster Trophy shipped to your door. Only 5 agents will ever hold one. The Lobster Council is in shambles. Type "claim".' },
 }
 
 function getPartialReveal(password: string, attemptCount: number): string {
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
           '<b>LOBSTER PROTOCOL: LEVEL 7 CLEARED</b>',
           `Agent: ${sanitizedAgentName}`,
           `IP: ${ip}`,
-          'Someone cracked the uncrackable. Ship the mystery prize.',
+          'Someone cracked the uncrackable. Ship the Lobster Trophy.',
         ].join('\n')
       ).catch(() => {})
     }
