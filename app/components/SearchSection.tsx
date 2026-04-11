@@ -119,20 +119,21 @@ export default function SearchSection({ markets }: {
         </div>
       )}
 
-      {/* Search form */}
-      <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-10) var(--space-4) 0' }}>
-        <div id="search" style={{ maxWidth: '560px', margin: '0 auto' }}>
+      {/* Search form — full width, grows with viewport */}
+      <div style={{ width: '100%', padding: 'var(--space-10) var(--space-4) 0' }}>
+        <div id="search" style={{ maxWidth: '900px', width: '100%', margin: '0 auto' }}>
           <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)', marginBottom: 'var(--space-4)' }}>
             Try it — search your area for free
           </p>
           <form onSubmit={handleSearch}>
             <div style={{
               background: '#ffffff', border: '1px solid var(--border-default)',
-              borderRadius: '14px', padding: '16px',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)',
+              borderRadius: '16px', padding: '20px 24px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)',
+              transition: 'box-shadow 0.2s ease',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <div style={{ position: 'relative', width: '100%' }}>
                   <input
                     type="text" value={searchQuery}
@@ -143,24 +144,24 @@ export default function SearchSection({ markets }: {
                     aria-label="Search deals"
                     autoComplete="off"
                     style={{
-                      width: '100%', padding: '8px 0', border: 'none', outline: 'none',
-                      fontSize: '16px', color: 'var(--text-primary)', background: 'transparent',
+                      width: '100%', padding: '10px 0', border: 'none', outline: 'none',
+                      fontSize: '18px', color: 'var(--text-primary)', background: 'transparent',
                     }}
                   />
                   {showSuggestions && suggestions.length > 0 && (
                     <div style={{
-                      position: 'absolute', top: '100%', left: '-28px', right: '-16px',
+                      position: 'absolute', top: '100%', left: '-32px', right: '-24px',
                       background: '#fff', border: '1px solid var(--border-default)',
-                      borderRadius: '10px', marginTop: '6px', padding: '4px 0',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.08)', zIndex: 50,
+                      borderRadius: '12px', marginTop: '8px', padding: '4px 0',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.10)', zIndex: 50,
                     }}>
                       {suggestions.map(s => (
                         <button key={s} type="button"
                           onMouseDown={() => { setSearchQuery(s); setShowSuggestions(false); handleSearch(undefined, s) }}
                           style={{
-                            display: 'block', width: '100%', padding: '8px 16px', border: 'none',
+                            display: 'block', width: '100%', padding: '10px 20px', border: 'none',
                             background: 'transparent', textAlign: 'left', cursor: 'pointer',
-                            fontSize: '14px', color: 'var(--text-secondary)',
+                            fontSize: '15px', color: 'var(--text-secondary)',
                             transition: 'background 0.1s',
                           }}
                           onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
@@ -173,10 +174,10 @@ export default function SearchSection({ markets }: {
                   )}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '10px' }}>
                 <select value={searchMarket} onChange={e => setSearchMarket(e.target.value)} aria-label="Select market area" style={{
-                  flex: 1, padding: '10px 12px', border: '1px solid var(--border-default)', borderRadius: '10px',
-                  fontSize: '13px', color: 'var(--text-secondary)', background: 'var(--bg-surface)', cursor: 'pointer',
+                  flex: 1, padding: '12px 14px', border: '1px solid var(--border-default)', borderRadius: '10px',
+                  fontSize: '14px', color: 'var(--text-secondary)', background: 'var(--bg-surface)', cursor: 'pointer',
                 }}>
                   <option value="">All areas</option>
                   {sortedMarketOptions.map(m => (
@@ -184,10 +185,10 @@ export default function SearchSection({ markets }: {
                   ))}
                 </select>
                 <button type="submit" disabled={searching} style={{
-                  padding: '10px 24px',
+                  padding: '12px 32px',
                   background: searching ? 'var(--border-active)' : 'var(--accent-green)',
                   color: '#fff',
-                  border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '14px',
+                  border: 'none', borderRadius: '10px', fontWeight: 600, fontSize: '15px',
                   cursor: searching ? 'wait' : 'pointer', whiteSpace: 'nowrap',
                 }}>
                   {searching ? '...' : 'Search'}
@@ -195,7 +196,7 @@ export default function SearchSection({ markets }: {
               </div>
             </div>
 
-            <div className="flex gap-2 mt-3 overflow-x-auto pb-1 justify-center" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="flex gap-2 mt-4 overflow-x-auto pb-1 justify-center" style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {[
                 { label: 'Garage Sales', q: 'garage sale', icon: Home },
                 { label: 'Estate Sales', q: 'estate sale', icon: Landmark },
@@ -205,8 +206,8 @@ export default function SearchSection({ markets }: {
                 { label: 'Free Items', q: 'free', icon: Gift },
               ].map(tag => (
                 <button key={tag.q} type="button" onClick={() => { setSearchQuery(tag.q); handleSearch(undefined, tag.q) }} style={{
-                  padding: '5px 14px', border: '1px solid var(--border-subtle)', borderRadius: '20px',
-                  fontSize: '12px', color: 'var(--text-muted)', background: 'transparent', cursor: 'pointer', flexShrink: 0,
+                  padding: '6px 16px', border: '1px solid var(--border-subtle)', borderRadius: '20px',
+                  fontSize: '13px', color: 'var(--text-muted)', background: 'transparent', cursor: 'pointer', flexShrink: 0,
                   transition: 'all 0.15s', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '5px',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(22,163,74,0.4)'; e.currentTarget.style.color = 'var(--accent-green)' }}

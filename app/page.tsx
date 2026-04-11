@@ -8,6 +8,7 @@ import RetroPortalButton from './components/RetroPortalButton'
 import ShellTrigger from './components/ShellTrigger'
 import FadeIn from './components/FadeIn'
 import HeroCTA from './components/HeroCTA'
+import HeroBackground from './components/HeroBackground'
 import { TrendingUp, DollarSign, Tags, Zap, CircleCheck, Construction, Check, Circle } from 'lucide-react'
 
 /* ══════════════════════════════════════════════════════════
@@ -102,22 +103,31 @@ export default async function Home() {
 
         <HomeHeader />
 
-        {/* ═══ BEAT 1: HERO — Split layout: text left, video right ═══ */}
-        <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1.1fr',
-            gap: '40px',
-            alignItems: 'center',
-          }} className="hero-split">
+        {/* ═══ BEAT 1: HERO — Full-width image with text overlay ═══ */}
+        <div className="hero-image-section" style={{
+          position: 'relative',
+          width: '100%',
+          minHeight: '520px',
+          overflow: 'hidden',
+        }}>
+          {/* Interactive background — cycles images with hover parallax */}
+          <HeroBackground />
 
-            {/* Left: Value prop + stats + CTA */}
-            <div style={{ textAlign: 'left' }}>
+          {/* Content */}
+          <div style={{
+            position: 'relative', zIndex: 2,
+            maxWidth: '70rem', margin: '0 auto',
+            padding: 'var(--space-12) var(--space-4)',
+            display: 'flex', alignItems: 'center',
+            minHeight: '520px',
+          }}>
+            <div style={{ maxWidth: '520px' }}>
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '6px',
-                background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)',
+                background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.25)',
                 borderRadius: '20px', padding: '5px 12px', marginBottom: '16px',
                 fontSize: '12px', fontWeight: 600, color: 'var(--accent-green)',
+                backdropFilter: 'blur(8px)',
               }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-green)', animation: 'pulse-dot 2s ease-in-out infinite' }} />
                 Live — scanning now
@@ -153,35 +163,6 @@ export default async function Home() {
                 ))}
               </div>
             </div>
-
-            {/* Right: Hero demo video */}
-            <div style={{
-              position: 'relative',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              background: '#f5f5f7',
-              boxShadow: '0 12px 48px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.04)',
-              aspectRatio: '16 / 10',
-            }}>
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="none"
-                poster="/hero-poster.jpg"
-                aria-label="Product demo showing Flip-ly deal search"
-                style={{
-                  width: '110%', height: 'auto',
-                  margin: '-3% 0 -4% -5%',
-                  display: 'block',
-                }}
-              >
-                <source src="/hero-demo.webm" type="video/webm" />
-                <source src="/hero-demo.mp4" type="video/mp4" />
-              </video>
-            </div>
-
           </div>
         </div>
 

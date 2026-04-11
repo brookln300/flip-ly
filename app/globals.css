@@ -155,15 +155,21 @@ body {
   button { min-height: 44px; }
   .cl-input { font-size: 16px; } /* prevents iOS zoom on focus */
   footer { transform: none !important; }
-  .hero-split {
-    grid-template-columns: 1fr !important;
-    gap: 32px !important;
+  .hero-image-section {
+    min-height: 420px !important;
   }
-  .hero-split > div:first-child {
-    text-align: center !important;
+  .hero-image-section > div:nth-child(4) {
+    min-height: 420px !important;
+    text-align: center;
   }
-  .hero-split > div:first-child > div {
+  .hero-image-section > div:nth-child(4) > div {
+    margin: 0 auto;
+  }
+  .hero-image-section > div:nth-child(4) > div > div:last-child {
     justify-content: center !important;
+  }
+  .hero-mobile-overlay {
+    display: block !important;
   }
 }
 
