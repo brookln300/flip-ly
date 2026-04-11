@@ -121,7 +121,7 @@ export default function SearchSection({ markets }: {
 
       {/* Search form — full width, grows with viewport */}
       <div style={{ width: '100%', padding: 'var(--space-10) var(--space-4) 0' }}>
-        <div id="search" style={{ maxWidth: '900px', width: '100%', margin: '0 auto' }}>
+        <div id="search" style={{ maxWidth: '70rem', width: '100%', margin: '0 auto' }}>
           <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)', marginBottom: 'var(--space-4)' }}>
             Try it — search your area for free
           </p>

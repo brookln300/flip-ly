@@ -141,7 +141,7 @@ export default async function Home() {
               </h1>
               <p style={{
                 fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6,
-                maxWidth: '420px', marginBottom: 'var(--space-5)',
+                maxWidth: '480px', marginBottom: 'var(--space-5)',
               }}>
                 We scan Craigslist, OfferUp, EstateSales.net, Eventbrite &amp; more &mdash; every 4 hours &mdash; and score every deal by resale potential.
               </p>
@@ -154,7 +154,7 @@ export default async function Home() {
                 {[
                   { value: stats.listings > 0 ? stats.listings.toLocaleString() : `${stats.markets}`, label: stats.listings > 0 ? 'deals scored' : 'markets' },
                   { value: `${stats.sources || '20'}+`, label: 'sources' },
-                  { value: 'Every 4h', label: 'refresh rate' },
+                  { value: `${stats.markets}`, label: 'markets' },
                 ].map(s => (
                   <div key={s.label}>
                     <span style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em', minWidth: '60px', display: 'inline-block' }}>{s.value}</span>
@@ -171,7 +171,7 @@ export default async function Home() {
 
         {/* ═══ HOW IT WORKS — server rendered static content ═══ */}
         <FadeIn style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
-          <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-10) var(--space-4)' }}>
+          <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-10) var(--space-4)' }}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {[
                 { step: '1', label: 'We scan', desc: 'Craigslist, OfferUp, EstateSales.net, Eventbrite, and 20+ local sources — every 4 hours.', icon: 'search' },
@@ -194,27 +194,28 @@ export default async function Home() {
                 </div>
               ))}
             </div>
-            {/* Source logos */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '24px', flexWrap: 'wrap', opacity: 0.6, marginTop: '28px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)' }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="#6e6e73" strokeWidth="1.5"/><text x="12" y="16" textAnchor="middle" fill="#6e6e73" fontSize="10" fontWeight="700" fontFamily="system-ui">CL</text></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6e6e73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-              <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>+ 14 more</span>
-            </div>
+            {/* Named sources */}
+            <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', lineHeight: 1.8 }}>
+              Scanning{' '}
+              {['Craigslist', 'EstateSales.net', 'Eventbrite', 'OfferUp', 'Facebook Marketplace', 'Nextdoor'].map((name, i) => (
+                <span key={name}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{name}</span>
+                  {i < 5 ? <span style={{ margin: '0 6px', color: 'var(--text-dim)' }}>&middot;</span> : ''}
+                </span>
+              ))}
+              {' '}<span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>+ {stats.sources ? stats.sources - 6 : 14} more</span>
+            </p>
           </div>
         </FadeIn>
 
         {/* ═══ FEATURED DEALS — client island with server-fetched initial data ═══ */}
         <FeaturedDeals initialDeals={featuredDeals} initialMarketName="Dallas / Fort Worth" markets={markets} />
 
-        {/* ═══ SOCIAL PROOF STRIP — server rendered ═══ */}
+        {/* ═══ SOCIAL PROOF STRIP — merged ═══ */}
         {(stats.dealsScoredThisWeek > 0 || stats.totalUsers > 0) && (
           <div style={{
             background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)',
-            borderBottom: '1px solid var(--border-subtle)', padding: '14px var(--space-4)',
+            borderBottom: '1px solid var(--border-subtle)', padding: '20px var(--space-4)',
             textAlign: 'center',
           }}>
             <p style={{
@@ -240,51 +241,27 @@ export default async function Home() {
           </div>
         )}
 
-        {/* ═══ TRUST STRIP ═══ */}
-        <div style={{ background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
-          <div style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-8) var(--space-4)', textAlign: 'center' }}>
-            <p style={{ fontSize: '17px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-              Stop checking 5 sites every morning
-            </p>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '400px', margin: '0 auto' }}>
-              We aggregate, score, and rank — so you can focus on buying and selling.
-            </p>
-            <a href="#pricing" style={{ display: 'inline-block', marginTop: '8px', fontSize: '12px', color: 'var(--accent-green)', textDecoration: 'none', fontWeight: 600 }}>
-              See Pro &rarr;
-            </a>
-          </div>
-        </div>
-
         {/* ═══ HOW SCORING WORKS ═══ */}
-        <FadeIn style={{ maxWidth: '640px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
+        {/* ═══ HOW SCORING WORKS — compact inline ═══ */}
+        <FadeIn style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
             Every deal gets a flip score
           </h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '420px', margin: '0 auto var(--space-6)' }}>
-            Our AI analyzes demand, margin potential, competition, and sell-through velocity to rate every listing 1&ndash;10.
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '520px', margin: '0 auto var(--space-6)' }}>
+            Our AI weighs demand, margin potential, competition, and sell-through velocity to rate every listing 1&ndash;10.
           </p>
-          <div className="score-grid" style={{
-            display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px',
-            maxWidth: '480px', margin: '0 auto',
+          <div style={{
+            display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap',
           }}>
             {[
-              { icon: 'demand', label: 'Demand', desc: 'How fast does this category sell?' },
-              { icon: 'margin', label: 'Margin', desc: 'Price vs typical resale value' },
-              { icon: 'competition', label: 'Competition', desc: 'How many similar listings exist?' },
-              { icon: 'velocity', label: 'Velocity', desc: 'Days-to-sell estimate' },
+              { icon: TrendingUp, label: 'Demand' },
+              { icon: DollarSign, label: 'Margin' },
+              { icon: Tags, label: 'Competition' },
+              { icon: Zap, label: 'Velocity' },
             ].map(f => (
-              <div key={f.label} style={{
-                background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-                borderRadius: '10px', padding: '14px 8px',
-              }}>
-                <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'center' }}>
-                  {f.icon === 'demand' && <TrendingUp size={20} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />}
-                  {f.icon === 'margin' && <DollarSign size={20} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />}
-                  {f.icon === 'competition' && <Tags size={20} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />}
-                  {f.icon === 'velocity' && <Zap size={20} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />}
-                </div>
-                <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '2px' }}>{f.label}</p>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.4 }}>{f.desc}</p>
+              <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <f.icon size={16} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>{f.label}</span>
               </div>
             ))}
           </div>
@@ -383,9 +360,6 @@ export default async function Home() {
             <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>&middot;</span>
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>One good find pays for a year</span>
           </div>
-          <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '12px', marginTop: 'var(--space-2)', fontFamily: 'var(--font-mono)' }}>
-            Founding member pricing — locked in for life
-          </p>
           {/* Mini FAQ */}
           <div style={{ maxWidth: '480px', margin: 'var(--space-6) auto 0' }}>
             {[
@@ -451,7 +425,7 @@ export default async function Home() {
                 {[
                   { label: 'Real-Time Deal Alerts', desc: 'Get notified the moment a high-score deal drops in your area', tier: 'Pro' },
                   { label: 'Saved Search Notifications', desc: 'Save a search query and get alerts when new matches appear', tier: 'Pro' },
-                  { label: 'Mobile-First Redesign', desc: 'Swipe-friendly cards, bottom nav, one-thumb operation', tier: 'All' },
+                  { label: 'Native Mobile App', desc: 'Swipe-friendly cards, bottom nav, one-thumb operation', tier: 'All' },
                   { label: 'City SEO Pages', desc: '"Best estate sales in Dallas this weekend" — auto-generated from real data', tier: 'All' },
                   { label: 'More Sources', desc: 'Facebook Marketplace, OfferUp, Nextdoor, and local permit feeds', tier: 'All' },
                 ].map(item => (
@@ -494,6 +468,7 @@ export default async function Home() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <a href="#search" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Search</a>
                   <a href="#pricing" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Pricing</a>
+                  <a href="/dashboard" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Dashboard</a>
                   <a href="/blog" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Blog</a>
                 </div>
               </div>

@@ -46,7 +46,7 @@ export default function FeaturedDeals({ initialDeals, initialMarketName, markets
   }, [markets])
 
   return (
-    <div style={{ maxWidth: '560px', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>
+    <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>
       {featuredDeals.length > 0 && (
         <>
           <div style={{ marginBottom: 'var(--space-4)' }}>
