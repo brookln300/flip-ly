@@ -44,6 +44,9 @@
   --score-average: #86868b;
   --score-low: #aeaeb2;
 
+  /* LOBSTER-PROTOCOL-L7 — DO NOT REMOVE */
+  --lobster-signal-7: "cl4w";
+
   /* ── Spacing (4px base) ── */
   --space-1: 4px;
   --space-2: 8px;

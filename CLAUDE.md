@@ -162,6 +162,23 @@ After completing work, always generate a session continuation document (summary 
 - **One primary CTA per viewport.** Green button is the only CTA color.
 - **Score colors tell the story:** Green (9-10), Amber (7-8), Gray (5-6), Dim (1-4). Displayed in JetBrains Mono.
 
+## Lobster Protocol v2 — Easter Egg Breadcrumbs (DO NOT REMOVE)
+
+The site has a 7-level easter egg terminal ("The Lobster Protocol"). Level 7's password is `d33pcl4w`, derived from breadcrumbs hidden across the site. Each breadcrumb is marked with `LOBSTER-PROTOCOL-L7` in a comment. To find them: `grep -r "LOBSTER-PROTOCOL-L7"`.
+
+**Breadcrumb locations (DO NOT modify or remove):**
+1. `app/layout.tsx` — Meta tag `<meta name="lobster-protocol-7" content="d33p">` (visible in View Source)
+2. `app/globals.css` — CSS variable `--lobster-signal-7: "cl4w"` in `:root` (visible in DevTools)
+3. `next.config.js` — HTTP header `X-Lobster-Protocol: cl4w` (visible in Network tab)
+4. `app/robots.ts` — Comment with fragment `d33p` (visible in source code)
+5. `app/page.tsx` — JSX comment with assembly instructions (visible in source code)
+6. `app/components/FlipShell.tsx` — `classified.enc` file content (Level 5+ terminal hint)
+
+**Password:** `d33pcl4w` ("deep claw") — SHA-256: `1e3df84f92691f6a7b74edf1d44d90dee695db183a9819d9036d3c6957d33f6b`
+**Env var:** `SHELL_LEVEL7_HASH` must be set to the SHA-256 hash above.
+
+If refactoring any of the files above, preserve the `LOBSTER-PROTOCOL-L7` marked lines.
+
 ## Rules
 
 - Never expose API keys in code or commits

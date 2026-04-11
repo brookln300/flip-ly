@@ -51,6 +51,10 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
   },
+  // LOBSTER-PROTOCOL-L7 — DO NOT REMOVE
+  other: {
+    'lobster-protocol-7': 'd33p',
+  },
 }
 
 /**

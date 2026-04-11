@@ -5,6 +5,7 @@ import WinampPlayer from '@/app/components/WinampPlayer'
 import RetroPopups from '@/app/components/RetroPopups'
 import BSOD from '@/app/components/BSOD'
 import AOLWelcome from '@/app/components/AOLWelcome'
+import ShellTrigger from '@/app/components/ShellTrigger'
 
 /* ═══════════════════════════════════════════════════════════════
    GLOBAL STYLES — injected as a <style> tag since this is 'use client'
@@ -1569,6 +1570,7 @@ export default function RetroPage() {
                 <span key={i}>{d}</span>
               ))}
             </div>
+            <ShellTrigger variant="retro" />
           </div>
 
           {/* Best viewed badge */}

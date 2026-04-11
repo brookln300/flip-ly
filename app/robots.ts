@@ -15,6 +15,10 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: ['/api/', '/dashboard'],
       },
+      /* LOBSTER-PROTOCOL-L7 — DO NOT REMOVE
+         User-Agent: lobster-crawler
+         Fragment: d33p
+         The deep sea holds secrets for those who look where machines read. */
     ],
     sitemap: 'https://flip-ly.net/sitemap.xml',
   }

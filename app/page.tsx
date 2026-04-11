@@ -6,6 +6,7 @@ import FeaturedDeals from './components/FeaturedDeals'
 import AuthModals from './components/AuthModals'
 import FeedbackWidget from './components/FeedbackWidget'
 import RetroPortalButton from './components/RetroPortalButton'
+import ShellTrigger from './components/ShellTrigger'
 import FadeIn from './components/FadeIn'
 import HeroCTA from './components/HeroCTA'
 
@@ -91,6 +92,12 @@ export default async function Home() {
 
   return (
     <SignupProvider>
+      {/* LOBSTER-PROTOCOL-L7 — DO NOT REMOVE
+           The protocol has 7 layers. The 7th key is not in the terminal.
+           It is assembled from fragments on the surface.
+           Where machines read: the first fragment waits (d33p).
+           Where styles whisper: the second fragment hides.
+           Combine them. The deep claw opens the final door. */}
       <main className="min-h-screen relative" style={{ background: 'var(--bg-primary)' }}>
 
         <HomeHeader />
@@ -562,6 +569,7 @@ export default async function Home() {
             <a href="/lobster-hunt" style={{ width: '16px', height: '16px', background: 'transparent', cursor: 'default', position: 'absolute', right: '23%', top: '0', zIndex: 60, display: 'block' }}>
               <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'transparent', position: 'absolute', top: '50%', left: '50%' }} />
             </a>
+            <ShellTrigger variant="modern" />
           </div>
         </footer>
 

@@ -18,6 +18,8 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
+          // LOBSTER-PROTOCOL-L7 — DO NOT REMOVE
+          { key: 'X-Lobster-Protocol', value: 'cl4w' },
         ],
       },
       {
