@@ -16,14 +16,10 @@ import { createHash } from 'crypto'
 
 const POW_DIFFICULTY = 4 // Number of leading hex zeros required (4 = ~65k iterations avg)
 const POW_TTL_MS = 5 * 60 * 1000 // Challenge valid for 5 minutes
-
-function getPowSecret(): string {
-  const secret = process.env.POW_SECRET
-  if (!secret) {
-    throw new Error('POW_SECRET environment variable is required')
-  }
-  return secret
+if (!process.env.POW_SECRET) {
+  throw new Error('POW_SECRET environment variable is required')
 }
+const POW_SECRET = process.env.POW_SECRET
 
 export function sha256hex(input: string): string {
   return createHash('sha256').update(input).digest('hex')
@@ -39,9 +35,8 @@ export function generateChallenge(): {
   signature: string
 } {
   const expires = Date.now() + POW_TTL_MS
-  const secret = getPowSecret()
-  const challenge = sha256hex(`${Date.now()}-${Math.random()}-${secret}`)
-  const signature = sha256hex(`${challenge}:${expires}:${secret}`)
+  const challenge = sha256hex(`${Date.now()}-${Math.random()}-${POW_SECRET}`)
+  const signature = sha256hex(`${challenge}:${expires}:${POW_SECRET}`)
 
   return {
     challenge,
@@ -67,7 +62,7 @@ export function verifyProofOfWork(
   }
 
   // Verify signature (prevents forged/tampered challenges)
-  const expectedSig = sha256hex(`${challenge}:${expires}:${getPowSecret()}`)
+  const expectedSig = sha256hex(`${challenge}:${expires}:${POW_SECRET}`)
   if (signature !== expectedSig) {
     return { valid: false, error: 'Invalid challenge signature.' }
   }

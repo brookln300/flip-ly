@@ -20,6 +20,26 @@ const CL_CATEGORIES: Record<string, { label: string; eventType: string }> = {
   foa: { label: 'General For Sale', eventType: 'listing' },
 }
 
+// ── SAPI searchPath → CL URL category code mapping ──
+// SAPI uses different codes than CL's actual URL paths.
+// e.g. SAPI 'cba' (collectibles) → URL '/clt/', SAPI 'ela' → URL '/ele/'
+// Built by testing actual posting IDs against CL's routing (2026-04-12).
+const SAPI_TO_URL_CATEGORY: Record<string, string> = {
+  gms: 'gms', // Garage Sales — same
+  ela: 'ele', // Electronics
+  tla: 'tls', // Tools
+  fua: 'fuo', // Furniture
+  cba: 'clt', // Collectibles
+  ppa: 'app', // Appliances
+  sga: 'spo', // Sporting Goods
+  msa: 'msg', // Musical Instruments
+  vga: 'vgm', // Video Gaming
+  ata: 'atq', // Antiques
+  zip: 'zip', // Free Stuff — same
+  hsa: 'hsh', // Household
+  foa: 'for', // General For Sale
+}
+
 /**
  * Scrape Craigslist listings via their internal Search API (SAPI).
  * Supports both garage sales (gms) and individual item categories (ela, tla, fua, cba, etc.)
@@ -76,6 +96,8 @@ export async function scrapeCraigslist(
     const minPostingId: number = decode.minPostingId || 0
     // SAPI v8 encodes event/posting dates as offsets from minDate (unix seconds)
     const minDate: number = decode.minDate || 0
+    // decode.locations: [0, [areaId, hostname, areaCode], ...] — maps latLng prefix to CL area codes
+    const locationEntries: any[] = decode.locations || []
 
     if (items.length === 0) {
       result.errors.push(`CL SAPI returned 0 items [${searchPath}]`)
@@ -91,9 +113,11 @@ export async function scrapeCraigslist(
     for (const item of items) {
       try {
         // Item array format (SAPI v8):
-        // [postingIdOffset, dateOffset, locationIdx, price, latLng, ?, ?, thumbnailInfo, images, [?,slug], title]
+        // Items: [postIdOff, dateOff, locIdx, price, latLng, hash, [thumbnail], [images], [catIdx,slug], [priceDisplay], title]
+        // GMS:   [postIdOff, dateOff, locIdx, price, latLng, hash, [eventMeta], [thumbnail], [images], [catIdx,slug], title]
         // postingId = minPostingId + item[0]
         // date = minDate + item[1] (unix seconds) — event date for gms, posting date for items
+        // latLng prefix (before ':') indexes into decode.locations for area code
         const postingIdOffset = item[0]
         const postingId = minPostingId + (typeof postingIdOffset === 'number' ? postingIdOffset : 0)
         const dateOffset = item[1]
@@ -147,10 +171,35 @@ export async function scrapeCraigslist(
           }
         }
 
-        // Build posting URL — generate slug from title (SAPI slug field is unreliable
-        // for priced categories — often returns price text like "$25" instead of title slug)
-        const titleSlug = slugifyTitle(String(title))
-        const postUrl = `https://${hostname}.craigslist.org/${searchPath}/d/${titleSlug}/${postingId}.html`
+        // Build posting URL with correct area code + URL category code.
+        // SAPI latLng prefix maps to decode.locations for the area code (dal, ftw, ndf, etc.)
+        // SAPI searchPath must be translated to CL's URL category via SAPI_TO_URL_CATEGORY.
+        const urlCategory = SAPI_TO_URL_CATEGORY[searchPath] || searchPath
+
+        // Extract area code from latLng prefix → decode.locations[idx][2]
+        // Fallback: use first non-zero location entry — wrong area just 301 redirects
+        let areaCode = (Array.isArray(locationEntries[1]) && locationEntries[1][2]) || 'dal'
+        if (typeof latLngStr === 'string') {
+          const locIdx = parseInt(latLngStr.split(':')[0], 10)
+          if (!isNaN(locIdx) && Array.isArray(locationEntries[locIdx])) {
+            areaCode = locationEntries[locIdx][2] || areaCode
+          }
+        }
+
+        // Extract slug — position varies: item[8] for item listings, item[9] for gms
+        // (gms has extra event metadata at [6] that shifts subsequent indices)
+        // Search backwards for the slug array: [N, 'city-slug-text'] with hyphens
+        let slug = '-'
+        for (let si = item.length - 2; si >= 7; si--) {
+          const el = item[si]
+          if (Array.isArray(el) && el.length === 2 && typeof el[1] === 'string'
+              && el[1].includes('-') && !el[1].includes(':')) {
+            slug = el[1]
+            break
+          }
+        }
+
+        const postUrl = `https://${hostname}.craigslist.org/${areaCode}/${urlCategory}/d/${slug}/${postingId}.html`
         const externalId = `cl-${postingId}`
         seenExternalIds.push(externalId)
 
@@ -268,21 +317,6 @@ function hostnameToCity(hostname: string): string {
 
 function hostnameToState(hostname: string): string | null {
   return CL_HOSTNAME_MAP[hostname.toLowerCase()]?.state || null
-}
-
-/**
- * Generate a URL-safe slug from a listing title.
- * CL routes by posting ID so the slug doesn't need to be exact,
- * but a real title slug looks professional and helps link-checking.
- */
-function slugifyTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // strip non-alphanumeric
-    .replace(/\s+/g, '-')          // spaces to hyphens
-    .replace(/-+/g, '-')           // collapse multiple hyphens
-    .replace(/^-|-$/g, '')         // trim leading/trailing hyphens
-    .substring(0, 70) || 'listing' // CL slugs are ~50-70 chars max
 }
 
 /**

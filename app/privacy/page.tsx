@@ -105,12 +105,20 @@ export default function Privacy() {
 
         <section>
           <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Cookies</h2>
-          <p>We use minimal cookies:</p>
-          <ul className="list-disc ml-6 mt-2 space-y-1">
-            <li><strong>Session cookie</strong> (httpOnly) — keeps you logged in for 7 days</li>
-            <li><strong>Google Analytics cookies</strong> — _ga, _ga_* (anonymized usage tracking)</li>
+          <p>We use the following cookies:</p>
+          <p className="mt-2 font-semibold" style={{ color: 'var(--text-primary)' }}>Essential (always active):</p>
+          <ul className="list-disc ml-6 mt-1 space-y-1">
+            <li><strong>fliply_token</strong> (httpOnly) — session authentication, expires after 7 days</li>
+            <li><strong>fliply_cookie_consent</strong> (localStorage) — stores your cookie preference</li>
           </ul>
-          <p className="mt-2">We do not use advertising or retargeting cookies. You can disable cookies in your browser settings, but some features may not work properly.</p>
+          <p className="mt-3 font-semibold" style={{ color: 'var(--text-primary)' }}>Analytics (loaded only with your consent):</p>
+          <ul className="list-disc ml-6 mt-1 space-y-1">
+            <li><strong>_ga</strong> — Google Analytics unique visitor ID, expires after 2 years</li>
+            <li><strong>_ga_*</strong> — Google Analytics session data, expires after 1 year</li>
+            <li><strong>_gid</strong> — Google Analytics session ID, expires after 24 hours</li>
+            <li><strong>Vercel Analytics</strong> — page views and performance (cookieless, consent-gated)</li>
+          </ul>
+          <p className="mt-3">Analytics cookies are <strong>not loaded</strong> until you click &ldquo;Accept&rdquo; on our cookie banner. You can withdraw consent at any time by clearing your browser cookies — the banner will reappear. We do not use advertising or retargeting cookies.</p>
         </section>
 
         <section>

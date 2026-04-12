@@ -475,6 +475,7 @@ export async function GET(req: NextRequest) {
         price_cents: l.price_low_cents || null,
         distance_miles: l.distance_miles || null,
         price_context: priceContextMap.get(l.id) || null,
+        resale_flag: l.resale_flag || false,
       }
     }
 

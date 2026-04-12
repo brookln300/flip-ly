@@ -47,9 +47,21 @@ function ProContent() {
   const isAuthenticated = authChecked && user !== null
   const isAlreadyPro = user?.is_premium === true || ['pro', 'power', 'admin'].includes(user?.subscription_tier || '')
 
+  // Auto-dismiss error after 5 seconds
+  useEffect(() => {
+    if (!error) return
+    const timer = setTimeout(() => setError(''), 5000)
+    return () => clearTimeout(timer)
+  }, [error])
+
   const handleUpgrade = async (tier: 'pro' | 'power') => {
     if (!isAuthenticated) {
       window.location.href = isPower ? '/?signup=pro&next=/pro?tier=power' : '/?signup=pro'
+      return
+    }
+    // Guard: if already subscribed, send to portal instead of creating a new checkout
+    if (isAlreadyPro) {
+      handleManage()
       return
     }
     setLoading(true)
@@ -223,8 +235,13 @@ function ProContent() {
             <div style={{
               background: 'rgba(239,68,68,0.05)', border: '1px solid var(--accent-red)',
               borderRadius: '8px', padding: '12px 16px', marginBottom: '16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
             }}>
-              <p style={{ color: 'var(--accent-red)', fontSize: '13px' }}>{error}</p>
+              <p style={{ color: 'var(--accent-red)', fontSize: '13px', margin: 0 }}>{error}</p>
+              <button onClick={() => setError('')} style={{
+                background: 'none', border: 'none', color: 'var(--accent-red)',
+                cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '0 2px', flexShrink: 0,
+              }}>&times;</button>
             </div>
           )}
 
@@ -326,8 +343,13 @@ function ProContent() {
             background: 'rgba(239,68,68,0.05)', border: '1px solid var(--accent-red)',
             borderRadius: '8px', padding: '12px 16px', maxWidth: '400px',
             margin: '0 auto var(--space-8)', textAlign: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
           }}>
-            <p style={{ color: 'var(--accent-red)', fontSize: '13px' }}>{error}</p>
+            <p style={{ color: 'var(--accent-red)', fontSize: '13px', margin: 0 }}>{error}</p>
+            <button onClick={() => setError('')} style={{
+              background: 'none', border: 'none', color: 'var(--accent-red)',
+              cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '0 2px', flexShrink: 0,
+            }}>&times;</button>
           </div>
         )}
 

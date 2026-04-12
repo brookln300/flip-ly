@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../lib/supabase'
 import { getSession, requireAdmin } from '../../lib/auth'
-import { getUserTier } from '../../lib/user-tier'
 
 // GET /api/feedback?key=<admin_key>&status=new&limit=50
 export async function GET(req: NextRequest) {
@@ -59,18 +58,13 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid id or status' }, { status: 400 })
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('fliply_feedback')
     .update({ status })
     .eq('id', id)
-    .select()
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  if (!data || data.length === 0) {
-    return NextResponse.json({ error: 'Feedback not found' }, { status: 404 })
   }
 
   return NextResponse.json({ ok: true, id, status })
@@ -101,14 +95,14 @@ export async function POST(req: NextRequest) {
   if (session) {
     const { data: user } = await supabase
       .from('fliply_users')
-      .select('id, email, is_premium, subscription_tier, market_id')
+      .select('id, email, is_premium, market_id')
       .eq('id', session.userId)
       .single()
 
     if (user) {
       userId = user.id
       email = user.email
-      userTier = getUserTier(user)
+      userTier = user.is_premium ? 'pro' : 'free'
 
       if (user.market_id) {
         const { data: m } = await supabase

@@ -11,22 +11,27 @@ const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 export default function GoogleAnalytics() {
   const [consentGiven, setConsentGiven] = useState(false)
 
-  // Capture gclid/fbclid/msclkid on landing for ad attribution
-  // This uses first-party sessionStorage, not cookies — runs regardless of consent
+  // Check cookie consent status + listen for runtime consent changes
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const params = new URLSearchParams(window.location.search)
-    const gclid = params.get('gclid')
-    const fbclid = params.get('fbclid')
-    const msclkid = params.get('msclkid')
-    if (gclid) sessionStorage.setItem('fliply_gclid', gclid)
-    if (fbclid) sessionStorage.setItem('fliply_fbclid', fbclid)
-    if (msclkid) sessionStorage.setItem('fliply_msclkid', msclkid)
-  }, [])
+    const checkConsent = () => {
+      const accepted = getConsent() === 'accepted'
+      setConsentGiven(accepted)
 
-  // Check cookie consent status
-  useEffect(() => {
-    setConsentGiven(getConsent() === 'accepted')
+      // Capture gclid/fbclid/msclkid for ad attribution — only after consent
+      if (accepted && typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search)
+        const gclid = params.get('gclid')
+        const fbclid = params.get('fbclid')
+        const msclkid = params.get('msclkid')
+        if (gclid) sessionStorage.setItem('fliply_gclid', gclid)
+        if (fbclid) sessionStorage.setItem('fliply_fbclid', fbclid)
+        if (msclkid) sessionStorage.setItem('fliply_msclkid', msclkid)
+      }
+    }
+
+    checkConsent()
+    window.addEventListener('fliply-consent-change', checkConsent)
+    return () => window.removeEventListener('fliply-consent-change', checkConsent)
   }, [])
 
   if (!GA_MEASUREMENT_ID || !consentGiven) return null

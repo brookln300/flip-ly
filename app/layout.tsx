@@ -3,8 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import Providers from './components/Providers'
 import GoogleAnalytics from './components/GoogleAnalytics'
 import CookieConsentBanner from './components/CookieConsentBanner'
-import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/next'
+import ConsentGatedAnalytics from './components/ConsentGatedAnalytics'
 import './globals.css'
 
 const inter = Inter({
@@ -138,8 +137,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <GoogleAnalytics />
-        <Analytics />
-        <SpeedInsights />
+        <ConsentGatedAnalytics />
         <Providers>{children}</Providers>
         <CookieConsentBanner />
       </body>

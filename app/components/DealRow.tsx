@@ -1,6 +1,7 @@
 'use client'
 
 import React, { memo } from 'react'
+import { Lock } from 'lucide-react'
 import { useSignup } from './SignupContext'
 
 const scoreColor = (score: number) => {
@@ -8,21 +9,6 @@ const scoreColor = (score: number) => {
   if (score >= 7) return 'var(--score-good)'
   if (score >= 5) return 'var(--score-average)'
   return 'var(--score-low)'
-}
-
-const categoryIcon = (title: string) => {
-  const t = (title || '').toLowerCase()
-  if (/drill|saw|tool|wrench|hammer|milwaukee|dewalt|makita/.test(t)) return '\u{1F527}'
-  if (/chair|table|desk|couch|sofa|dresser|shelf|furniture|bookcase/.test(t)) return '\u{1FA91}'
-  if (/kitchen|mixer|oven|blender|pot|pan|kitchenaid|instant pot/.test(t)) return '\u{1F373}'
-  if (/tv|monitor|speaker|headphone|electronic|laptop|phone|ipad|xbox|playstation/.test(t)) return '\u{1F4FA}'
-  if (/vintage|antique|retro|mid.century|mcm/.test(t)) return '\u{1F3FA}'
-  if (/bike|bicycle|trek|schwinn/.test(t)) return '\u{1F6B2}'
-  if (/free|curb/.test(t)) return '\u{1F193}'
-  if (/kid|toy|baby|stroller|crib/.test(t)) return '\u{1F9F8}'
-  if (/yard|garden|mower|lawn/.test(t)) return '\u{1F33F}'
-  if (/car|auto|truck|motor/.test(t)) return '\u{1F697}'
-  return '\u{1F4E6}'
 }
 
 function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInUser }: {
@@ -38,6 +24,7 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
   const isScoreGated = deal.deal_score === 'gated'
   const hasReason = !!deal.deal_reason
   const canExpand = showExpand && (hasReason || isScoreGated)
+  const isEstate = deal.event_type === 'estate_sale'
 
   const handleTitleClick = (e: React.MouseEvent) => {
     if (deal.source_url) return
@@ -45,6 +32,11 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
     e.stopPropagation()
     openSourceGate()
   }
+
+  // Format event type for display (only for non-listing types)
+  const eventLabel = deal.event_type && deal.event_type !== 'listing'
+    ? (deal.event_type as string).replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+    : null
 
   return (
     <div>
@@ -61,15 +53,7 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
         }}
         onClick={() => canExpand && setExpandedDeal(expandedDeal === i ? null : i)}
       >
-        <div className="deal-icon" style={{
-          width: '40px', height: '40px', borderRadius: '8px', flexShrink: 0,
-          background: 'var(--bg-surface)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '18px',
-        }}>
-          {categoryIcon(deal.title)}
-        </div>
-
+        {/* Score */}
         {hasRealScore ? (
           <div className="deal-score" style={{
             width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0,
@@ -91,11 +75,11 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
               background: 'linear-gradient(135deg, #f0fdf4, #f8f8f8)',
               border: '1px solid rgba(22,163,74,0.2)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', position: 'relative',
+              cursor: 'pointer',
             }}
             title="Sign up free for full scores on every result"
           >
-            <span style={{ fontSize: '14px' }}>🔒</span>
+            <Lock size={14} color="var(--accent-green)" strokeWidth={2} />
           </div>
         ) : (
           <div className="deal-score" style={{
@@ -107,19 +91,18 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
           </div>
         )}
 
+        {/* Title + type + meta */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '2px' }}>
-            {deal.hot && (
-              <span style={{ background: '#fef2f2', color: '#dc2626', padding: '1px 5px', fontSize: '9px', fontWeight: 700, borderRadius: '3px', letterSpacing: '0.04em', flexShrink: 0 }}>HOT</span>
-            )}
-            {deal.event_type && deal.event_type !== 'listing' && (
+            {eventLabel && (
               <span style={{
                 padding: '1px 6px', fontSize: '9px', fontWeight: 600, borderRadius: '3px',
                 letterSpacing: '0.02em', whiteSpace: 'nowrap', flexShrink: 0,
-                background: deal.event_type === 'estate_sale' ? 'rgba(168,85,247,0.08)' : deal.event_type === 'garage_sale' ? 'rgba(59,130,246,0.08)' : deal.event_type === 'flea_market' ? 'rgba(236,72,153,0.08)' : deal.event_type === 'moving_sale' ? 'rgba(249,115,22,0.08)' : deal.event_type === 'auction' ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.08)',
-                color: deal.event_type === 'estate_sale' ? '#A855F7' : deal.event_type === 'garage_sale' ? '#3B82F6' : deal.event_type === 'flea_market' ? '#EC4899' : deal.event_type === 'moving_sale' ? '#F97316' : deal.event_type === 'auction' ? '#EF4444' : '#6366F1',
+                background: isEstate ? 'rgba(124,58,237,0.08)' : 'var(--bg-surface)',
+                color: isEstate ? 'var(--accent-purple)' : 'var(--text-muted)',
+                border: `1px solid ${isEstate ? 'rgba(124,58,237,0.12)' : 'var(--border-subtle)'}`,
               }}>
-                {(deal.event_type || '').replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                {eventLabel}
               </span>
             )}
             <span
@@ -143,28 +126,66 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
               const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
               const diff = Math.round((target.getTime() - today.getTime()) / 86400000)
               const label = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : diff > 0 && diff <= 6 ? d.toLocaleDateString('en-US', { weekday: 'short' }) : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-              const isHot = diff === 0 || diff === 1
+              const isSoon = diff === 0 || diff === 1
               return (
                 <span style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '3px',
-                  padding: '1px 6px', borderRadius: '3px', fontSize: '10px', fontWeight: 600,
-                  background: isHot ? 'rgba(22,163,74,0.08)' : 'var(--bg-surface)',
-                  color: isHot ? 'var(--accent-green)' : 'var(--text-muted)',
-                  border: `1px solid ${isHot ? 'rgba(22,163,74,0.15)' : 'var(--border-subtle)'}`,
+                  fontSize: '11px', fontWeight: 500,
+                  color: isSoon ? 'var(--accent-green)' : 'var(--text-muted)',
                 }}>
                   {label}{deal.time ? ` · ${deal.time}` : ''}
                 </span>
               )
             })()}
-            {deal.city && <span>{deal.city}</span>}
-            <span style={{
-              textTransform: 'uppercase', fontSize: '10px', letterSpacing: '0.5px',
-              color: 'var(--text-dim)', background: 'var(--bg-surface)',
-              padding: '1px 6px', borderRadius: '3px',
-            }}>{deal.source}</span>
+            {deal.date && deal.city && <span style={{ color: 'var(--text-dim)' }}>·</span>}
+            {deal.city && <span style={{ fontSize: '11px' }}>{deal.city}</span>}
+            {deal.posted_at && (() => {
+              const posted = new Date(deal.posted_at)
+              if (isNaN(posted.getTime())) return null
+              const diffMs = Date.now() - posted.getTime()
+              const diffMin = Math.floor(diffMs / 60000)
+              const diffHr = Math.floor(diffMs / 3600000)
+              const diffDay = Math.floor(diffMs / 86400000)
+              const label = diffMin < 60 ? `${diffMin}m ago` : diffHr < 24 ? `${diffHr}h ago` : diffDay < 7 ? `${diffDay}d ago` : null
+              if (!label) return null
+              return (
+                <>
+                  <span style={{ color: 'var(--text-dim)' }}>·</span>
+                  <span style={{ fontSize: '10px', color: diffMin < 120 ? 'var(--accent-green)' : 'var(--text-dim)' }}>
+                    {label}
+                  </span>
+                </>
+              )
+            })()}
+            {/* Pro-only: price context badge */}
+            {deal.price_context && deal.price_context.vsMedian < 0 && (
+              <>
+                <span style={{ color: 'var(--text-dim)' }}>·</span>
+                <span style={{
+                  fontSize: '10px', fontWeight: 600, color: 'var(--accent-green)',
+                  background: 'rgba(22,163,74,0.06)', padding: '1px 5px', borderRadius: '3px',
+                  border: '1px solid rgba(22,163,74,0.12)',
+                }}>
+                  {Math.abs(deal.price_context.vsMedian)}% below typical
+                </span>
+              </>
+            )}
+            {/* Pro-only: resale flag */}
+            {deal.resale_flag && deal.deal_score >= 7 && (
+              <>
+                <span style={{ color: 'var(--text-dim)' }}>·</span>
+                <span style={{
+                  fontSize: '10px', fontWeight: 600, color: 'var(--accent-amber)',
+                  background: 'rgba(217,119,6,0.06)', padding: '1px 5px', borderRadius: '3px',
+                  border: '1px solid rgba(217,119,6,0.12)',
+                }}>
+                  Flip potential
+                </span>
+              </>
+            )}
           </div>
         </div>
 
+        {/* Price */}
         <div style={{
           fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '14px', flexShrink: 0,
           color: deal.price === 'FREE' ? 'var(--accent-green)' : deal.price === 'Not listed' ? 'var(--text-dim)' : 'var(--text-primary)',
@@ -175,7 +196,7 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
 
       {showExpand && expandedDeal === i && hasReason && (
         <div className="deal-expanded" style={{
-          padding: '8px 0 12px 52px',
+          padding: '8px 0 12px 48px',
           borderBottom: '1px solid var(--border-subtle)',
         }}>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
@@ -194,7 +215,7 @@ function DealRow({ deal, i, showExpand, expandedDeal, setExpandedDeal, loggedInU
 
       {showExpand && expandedDeal === i && isScoreGated && !hasReason && (
         <div style={{
-          padding: '10px 0 14px 52px',
+          padding: '10px 0 14px 48px',
           borderBottom: '1px solid var(--border-subtle)',
         }}>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 8px' }}>

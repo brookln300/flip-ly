@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - When Keith says "aesthetic only" or "don't touch data logic", strictly limit changes to UI/styling code. Never modify database queries, API calls, or data-connected code unless explicitly asked.
 - Do NOT over-engineer solutions. Start with the simplest working version. When asked for a way to view data, suggest existing tools (like Supabase Studio) before building custom dashboards.
 - When working with browser automation (Chrome MCP), expect UI click failures. After 2 failed click attempts on the same element, stop and suggest Keith do that step manually. Continue with other tasks.
+- **When hitting API errors or roadblocks:** Always fetch and reference the official documentation first (WebFetch the API docs, check changelogs, read error references) before iterating blind. Don't guess at parameter values — look them up.
 
 ## What This Is
 
@@ -178,6 +179,57 @@ The site has a 7-level easter egg terminal ("The Lobster Protocol"). Level 7's p
 **Env var:** `SHELL_LEVEL7_HASH` must be set to the SHA-256 hash above.
 
 If refactoring any of the files above, preserve the `LOBSTER-PROTOCOL-L7` marked lines.
+
+## Installed Skills
+
+### UI/UX Pro Max (`.claude/skills/ui-ux-pro-max/`)
+Design intelligence skill with searchable databases: 67 UI styles, 161 color palettes, 57 font pairings, 161 reasoning rules, 99 UX guidelines, 25 chart types, 16 stack-specific guideline files.
+
+**When to use:** Any UI structure, visual design, component creation, or UX review task.
+
+```bash
+# Generate full design system recommendation
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "deal discovery marketplace" --design-system -p "Flip-ly"
+
+# Search specific domains
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "accessibility contrast" --domain ux
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "marketplace hero" --domain landing
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "glassmorphism" --domain style
+
+# Stack-specific guidelines
+python3 .claude/skills/ui-ux-pro-max/scripts/search.py "performance" --stack nextjs
+```
+
+Requires Python 3. Trigger with `/ui-ux-pro-max` or invoke automatically on UI/UX tasks.
+
+### Media Generation (`tools/gen.ts`)
+Imagen 4 (images) + Veo 3.1 (video) via Google Gemini API. API key in `.env.local` as `GOOGLE_AI_API_KEY`.
+
+```bash
+# Images — Imagen 4
+npx tsx tools/gen.ts image "<prompt>" --model fast|standard|ultra --aspect 16:9 --count 4
+npx tsx tools/gen.ts image "<prompt>" --model ultra --size 2K --out assets/
+
+# Video — Veo 3.1
+npx tsx tools/gen.ts video "<prompt>" --model lite|fast|full --res 720p|1080p|4k --duration 8
+npx tsx tools/gen.ts video "<prompt>" --from-image source.png --model fast
+
+# Batch jobs
+npx tsx tools/gen.ts batch tools/batch-example.json
+
+# Pricing reference
+npx tsx tools/gen.ts cost
+```
+
+**Pricing:** Images $0.02-0.06 each. Video $0.05-0.60/sec. Prepaid credits ($25 loaded, auto-reload on).
+
+**Standalone entry points also available:**
+- `npx tsx tools/generate-image.ts "<prompt>" [options]`
+- `npx tsx tools/generate-video.ts "<prompt>" [options]`
+
+Generated files save to `generated/` (gitignored). Functions are importable for use in scripts/workflows.
+
+**Prompt quality matters.** Veo is "garbage in, garbage out" — always reference `docs/reference/veo-prompt-guide.md` before crafting video prompts and `docs/reference/imagen-prompt-guide.md` for image prompts. Include camera movement, lighting, atmosphere, and audio cues for video. Include subject, context, style, and quality modifiers for images.
 
 ## Rules
 

@@ -267,6 +267,71 @@ export default async function Home() {
           </div>
         </FadeIn>
 
+        {/* ═══ SCORE BREAKDOWN EXAMPLE — shows visitors what a real score looks like ═══ */}
+        <FadeIn style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-10) var(--space-4) 0' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 'var(--space-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Here&apos;s what a score looks like
+          </p>
+          <div style={{
+            background: '#ffffff', border: '1px solid var(--border-default)', borderRadius: '14px',
+            padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+            maxWidth: '520px', margin: '0 auto',
+          }}>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+              {/* Score badge */}
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '10px', flexShrink: 0,
+                background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', fontWeight: 700, color: 'var(--score-excellent)' }}>9</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <span style={{
+                    padding: '1px 6px', fontSize: '9px', fontWeight: 600, borderRadius: '3px',
+                    background: 'rgba(124,58,237,0.08)', color: 'var(--accent-purple)',
+                    border: '1px solid rgba(124,58,237,0.12)',
+                  }}>Estate Sale</span>
+                  <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    DeWalt 20V MAX 5-Tool Combo Kit
+                  </span>
+                </div>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '6px 0 10px' }}>
+                  Complete DeWalt 20V tool set including drill, impact driver, circular saw, reciprocating saw, and work light with two batteries and charger. Excellent condition, barely used.
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: '0 0 10px', fontStyle: 'italic' }}>
+                  <span style={{ color: 'var(--accent-green)', fontWeight: 600, fontStyle: 'normal' }}>AI insight:</span>{' '}
+                  DeWalt 20V 5-tool combo at $60 — typically resells for $180-220 on eBay. Strong 3x flip margin with high demand.
+                </p>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {['tools', 'electronics'].map(tag => (
+                    <span key={tag} style={{
+                      fontSize: '10px', fontWeight: 500, color: 'var(--text-muted)',
+                      background: 'var(--bg-surface)', padding: '2px 8px', borderRadius: '4px',
+                      border: '1px solid var(--border-subtle)',
+                    }}>{tag}</span>
+                  ))}
+                  <span style={{
+                    fontSize: '10px', fontWeight: 600, color: 'var(--accent-green)',
+                    background: 'rgba(22,163,74,0.06)', padding: '2px 8px', borderRadius: '4px',
+                    border: '1px solid rgba(22,163,74,0.12)',
+                  }}>68% below typical</span>
+                  <span style={{
+                    fontSize: '10px', fontWeight: 600, color: 'var(--accent-amber)',
+                    background: 'rgba(217,119,6,0.06)', padding: '2px 8px', borderRadius: '4px',
+                    border: '1px solid rgba(217,119,6,0.12)',
+                  }}>Flip potential</span>
+                  <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>$60</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: 'var(--space-3)' }}>
+            Pro members see full breakdowns, price context, and flip indicators on every listing.
+          </p>
+        </FadeIn>
+
         {/* ═══ PRICING ═══ */}
         <FadeIn id="pricing" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
           <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>

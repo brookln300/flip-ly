@@ -175,8 +175,7 @@ body {
 
 @media (max-width: 480px) {
   .deal-row { gap: 8px !important; }
-  .deal-row .deal-icon { display: none !important; }
-  .deal-row .deal-score { width: 32px !important; height: 32px !important; }
+.deal-row .deal-score { width: 32px !important; height: 32px !important; }
   .deal-expanded { padding-left: 0 !important; }
   .score-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }

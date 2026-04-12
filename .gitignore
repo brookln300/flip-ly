@@ -6,3 +6,6 @@ node_modules/
 *.log
 
 .vercel
+
+# Generated media (Imagen/Veo output)
+generated/

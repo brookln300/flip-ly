@@ -81,6 +81,38 @@ export async function GET(req: NextRequest) {
 
     const urgency = daysLeft <= 3 ? 'FINAL STRETCH' : daysLeft <= 7 ? 'CRUNCH TIME' : 'BUILD MODE'
 
+    // ── Weekly featured deal suggestions (Mondays only) ──
+    // Picks top 5 highest-scored deals with best reason text for landing page showcase
+    let featuredSuggestions = ''
+    if (now.getDay() === 1) { // Monday
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      const { data: topDeals } = await supabase
+        .from('fliply_listings')
+        .select('id, title, deal_score, deal_score_reason, ai_tags, price_text, city, state, event_type')
+        .gte('deal_score', 8)
+        .not('deal_score_reason', 'is', null)
+        .gte('scraped_at', sevenDaysAgo)
+        .eq('resale_flag', true)
+        .order('deal_score', { ascending: false })
+        .limit(5)
+
+      if (topDeals && topDeals.length > 0) {
+        const suggestions = topDeals.map((d, i) => {
+          const tags = (d.ai_tags || []).slice(0, 3).join(', ')
+          const type = (d.event_type || '').replace(/_/g, ' ')
+          return `  ${i + 1}. [${d.deal_score}] ${d.title}\n     ${type} · ${d.city}, ${d.state} · ${d.price_text}\n     ${tags}\n     "${d.deal_score_reason}"`
+        }).join('\n\n')
+
+        featuredSuggestions = [
+          ``,
+          `<b>FEATURED DEAL CANDIDATES</b> (for landing page)`,
+          `Reply with numbers to approve for this week's showcase:`,
+          ``,
+          suggestions,
+        ].join('\n')
+      }
+    }
+
     await sendTelegramAlert([
       `<b>FLIP-LY MORNING BRIEFING</b>`,
       `Sprint Day ${sprintDay} · ${daysLeft} days to launch · ${urgency}`,
@@ -100,9 +132,10 @@ export async function GET(req: NextRequest) {
       `  Trust issue? Fix now`,
       `  Cosmetic? Log it, keep shipping`,
       `  Nice-to-have? After April 18`,
+      featuredSuggestions,
       ``,
       `Ship > Perfect. Go.`,
-    ].join('\n'))
+    ].filter(Boolean).join('\n'))
 
     return NextResponse.json({ success: true, sprint_day: sprintDay, days_left: daysLeft })
   } catch (err: any) {

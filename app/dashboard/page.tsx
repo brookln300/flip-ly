@@ -141,14 +141,14 @@ function formatTimeAgo(hours: number): string {
 
 // Event type display config
 const EVENT_TYPE_COLORS: Record<string, { bg: string; color: string; label: string }> = {
-  garage_sale: { bg: 'rgba(59,130,246,0.08)', color: '#3B82F6', label: 'Garage Sale' },
-  estate_sale: { bg: 'rgba(168,85,247,0.08)', color: '#A855F7', label: 'Estate Sale' },
-  moving_sale: { bg: 'rgba(249,115,22,0.08)', color: '#F97316', label: 'Moving Sale' },
-  flea_market: { bg: 'rgba(236,72,153,0.08)', color: '#EC4899', label: 'Flea Market' },
-  auction: { bg: 'rgba(239,68,68,0.08)', color: '#EF4444', label: 'Auction' },
-  community_sale: { bg: 'rgba(20,184,166,0.08)', color: '#14B8A6', label: 'Community' },
-  thrift: { bg: 'rgba(132,204,22,0.08)', color: '#84CC16', label: 'Thrift' },
-  event: { bg: 'rgba(99,102,241,0.08)', color: '#6366F1', label: 'Event' },
+  garage_sale: { bg: 'rgba(107,114,128,0.06)', color: '#6B7280', label: 'Garage Sale' },
+  estate_sale: { bg: 'rgba(59,130,246,0.08)', color: '#3B82F6', label: 'Estate Sale' },
+  moving_sale: { bg: 'rgba(107,114,128,0.06)', color: '#6B7280', label: 'Moving Sale' },
+  flea_market: { bg: 'rgba(107,114,128,0.06)', color: '#6B7280', label: 'Flea Market' },
+  auction: { bg: 'rgba(107,114,128,0.06)', color: '#6B7280', label: 'Auction' },
+  community_sale: { bg: 'rgba(107,114,128,0.06)', color: '#6B7280', label: 'Community' },
+  thrift: { bg: 'rgba(107,114,128,0.06)', color: '#6B7280', label: 'Thrift' },
+  event: { bg: 'rgba(107,114,128,0.06)', color: '#6B7280', label: 'Event' },
   listing: { bg: 'rgba(107,114,128,0.06)', color: '#6B7280', label: 'Listing' },
 }
 
@@ -653,12 +653,17 @@ export default function Dashboard() {
   const [eventTypeFilter, setEventTypeFilter] = useState('all')
   const [quickFilters, setQuickFilters] = useState<Set<string>>(new Set())
   const [filterLoading, setFilterLoading] = useState(false)
+  const [showAdvFilters, setShowAdvFilters] = useState(false)
+  const [priceMin, setPriceMin] = useState('')
+  const [priceMax, setPriceMax] = useState('')
+  const [dateFilter, setDateFilter] = useState<'any' | 'today' | 'weekend' | 'week'>('any')
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [savedListings, setSavedListings] = useState<Listing[]>([])
   const [markets, setMarkets] = useState<MarketOption[]>([])
   const [showMarketPicker, setShowMarketPicker] = useState(false)
   const [toastMsg, setToastMsg] = useState('')
   const [activeMarketSlug, setActiveMarketSlug] = useState<string>('')
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const marketRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -686,6 +691,12 @@ export default function Dashboard() {
         }
         setUser(u)
         if (u?.market_slug) setActiveMarketSlug(u.market_slug)
+        // Show onboarding for users who signed up in the last 5 minutes
+        if (u?.created_at) {
+          const ageMs = Date.now() - new Date(u.created_at).getTime()
+          const dismissed = typeof window !== 'undefined' && localStorage.getItem('fliply_onboarded')
+          if (ageMs < 300000 && !dismissed) setShowOnboarding(true)
+        }
         setLoading(false)
       })
       .catch(() => { setLoading(false); window.location.href = '/' })
@@ -787,7 +798,24 @@ export default function Dashboard() {
     if (activeMarketSlug) params.set('market', activeMarketSlug)
     if (eventTypeFilter !== 'all') params.set('event_type', eventTypeFilter)
     if (quickFilters.has('hot')) params.set('min_score', '7')
-    if (quickFilters.has('weekend')) {
+    // Date filter (advanced takes priority over quick chip)
+    if (dateFilter !== 'any') {
+      const now = new Date()
+      const todayStr = now.toISOString().split('T')[0]
+      if (dateFilter === 'today') {
+        params.set('date_start', todayStr)
+        params.set('date_end', todayStr)
+      } else if (dateFilter === 'weekend') {
+        const { start, end } = getWeekendDates()
+        params.set('date_start', start)
+        params.set('date_end', end)
+      } else if (dateFilter === 'week') {
+        const endOfWeek = new Date(now)
+        endOfWeek.setDate(now.getDate() + 7)
+        params.set('date_start', todayStr)
+        params.set('date_end', endOfWeek.toISOString().split('T')[0])
+      }
+    } else if (quickFilters.has('weekend')) {
       const { start, end } = getWeekendDates()
       params.set('date_start', start)
       params.set('date_end', end)
@@ -797,8 +825,11 @@ export default function Dashboard() {
       params.set('lng', String(userLocation.lng))
       params.set('radius', '25')
     }
+    // Price filters
+    if (priceMin) params.set('price_min', priceMin)
+    if (priceMax) params.set('price_max', priceMax)
     return params
-  }, [eventTypeFilter, quickFilters, activeMarketSlug])
+  }, [eventTypeFilter, quickFilters, activeMarketSlug, dateFilter, priceMin, priceMax])
 
   // ── Search ──
   const handleSearch = useCallback(async (e?: React.FormEvent, query?: string) => {
@@ -823,7 +854,7 @@ export default function Dashboard() {
   // ── Filtered browse (fires when event type or quick filters change) ──
   const fetchFilteredListings = useCallback(async () => {
     if (!user) return
-    const hasFilters = eventTypeFilter !== 'all' || quickFilters.size > 0
+    const hasFilters = eventTypeFilter !== 'all' || quickFilters.size > 0 || !!priceMin || !!priceMax || dateFilter !== 'any'
     if (!hasFilters) return // Default browse handles no-filter state
     setFilterLoading(true)
     try {
@@ -874,13 +905,36 @@ export default function Dashboard() {
 
   /* ── Loading state ── */
   if (loading) {
+    const skelPulse = `
+      @keyframes skel-pulse { 0%,100% { opacity: 0.06 } 50% { opacity: 0.12 } }
+      .skel { background: var(--text-primary); border-radius: 6px; animation: skel-pulse 1.4s ease-in-out infinite; }
+    `
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '24px', height: '24px', border: '2px solid var(--border-default)', borderTop: '2px solid var(--accent-green)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto 16px' }} />
-          <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontFamily: font, fontWeight: 500 }}>Loading dashboard...</p>
+      <div className="min-h-screen" style={{ background: 'var(--bg-primary)', padding: '24px 16px', maxWidth: '720px', margin: '0 auto' }}>
+        <style>{DASH_CSS}{skelPulse}</style>
+        {/* Header skeleton */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '28px' }}>
+          <div className="skel" style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+          <div>
+            <div className="skel" style={{ width: '140px', height: '14px', marginBottom: '6px' }} />
+            <div className="skel" style={{ width: '90px', height: '10px' }} />
+          </div>
         </div>
-        <style>{DASH_CSS}</style>
+        {/* Search bar skeleton */}
+        <div className="skel" style={{ width: '100%', height: '44px', borderRadius: '10px', marginBottom: '24px' }} />
+        {/* Deal rows skeleton */}
+        <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+          {[0,1,2,3,4,5].map(j => (
+            <div key={j} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderBottom: j < 5 ? '1px solid var(--border-subtle)' : 'none' }}>
+              <div className="skel" style={{ width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="skel" style={{ width: `${60 + (j * 7) % 30}%`, height: '13px', marginBottom: '6px' }} />
+                <div className="skel" style={{ width: '45%', height: '10px' }} />
+              </div>
+              <div className="skel" style={{ width: '48px', height: '14px', flexShrink: 0 }} />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
@@ -934,6 +988,83 @@ export default function Dashboard() {
           animation: 'fadeIn 0.2s ease',
         }}>
           {toastMsg}
+        </div>
+      )}
+
+      {/* ═══ ONBOARDING MODAL ═══ */}
+      {showOnboarding && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px', animation: 'fadeIn 0.2s ease',
+        }}
+          onClick={() => { setShowOnboarding(false); localStorage.setItem('fliply_onboarded', '1') }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#fff', borderRadius: '18px', padding: '32px 28px',
+              maxWidth: '400px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{
+              width: '48px', height: '48px', borderRadius: '14px',
+              background: 'rgba(22,163,74,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 16px',
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+              </svg>
+            </div>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: font, marginBottom: '6px' }}>
+              Welcome to Flip-ly
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', fontFamily: font, lineHeight: 1.5, marginBottom: '24px' }}>
+              We score deals from estate sales, garage sales, and more in your area. Try a search to get started.
+            </p>
+            <div style={{
+              background: 'var(--bg-surface)', borderRadius: '10px', padding: '12px',
+              marginBottom: '20px', textAlign: 'left',
+            }}>
+              <p style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-dim)', fontFamily: font, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>Try searching for:</p>
+              {['vintage furniture', 'power tools', 'electronics'].map(term => (
+                <button
+                  key={term}
+                  onClick={() => {
+                    setShowOnboarding(false)
+                    localStorage.setItem('fliply_onboarded', '1')
+                    setSearchQuery(term)
+                    setTimeout(() => handleSearch(undefined, term), 100)
+                  }}
+                  style={{
+                    display: 'block', width: '100%', padding: '8px 12px', marginBottom: '4px',
+                    background: '#fff', border: '1px solid var(--border-default)', borderRadius: '8px',
+                    fontFamily: font, fontSize: '13px', color: 'var(--text-primary)', cursor: 'pointer',
+                    textAlign: 'left', transition: 'background 0.1s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => { setShowOnboarding(false); localStorage.setItem('fliply_onboarded', '1'); searchRef.current?.focus() }}
+              style={{
+                width: '100%', padding: '12px', background: 'var(--accent-green)', color: '#fff',
+                border: 'none', borderRadius: '10px', fontFamily: font, fontSize: '14px', fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Start Searching
+            </button>
+            <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontFamily: font, marginTop: '12px' }}>
+              Scores range 1–10. Green (9+) = don't miss. Amber (7-8) = worth checking.
+            </p>
+          </div>
         </div>
       )}
 
@@ -1177,7 +1308,95 @@ export default function Dashboard() {
           {filterLoading && (
             <div style={{ width: '14px', height: '14px', border: '2px solid var(--border-default)', borderTop: '2px solid var(--accent-green)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 }} />
           )}
+          <button
+            onClick={() => setShowAdvFilters(v => !v)}
+            style={{
+              padding: '5px 10px', border: '1px solid var(--border-default)', borderRadius: '16px',
+              fontFamily: font, fontSize: '11px', fontWeight: 500, cursor: 'pointer', flexShrink: 0,
+              color: showAdvFilters || priceMin || priceMax || dateFilter !== 'any' ? '#fff' : 'var(--text-muted)',
+              background: showAdvFilters || priceMin || priceMax || dateFilter !== 'any' ? 'var(--accent-green)' : 'transparent',
+              transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '4px',
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/>
+            </svg>
+            Filters
+          </button>
         </div>
+
+        {/* ═══ ADVANCED FILTERS ═══ */}
+        {showAdvFilters && (
+          <div className="dash-fade" style={{
+            marginBottom: '16px', padding: '14px 16px',
+            background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '12px',
+          }}>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              {/* Price range */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-dim)', fontFamily: font, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Price</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <input
+                    type="number" placeholder="Min" value={priceMin} onChange={e => setPriceMin(e.target.value)}
+                    min="0" step="1"
+                    style={{
+                      width: '72px', padding: '7px 10px', border: '1px solid var(--border-default)', borderRadius: '8px',
+                      fontFamily: font, fontSize: '12px', color: 'var(--text-primary)', background: 'var(--bg-primary)', outline: 'none',
+                    }}
+                  />
+                  <span style={{ color: 'var(--text-dim)', fontSize: '11px' }}>–</span>
+                  <input
+                    type="number" placeholder="Max" value={priceMax} onChange={e => setPriceMax(e.target.value)}
+                    min="0" step="1"
+                    style={{
+                      width: '72px', padding: '7px 10px', border: '1px solid var(--border-default)', borderRadius: '8px',
+                      fontFamily: font, fontSize: '12px', color: 'var(--text-primary)', background: 'var(--bg-primary)', outline: 'none',
+                    }}
+                  />
+                </div>
+              </div>
+              {/* Date shortcuts */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-dim)', fontFamily: font, textTransform: 'uppercase', letterSpacing: '0.06em' }}>When</span>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {([['any', 'Any'], ['today', 'Today'], ['weekend', 'Weekend'], ['week', 'This Week']] as const).map(([key, label]) => (
+                    <button key={key} onClick={() => { setDateFilter(key); setActiveTab('deals') }} style={{
+                      padding: '6px 12px', border: `1px solid ${dateFilter === key ? 'var(--accent-green)' : 'var(--border-default)'}`,
+                      borderRadius: '8px', fontFamily: font, fontSize: '11px', fontWeight: 500, cursor: 'pointer',
+                      color: dateFilter === key ? '#fff' : 'var(--text-muted)',
+                      background: dateFilter === key ? 'var(--accent-green)' : 'transparent', transition: 'all 0.15s',
+                    }}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Apply */}
+              <button
+                onClick={() => { fetchFilteredListings(); setActiveTab('deals') }}
+                style={{
+                  padding: '7px 18px', background: 'var(--accent-green)', color: '#fff', border: 'none',
+                  borderRadius: '8px', fontFamily: font, fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                  alignSelf: 'flex-end',
+                }}
+              >
+                Apply
+              </button>
+              {(priceMin || priceMax || dateFilter !== 'any') && (
+                <button
+                  onClick={() => { setPriceMin(''); setPriceMax(''); setDateFilter('any') }}
+                  style={{
+                    padding: '7px 12px', background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border-default)',
+                    borderRadius: '8px', fontFamily: font, fontSize: '11px', fontWeight: 500, cursor: 'pointer',
+                    alignSelf: 'flex-end',
+                  }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ═══ RATE LIMIT ═══ */}
         {searchGate?.limited && (
@@ -1507,6 +1726,16 @@ export default function Dashboard() {
 
         {/* ═══ LISTINGS FEED ═══ */}
         {activeTab !== 'route' && <div style={{ marginBottom: '32px' }}>
+          {displayListings.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px 8px', fontFamily: font }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                {activeTab === 'search' ? `${searchTotal} result${searchTotal !== 1 ? 's' : ''}` : `${displayListings.length} deals`}
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                Sorted by: Deal Score, then newest
+              </span>
+            </div>
+          )}
           <div style={{
             background: '#fff', borderRadius: '14px',
             border: '1px solid var(--border-subtle)', overflow: 'hidden',
