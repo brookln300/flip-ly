@@ -68,7 +68,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: `${baseUrl}/blog/estate-sale-flipping-guide`,
-      lastModified: new Date(),
+      lastModified: new Date('2026-04-05'),
       changeFrequency: 'monthly',
       priority: 0.7,
     },
