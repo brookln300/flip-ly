@@ -18,7 +18,7 @@ import { sendTelegramAlert } from '../../../lib/telegram'
  */
 
 const BATCH_SIZE = 50
-const MAX_BATCHES = 8           // 50 * 8 = 400 listings per run max
+const MAX_BATCHES = 12          // 50 * 12 = 600 listings per run max
 const FETCH_TIMEOUT_MS = 4000
 const MAX_CONSECUTIVE_FAILS = 2 // delete after 2 failed checks (CL links die fast)
 
@@ -77,8 +77,69 @@ export async function GET(req: NextRequest) {
       totalDead += prePurged
     }
 
-    // Process in batches — prioritize CL listings (die fastest), then oldest-checked
-    for (let batch = 0; batch < MAX_BATCHES; batch++) {
+    // Phase 1: Check HOT items first (is_hot or deal_score >= 7) — these are what users see
+    const { data: hotListings } = await supabase
+      .from('fliply_listings')
+      .select('id, source_url, link_check_fails')
+      .not('source_url', 'is', null)
+      .gte('deal_score', 7)
+      .or('link_checked_at.is.null,link_checked_at.lt.' + new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString())
+      .order('deal_score', { ascending: false })
+      .order('link_checked_at', { ascending: true, nullsFirst: true })
+      .limit(BATCH_SIZE * 3) // Up to 150 hot items
+
+    if (hotListings && hotListings.length > 0) {
+      const hotResults = await Promise.all(
+        hotListings.map(async (listing) => {
+          const check = await checkUrl(listing.source_url)
+          return { ...listing, ...check }
+        })
+      )
+
+      const deadIds: string[] = []
+      const aliveIds: string[] = []
+      const suspectUpdates: { id: string; fails: number }[] = []
+
+      for (const r of hotResults) {
+        totalChecked++
+        if (r.alive) {
+          totalAlive++
+          aliveIds.push(r.id)
+        } else if (r.status === 404 || r.status === 410) {
+          totalDead++
+          deadIds.push(r.id)
+        } else {
+          const fails = (r.link_check_fails || 0) + 1
+          if (fails >= MAX_CONSECUTIVE_FAILS) {
+            totalDead++
+            deadIds.push(r.id)
+          } else {
+            totalSuspect++
+            suspectUpdates.push({ id: r.id, fails })
+          }
+        }
+      }
+
+      if (aliveIds.length > 0) {
+        await supabase.from('fliply_listings')
+          .update({ link_checked_at: new Date().toISOString(), link_check_fails: 0 })
+          .in('id', aliveIds)
+      }
+      if (deadIds.length > 0) {
+        await supabase.from('fliply_listings').delete().in('id', deadIds)
+      }
+      for (const s of suspectUpdates) {
+        await supabase.from('fliply_listings')
+          .update({ link_checked_at: new Date().toISOString(), link_check_fails: s.fails })
+          .eq('id', s.id)
+      }
+    }
+
+    const hotChecked = hotListings?.length || 0
+
+    // Phase 2: Check remaining listings — oldest-checked first
+    const remainingBatches = Math.max(1, MAX_BATCHES - Math.ceil(hotChecked / BATCH_SIZE))
+    for (let batch = 0; batch < remainingBatches; batch++) {
       const { data: listings, error } = await supabase
         .from('fliply_listings')
         .select('id, source_url, link_check_fails')
@@ -156,7 +217,8 @@ export async function GET(req: NextRequest) {
     await sendTelegramAlert([
       `🔗 <b>Link Health Check</b> (${elapsed}s)`,
       prePurged ? `Pre-purged: ${prePurged} stale CL listings 🗑️` : '',
-      `Checked: ${totalChecked}`,
+      `Hot items checked first: ${hotChecked}`,
+      `Total checked: ${totalChecked}`,
       `Alive: ${totalAlive} ✅`,
       `Dead (removed): ${totalDead} 🗑️`,
       `Suspect (will retry): ${totalSuspect} ⚠️`,

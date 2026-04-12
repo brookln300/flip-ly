@@ -31,6 +31,7 @@ export async function scrapeCraigslist(
   config: CraigslistConfig
 ): Promise<ScraperResult> {
   const result: ScraperResult = { inserted: 0, skipped: 0, errors: [] }
+  const seenExternalIds: string[] = [] // Track IDs seen in SAPI for staleness detection
 
   // Resolve area_id: use config.area_id if set, otherwise look it up by hostname
   let areaId: number | null = config.area_id || null
@@ -151,6 +152,7 @@ export async function scrapeCraigslist(
         const slug = Array.isArray(slugArr) ? slugArr[1] || slugArr[0] : slugArr
         const postUrl = `https://${hostname}.craigslist.org/${searchPath}/d/${slug}/${postingId}.html`
         const externalId = `cl-${postingId}`
+        seenExternalIds.push(externalId)
 
         // Extract zip from location text
         const zipCode = location ? extractZipCode(location) : null
@@ -190,6 +192,41 @@ export async function scrapeCraigslist(
     }
 
     console.log(`[CL] ${hostname}/${searchPath} (${categoryMeta.label}): ${items.length} found, ${result.inserted} new, ${result.skipped} deduped`)
+
+    // ── Staleness detection ──
+    // Any listing in our DB from this source that was NOT in the SAPI response
+    // has likely been deleted/sold/flagged on CL. Set expires_at so it drops
+    // from search results within 24h instead of lingering for 7 days.
+    if (seenExternalIds.length > 0) {
+      try {
+        // Find DB listings from this source that weren't in the SAPI response
+        const { data: dbListings } = await supabase
+          .from('fliply_listings')
+          .select('id, external_id')
+          .eq('source_id', sourceId)
+          .is('expires_at', null) // Only target listings not already marked for expiry
+
+        if (dbListings && dbListings.length > 0) {
+          const seenSet = new Set(seenExternalIds)
+          const missingIds = dbListings
+            .filter(l => !seenSet.has(l.external_id))
+            .map(l => l.id)
+
+          if (missingIds.length > 0) {
+            // Set expires_at to 24h from now — gives one more scrape cycle to reappear
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            await supabase
+              .from('fliply_listings')
+              .update({ expires_at: expiresAt })
+              .in('id', missingIds)
+
+            console.log(`[CL] ${hostname}/${searchPath}: marked ${missingIds.length} missing listings for expiry`)
+          }
+        }
+      } catch (staleErr: any) {
+        console.warn(`[CL] Staleness check failed: ${staleErr.message}`)
+      }
+    }
   } catch (err: any) {
     result.errors.push(`CL SAPI fetch failed [${searchPath}]: ${err.message}`)
     console.error(`[CL] ${config.hostname}/${searchPath} failed:`, err.message)

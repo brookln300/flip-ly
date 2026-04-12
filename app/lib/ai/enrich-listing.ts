@@ -32,6 +32,12 @@ Rules:
 - price_low_cents: If you can infer a low price from the title/description (e.g. "$5", "FREE"), return it in cents. Otherwise null.
 - price_high_cents: If you can infer a high price or range (e.g. "$5-$50"), return high end in cents. Otherwise null.
 
+CRITICAL — $1 PLACEHOLDER PRICING:
+On Craigslist, individual item listings priced at exactly $1 are almost NEVER actually $1. Sellers use $1 as a placeholder because Craigslist requires a price. It means "make an offer" or "see description for real price."
+- For INDIVIDUAL ITEMS at $1: treat the price as UNKNOWN, not as $1. Score based on the item alone without assuming it's a steal. Cap these at deal_score 5 max unless the title/description explicitly confirms the $1 price (e.g. "$1 each", "everything $1").
+- For SALE EVENTS (garage sales, estate sales) at $1: $1 pricing CAN be legitimate ("everything $1!"). Score normally based on other signals.
+- Never calculate resale margins against a $1 placeholder price. Set resale_flag to false for $1 placeholder items.
+
 Respond with ONLY a valid JSON array, one object per listing, in order. No markdown.`
 
 interface EnrichmentResult {
@@ -89,14 +95,29 @@ Source: ${l.source_type || 'unknown'}`
     const listing = listings[i]
 
     // Build update payload
+    let finalScore = result.deal_score
+    let finalResaleFlag = result.resale_flag || false
+    let finalReason = result.deal_score_reason
+
+    // ── $1 placeholder guard ──
+    // CL individual items at $1 are placeholder prices, not real deals.
+    // Hard cap: score ≤ 5 unless it's a sale event (garage_sale, estate_sale, etc.)
+    const isPlaceholderPrice = listing.price_low_cents === 100
+    const isSaleEvent = ['garage_sale', 'estate_sale', 'moving_sale', 'community_sale', 'flea_market', 'auction'].includes(result.event_type || '')
+    if (isPlaceholderPrice && !isSaleEvent && finalScore > 5) {
+      finalScore = 5
+      finalResaleFlag = false
+      finalReason = `[Score capped: $1 is a placeholder price on CL, not actual asking price] ${finalReason}`
+    }
+
     const updateData: Record<string, any> = {
       ai_description: result.description,
-      deal_score: result.deal_score,
-      deal_score_reason: result.deal_score_reason,
+      deal_score: finalScore,
+      deal_score_reason: finalReason,
       ai_tags: result.tags || [],
       event_type: result.event_type || null,
-      resale_flag: result.resale_flag || false,
-      is_hot: result.deal_score >= 8,
+      resale_flag: finalResaleFlag,
+      is_hot: finalScore >= 8,
       enriched_at: new Date().toISOString(),
     }
 

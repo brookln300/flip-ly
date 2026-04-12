@@ -65,12 +65,12 @@ export async function GET(req: NextRequest) {
 
     results.push(`Past-event listings: ${pastEventCount || 0} dead rows deleted`)
 
-    // Expire stale listings — 7 days for Craigslist (CL deletes posts after sale date),
+    // Expire stale listings — 4 days for Craigslist (CL items sell/die fast),
     // 10 days for everything else (Eventbrite, AI-extracted, etc.)
-    const clMaxAge = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    const clMaxAge = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString()
     const otherMaxAge = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
 
-    // CL listings: aggressive 7-day TTL (source URLs go 404 within days)
+    // CL listings: aggressive 4-day TTL (source URLs go 404 within days)
     const { count: clExpiredCount } = await supabase
       .from('fliply_listings')
       .select('*', { count: 'exact', head: true })
@@ -85,7 +85,22 @@ export async function GET(req: NextRequest) {
         .lt('scraped_at', clMaxAge)
     }
 
-    results.push(`Stale CL listings: ${clExpiredCount || 0} deleted (>7 days)`)
+    results.push(`Stale CL listings: ${clExpiredCount || 0} deleted (>4 days)`)
+
+    // Also delete any listing past its expires_at (set by scraper staleness detection)
+    const { count: expiredByMark } = await supabase
+      .from('fliply_listings')
+      .select('*', { count: 'exact', head: true })
+      .lt('expires_at', new Date().toISOString())
+
+    if (expiredByMark && expiredByMark > 0) {
+      await supabase
+        .from('fliply_listings')
+        .delete()
+        .lt('expires_at', new Date().toISOString())
+    }
+
+    results.push(`Expired (marked stale by scraper): ${expiredByMark || 0} deleted`)
 
     // All other listings: 10-day TTL
     const { count: otherExpiredCount } = await supabase
