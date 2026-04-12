@@ -8,6 +8,7 @@ export interface CraigslistConfig {
   rss_url: string       // kept for backwards compat, unused by new scraper
   hostname: string      // e.g. "dallas"
   area_id: number       // CL SAPI area ID (dallas = 21)
+  search_path?: string  // CL category code: 'gms' (garage sales, default), 'ela' (electronics), 'tla' (tools), 'fua' (furniture), 'cba' (collectibles), etc.
 }
 
 export interface EventbriteConfig {

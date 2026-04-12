@@ -2,10 +2,28 @@ import { supabase } from '../supabase'
 import { extractPrice, extractZipCode, formatDate } from './parse-utils'
 import type { ScraperResult, CraigslistConfig } from './types'
 
+// ── Category metadata ──
+// Maps CL search_path codes to human-readable names and default event_type
+const CL_CATEGORIES: Record<string, { label: string; eventType: string }> = {
+  gms: { label: 'Garage Sales', eventType: 'garage_sale' },
+  ela: { label: 'Electronics', eventType: 'listing' },
+  tla: { label: 'Tools', eventType: 'listing' },
+  fua: { label: 'Furniture', eventType: 'listing' },
+  cba: { label: 'Collectibles', eventType: 'listing' },
+  ppa: { label: 'Appliances', eventType: 'listing' },
+  sga: { label: 'Sporting Goods', eventType: 'listing' },
+  msa: { label: 'Musical Instruments', eventType: 'listing' },
+  vga: { label: 'Video Gaming', eventType: 'listing' },
+  ata: { label: 'Antiques', eventType: 'listing' },
+  zip: { label: 'Free Stuff', eventType: 'listing' },
+  hsa: { label: 'Household', eventType: 'listing' },
+  foa: { label: 'General For Sale', eventType: 'listing' },
+}
+
 /**
- * Scrape Craigslist garage sales via their internal Search API (SAPI).
+ * Scrape Craigslist listings via their internal Search API (SAPI).
+ * Supports both garage sales (gms) and individual item categories (ela, tla, fua, cba, etc.)
  * This is the same JSON API the CL web app uses to render search results.
- * Legal: public API, same data served to any browser.
  */
 export async function scrapeCraigslist(
   sourceId: string,
@@ -24,9 +42,14 @@ export async function scrapeCraigslist(
     return result
   }
 
+  // Category: defaults to garage sales for backward compat
+  const searchPath = config.search_path || 'gms'
+  const isItemListing = searchPath !== 'gms'
+  const categoryMeta = CL_CATEGORIES[searchPath] || { label: searchPath, eventType: 'listing' }
+
   try {
-    // CL SAPI — returns structured JSON with all garage/moving sale listings
-    const sapiUrl = `https://sapi.craigslist.org/web/v8/postings/search/full?batch=${areaId}-0-360-0-0&cc=US&lang=en&searchPath=gms&area_id=${areaId}`
+    // CL SAPI — returns structured JSON for any for-sale category
+    const sapiUrl = `https://sapi.craigslist.org/web/v8/postings/search/full?batch=${areaId}-0-360-0-0&cc=US&lang=en&searchPath=${searchPath}&area_id=${areaId}`
     const res = await fetch(sapiUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0',
@@ -35,13 +58,13 @@ export async function scrapeCraigslist(
     })
 
     if (!res.ok) {
-      result.errors.push(`CL SAPI ${res.status}: ${res.statusText}`)
+      result.errors.push(`CL SAPI ${res.status} [${searchPath}]: ${res.statusText}`)
       return result
     }
 
     const json = await res.json()
     if (json.errors?.length > 0) {
-      result.errors.push(`CL SAPI errors: ${JSON.stringify(json.errors)}`)
+      result.errors.push(`CL SAPI errors [${searchPath}]: ${JSON.stringify(json.errors)}`)
       return result
     }
 
@@ -54,7 +77,7 @@ export async function scrapeCraigslist(
     const minDate: number = decode.minDate || 0
 
     if (items.length === 0) {
-      result.errors.push('CL SAPI returned 0 items')
+      result.errors.push(`CL SAPI returned 0 items [${searchPath}]`)
       return result
     }
 
@@ -69,7 +92,7 @@ export async function scrapeCraigslist(
         // Item array format (SAPI v8):
         // [postingIdOffset, dateOffset, locationIdx, price, latLng, ?, ?, thumbnailInfo, images, [?,slug], title]
         // postingId = minPostingId + item[0]
-        // eventDate = minDate + item[1] (unix seconds)
+        // date = minDate + item[1] (unix seconds) — event date for gms, posting date for items
         const postingIdOffset = item[0]
         const postingId = minPostingId + (typeof postingIdOffset === 'number' ? postingIdOffset : 0)
         const dateOffset = item[1]
@@ -81,9 +104,11 @@ export async function scrapeCraigslist(
 
         if (!postingId || !title) continue
 
-        // Parse event date from SAPI offset
+        // Parse date from SAPI offset
+        // For garage sales (gms): this is the EVENT date (when the sale happens)
+        // For item listings: this is the POSTING date (when it was listed) — store as null event_date
         let eventDate: string | null = null
-        if (minDate && typeof dateOffset === 'number') {
+        if (!isItemListing && minDate && typeof dateOffset === 'number') {
           const d = new Date((minDate + dateOffset) * 1000)
           // Only use if the date is reasonable (within 30 days)
           if (d.getTime() > Date.now() - 7 * 86400000 && d.getTime() < Date.now() + 30 * 86400000) {
@@ -104,7 +129,7 @@ export async function scrapeCraigslist(
         }
 
         // Parse price — SAPI returns price in whole dollars, convert to cents for DB
-        // Falls back to extracting prices from title text when SAPI returns -1
+        // Individual item listings almost always have prices (unlike garage sales)
         let priceCents: number | null = null
         let priceHighCents: number | null = null
         let priceText = 'Not listed'
@@ -122,9 +147,9 @@ export async function scrapeCraigslist(
           }
         }
 
-        // Build posting URL
+        // Build posting URL — use the correct category path
         const slug = Array.isArray(slugArr) ? slugArr[1] || slugArr[0] : slugArr
-        const postUrl = `https://${hostname}.craigslist.org/gms/d/${slug}/${postingId}.html`
+        const postUrl = `https://${hostname}.craigslist.org/${searchPath}/d/${slug}/${postingId}.html`
         const externalId = `cl-${postingId}`
 
         // Extract zip from location text
@@ -145,7 +170,7 @@ export async function scrapeCraigslist(
           latitude,
           longitude,
           source_url: postUrl,
-          source_type: 'craigslist_rss', // keep existing source_type for DB compat
+          source_type: 'craigslist_rss', // keep existing source_type for pipeline compat
           event_date: eventDate,
           scraped_at: new Date().toISOString(),
         }, {
@@ -164,10 +189,10 @@ export async function scrapeCraigslist(
       }
     }
 
-    console.log(`[CL] ${hostname}: ${items.length} found, ${result.inserted} new, ${result.skipped} deduped`)
+    console.log(`[CL] ${hostname}/${searchPath} (${categoryMeta.label}): ${items.length} found, ${result.inserted} new, ${result.skipped} deduped`)
   } catch (err: any) {
-    result.errors.push(`CL SAPI fetch failed: ${err.message}`)
-    console.error(`[CL] ${config.hostname} failed:`, err.message)
+    result.errors.push(`CL SAPI fetch failed [${searchPath}]: ${err.message}`)
+    console.error(`[CL] ${config.hostname}/${searchPath} failed:`, err.message)
   }
 
   return result
