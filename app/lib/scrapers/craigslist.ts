@@ -101,7 +101,6 @@ export async function scrapeCraigslist(
         const rawPrice = item[3] // -1 = no price, otherwise whole dollars
         const latLngStr = item[4] // "1:1~lat~lng"
         const title = item[item.length - 1]
-        const slugArr = item[item.length - 2] // [6, "slug-text"] or similar
 
         if (!postingId || !title) continue
 
@@ -148,9 +147,10 @@ export async function scrapeCraigslist(
           }
         }
 
-        // Build posting URL — use the correct category path
-        const slug = Array.isArray(slugArr) ? slugArr[1] || slugArr[0] : slugArr
-        const postUrl = `https://${hostname}.craigslist.org/${searchPath}/d/${slug}/${postingId}.html`
+        // Build posting URL — generate slug from title (SAPI slug field is unreliable
+        // for priced categories — often returns price text like "$25" instead of title slug)
+        const titleSlug = slugifyTitle(String(title))
+        const postUrl = `https://${hostname}.craigslist.org/${searchPath}/d/${titleSlug}/${postingId}.html`
         const externalId = `cl-${postingId}`
         seenExternalIds.push(externalId)
 
@@ -268,6 +268,21 @@ function hostnameToCity(hostname: string): string {
 
 function hostnameToState(hostname: string): string | null {
   return CL_HOSTNAME_MAP[hostname.toLowerCase()]?.state || null
+}
+
+/**
+ * Generate a URL-safe slug from a listing title.
+ * CL routes by posting ID so the slug doesn't need to be exact,
+ * but a real title slug looks professional and helps link-checking.
+ */
+function slugifyTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // strip non-alphanumeric
+    .replace(/\s+/g, '-')          // spaces to hyphens
+    .replace(/-+/g, '-')           // collapse multiple hyphens
+    .replace(/^-|-$/g, '')         // trim leading/trailing hyphens
+    .substring(0, 70) || 'listing' // CL slugs are ~50-70 chars max
 }
 
 /**
