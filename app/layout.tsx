@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import Providers from './components/Providers'
 import GoogleAnalytics from './components/GoogleAnalytics'
+import CookieConsentBanner from './components/CookieConsentBanner'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
@@ -96,7 +97,7 @@ const jsonLd = {
     {
       '@type': 'Organization',
       '@id': 'https://flip-ly.net/#org',
-      name: 'Flip-ly',
+      name: 'Duskfall Ventures LLC',
       url: 'https://flip-ly.net',
       logo: 'https://flip-ly.net/api/og',
       sameAs: [
@@ -140,6 +141,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Analytics />
         <SpeedInsights />
         <Providers>{children}</Providers>
+        <CookieConsentBanner />
       </body>
     </html>
   )

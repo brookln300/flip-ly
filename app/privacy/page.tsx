@@ -7,37 +7,37 @@ export const metadata = {
 
 export default function Privacy() {
   return (
-    <div className="min-h-screen px-6 py-16 max-w-3xl mx-auto" style={{ background: '#000', color: '#ccc' }}>
-      <Link href="/" className="text-sm no-underline mb-8 inline-block" style={{ color: '#22C55E' }}>
+    <div className="min-h-screen px-6 py-16 max-w-3xl mx-auto" style={{ background: 'var(--bg-primary)', color: 'var(--text-secondary)' }}>
+      <Link href="/" className="text-sm no-underline mb-8 inline-block" style={{ color: 'var(--accent-green)' }}>
         &larr; Back to Flip-ly
       </Link>
 
-      <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'system-ui, -apple-system, sans-serif', color: '#fff' }}>
+      <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-primary)', color: 'var(--text-primary)' }}>
         Privacy Policy
       </h1>
-      <p className="text-xs mb-8" style={{ color: '#666' }}>Last updated: March 28, 2026</p>
+      <p className="text-xs mb-8" style={{ color: 'var(--text-muted)' }}>Last updated: April 12, 2026</p>
 
-      <div className="space-y-6 text-sm" style={{ lineHeight: 1.8, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <div className="space-y-6 text-sm" style={{ lineHeight: 1.8, fontFamily: 'var(--font-primary)' }}>
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Who We Are</h2>
-          <p>Flip-ly.net is operated by AetherCoreAI, based in Dallas, Texas. We are a garage sale listing aggregator that helps you find deals near you. We do not sell your data to advertisers or any third party.</p>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Who We Are</h2>
+          <p>Flip-ly.net is operated by Duskfall Ventures LLC, based in McKinney, Texas. We are a garage sale listing aggregator that helps you find deals near you. We do not sell your data to advertisers or any third party.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>What We Collect</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>What We Collect</h2>
           <p>When you interact with flip-ly.net, we may collect the following information:</p>
 
-          <h3 className="font-bold mt-4 mb-1" style={{ color: '#aaa' }}>Account Registration</h3>
+          <h3 className="font-bold mt-4 mb-1" style={{ color: 'var(--text-secondary)' }}>Account Registration</h3>
           <ul className="list-disc ml-6 space-y-1">
             <li><strong>Email address</strong> (required) — to send you listing digests and service emails</li>
             <li><strong>Password</strong> — stored as a one-way bcrypt hash (we cannot read your password)</li>
             <li><strong>City, state, zip code</strong> (optional) — to find garage sales near you</li>
           </ul>
 
-          <h3 className="font-bold mt-4 mb-1" style={{ color: '#aaa' }}>Payment Information</h3>
+          <h3 className="font-bold mt-4 mb-1" style={{ color: 'var(--text-secondary)' }}>Payment Information</h3>
           <p>If you subscribe to a paid plan (Pro at $5/mo or Power at $19/mo), payment is processed entirely by <strong>Stripe</strong>. We never see, store, or have access to your credit card number. We store only your Stripe customer ID and subscription ID to manage your account status.</p>
 
-          <h3 className="font-bold mt-4 mb-1" style={{ color: '#aaa' }}>Search Activity</h3>
+          <h3 className="font-bold mt-4 mb-1" style={{ color: 'var(--text-secondary)' }}>Search Activity</h3>
           <ul className="list-disc ml-6 space-y-1">
             <li>Search queries and timestamps are logged for rate limiting (free users: 10 searches/day)</li>
             <li>For logged-in users, searches are associated with your user ID</li>
@@ -45,7 +45,7 @@ export default function Privacy() {
             <li>Search logs are automatically cleaned up weekly</li>
           </ul>
 
-          <h3 className="font-bold mt-4 mb-1" style={{ color: '#aaa' }}>Automatically Collected</h3>
+          <h3 className="font-bold mt-4 mb-1" style={{ color: 'var(--text-secondary)' }}>Automatically Collected</h3>
           <ul className="list-disc ml-6 space-y-1">
             <li>IP address (for rate limiting and security)</li>
             <li>Browser user agent (for compatibility and security)</li>
@@ -54,7 +54,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>How We Use Your Data</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>How We Use Your Data</h2>
           <ul className="list-disc ml-6 space-y-1">
             <li><strong>Email</strong> — weekly listing digests, onboarding sequences, and service updates</li>
             <li><strong>City/zip</strong> — to find garage sales near your location</li>
@@ -65,7 +65,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Email Tracking</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Email Tracking</h2>
           <p>We use Resend for email delivery. Our email system tracks:</p>
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li><strong>Delivery status</strong> — whether your email was delivered, bounced, or deferred</li>
@@ -78,7 +78,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Analytics</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Analytics</h2>
           <p>We use <strong>Google Analytics 4</strong> to understand how the site is used. GA4 collects:</p>
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li>Pages visited and time spent</li>
@@ -90,7 +90,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Third-Party Services</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Third-Party Services</h2>
           <p>We use the following services to operate flip-ly.net:</p>
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li><strong>Supabase</strong> — database hosting and data storage</li>
@@ -104,7 +104,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Cookies</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Cookies</h2>
           <p>We use minimal cookies:</p>
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li><strong>Session cookie</strong> (httpOnly) — keeps you logged in for 7 days</li>
@@ -114,7 +114,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Data Retention</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Data Retention</h2>
           <ul className="list-disc ml-6 space-y-1">
             <li><strong>Account data</strong> — stored as long as your account is active</li>
             <li><strong>Search logs</strong> — automatically cleaned up weekly (logs older than 7 days are deleted)</li>
@@ -124,7 +124,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Your Rights</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Your Rights</h2>
           <p>You have the right to:</p>
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li><strong>Access</strong> — request a copy of your personal data</li>
@@ -133,11 +133,11 @@ export default function Privacy() {
             <li><strong>Opt out</strong> — unsubscribe from emails at any time</li>
             <li><strong>Portability</strong> — request your data in a portable format</li>
           </ul>
-          <p className="mt-2">To exercise any of these rights, email <span style={{ color: '#22C55E' }}>hello@flip-ly.net</span> and we will respond within 48 hours.</p>
+          <p className="mt-2">To exercise any of these rights, email <span style={{ color: 'var(--accent-green)' }}>hello@flip-ly.net</span> and we will respond within 48 hours.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>California Residents (CCPA)</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>California Residents (CCPA)</h2>
           <p>If you are a California resident, you have additional rights under the California Consumer Privacy Act:</p>
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li>The right to know what personal information is collected and how it is used</li>
@@ -145,21 +145,21 @@ export default function Privacy() {
             <li>The right to opt out of the sale of personal information</li>
             <li>The right to non-discrimination for exercising your privacy rights</li>
           </ul>
-          <p className="mt-2"><strong>We do not sell your personal information.</strong> To submit a CCPA request, email <span style={{ color: '#22C55E' }}>hello@flip-ly.net</span> with the subject line &quot;CCPA Request.&quot;</p>
+          <p className="mt-2"><strong>We do not sell your personal information.</strong> To submit a CCPA request, email <span style={{ color: 'var(--accent-green)' }}>hello@flip-ly.net</span> with the subject line &quot;CCPA Request.&quot;</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Do Not Track</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Do Not Track</h2>
           <p>We respect Do Not Track (DNT) browser signals. When DNT is enabled, we still use essential cookies for authentication but minimize analytics tracking where technically feasible.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Children</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Children</h2>
           <p>Flip-ly.net is not intended for users under 13 years of age. We do not knowingly collect personal information from children under 13. If we learn we have collected data from a child under 13, we will delete it promptly.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Security</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Security</h2>
           <p>We take reasonable measures to protect your data, including:</p>
           <ul className="list-disc ml-6 mt-2 space-y-1">
             <li>Passwords hashed with bcrypt (12 rounds)</li>
@@ -172,27 +172,29 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Changes to This Policy</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Changes to This Policy</h2>
           <p>We may update this Privacy Policy from time to time. Material changes will be reflected by updating the date at the top of this page. Continued use of the Service after changes constitutes acceptance.</p>
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: '#fff' }}>Contact</h2>
-          <p>Privacy questions? Email <span style={{ color: '#22C55E' }}>hello@flip-ly.net</span></p>
-          <p className="mt-2" style={{ color: '#666' }}>
-            AetherCoreAI<br />
-            Dallas, TX
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Contact</h2>
+          <p>Privacy questions? Email <span style={{ color: 'var(--accent-green)' }}>hello@flip-ly.net</span></p>
+          <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
+            Duskfall Ventures LLC<br />
+            9309 Sterling Gate Drive<br />
+            McKinney, TX 75072<br />
+            (469) 885-8164
           </p>
         </section>
       </div>
 
-      <div className="mt-12 pt-6 flex gap-4 text-xs" style={{ borderTop: '1px solid #222' }}>
-        <Link href="/terms" style={{ color: '#22C55E', textDecoration: 'underline' }}>Terms of Service</Link>
-        <Link href="/data-deletion" style={{ color: '#22C55E', textDecoration: 'underline' }}>Data Deletion</Link>
-        <Link href="/about" style={{ color: '#22C55E', textDecoration: 'underline' }}>About</Link>
+      <div className="mt-12 pt-6 flex gap-4 text-xs" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+        <Link href="/terms" style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>Terms of Service</Link>
+        <Link href="/data-deletion" style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>Data Deletion</Link>
+        <Link href="/about" style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>About</Link>
       </div>
       <div className="mt-4">
-        <p className="text-xs" style={{ color: '#444', fontFamily: 'system-ui, -apple-system, sans-serif' }}>&copy; 2026 Flip-ly.net &middot; AetherCoreAI</p>
+        <p className="text-xs" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-primary)' }}>&copy; 2026 Flip-ly.net &middot; Duskfall Ventures LLC</p>
       </div>
     </div>
   )

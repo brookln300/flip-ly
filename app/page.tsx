@@ -476,7 +476,7 @@ export default async function Home() {
                 <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Company</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <a href="/about" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>About</a>
-                  <a href="mailto:hello@flip-ly.net" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Contact</a>
+                  <a href="/contact" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Contact</a>
                 </div>
               </div>
               <div>
@@ -485,6 +485,7 @@ export default async function Home() {
                   <a href="/privacy" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Privacy</a>
                   <a href="/terms" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Terms</a>
                   <a href="/data-deletion" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Data Deletion</a>
+                  <a href="/refund" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Refund Policy</a>
                 </div>
               </div>
               <div>
@@ -497,7 +498,7 @@ export default async function Home() {
               </div>
             </div>
             <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-              <p style={{ color: 'var(--text-dim)', fontSize: '12px' }}>&copy; 2026 Flip-ly &middot; Deal intelligence for resellers</p>
+              <p style={{ color: 'var(--text-dim)', fontSize: '12px' }}>&copy; 2026 Flip-ly &middot; Deal intelligence for resellers &middot; Operated by Duskfall Ventures LLC</p>
             </div>
           </div>
           <div style={{ position: 'relative', height: '12px', marginTop: '4px' }}>

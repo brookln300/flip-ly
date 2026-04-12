@@ -144,7 +144,7 @@ export default function LinksPage() {
           Best viewed in Netscape Navigator 4.0 at 800x600
         </p>
         <p style={{ fontFamily: '"Comic Sans MS", cursive', fontSize: '10px', color: '#222', marginTop: '4px' }}>
-          Made by AetherCoreAI — the lobster sees all
+          Made by Duskfall Ventures LLC — the lobster sees all
         </p>
       </div>
     </div>

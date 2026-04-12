@@ -86,7 +86,7 @@ export default function ContestRules() {
           <section>
             <SectionHeading>Sponsor</SectionHeading>
             <p style={paragraphStyle}>
-              Flip-ly (<a href="https://flip-ly.net" style={linkStyle}>flip-ly.net</a>), operated by AetherCoreAI, Dallas, TX.
+              Flip-ly (<a href="https://flip-ly.net" style={linkStyle}>flip-ly.net</a>), operated by Duskfall Ventures LLC, McKinney, TX.
             </p>
           </section>
 
@@ -102,7 +102,7 @@ export default function ContestRules() {
           <section>
             <SectionHeading>Eligibility</SectionHeading>
             <p style={paragraphStyle}>
-              Open to anyone 18 years of age or older with internet access. Employees, officers, and directors of AetherCoreAI and their immediate family members are not eligible. Void where prohibited by law.
+              Open to anyone 18 years of age or older with internet access. Employees, officers, and directors of Duskfall Ventures LLC and their immediate family members are not eligible. Void where prohibited by law.
             </p>
           </section>
 
@@ -233,7 +233,7 @@ export default function ContestRules() {
               Questions about these rules or the contest: <span style={{ color: 'var(--accent-green)' }}>hello@flip-ly.net</span>
             </p>
             <p style={{ ...paragraphStyle, color: 'var(--text-dim)', marginTop: 'var(--space-2)' }}>
-              AetherCoreAI, Dallas, TX
+              Duskfall Ventures LLC, McKinney, TX
             </p>
           </section>
         </div>
@@ -258,7 +258,7 @@ export default function ContestRules() {
           fontSize: '12px',
           color: 'var(--text-dim)',
         }}>
-          &copy; 2026 Flip-ly.net &middot; AetherCoreAI
+          &copy; 2026 Flip-ly.net &middot; Duskfall Ventures LLC
         </p>
       </main>
     </div>

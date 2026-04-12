@@ -1,14 +1,18 @@
 'use client'
 
 import Script from 'next/script'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { getConsent } from '../lib/consent'
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID
 
 export default function GoogleAnalytics() {
+  const [consentGiven, setConsentGiven] = useState(false)
+
   // Capture gclid/fbclid/msclkid on landing for ad attribution
+  // This uses first-party sessionStorage, not cookies — runs regardless of consent
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
@@ -20,7 +24,12 @@ export default function GoogleAnalytics() {
     if (msclkid) sessionStorage.setItem('fliply_msclkid', msclkid)
   }, [])
 
-  if (!GA_MEASUREMENT_ID) return null
+  // Check cookie consent status
+  useEffect(() => {
+    setConsentGiven(getConsent() === 'accepted')
+  }, [])
+
+  if (!GA_MEASUREMENT_ID || !consentGiven) return null
 
   return (
     <>
