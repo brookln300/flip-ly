@@ -22,7 +22,7 @@
     },
     {
       "path": "/api/cron/drip",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/daily-summary",
@@ -42,7 +42,7 @@
     },
     {
       "path": "/api/cron/discover-sources",
-      "schedule": "0 * * * *"
+      "schedule": "0 2,6,10,14,18,22 * * *"
     },
     {
       "path": "/api/cron/daily-deals",

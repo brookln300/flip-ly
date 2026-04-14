@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
 
   const start = Date.now()
   const results: { source: string; result: ScraperResult }[] = []
+  const sourceUpdates: { id: string; data: any }[] = []
 
   try {
     // Fetch all active, approved sources that are due for scraping
@@ -85,7 +86,7 @@ export async function GET(req: NextRequest) {
         result.errors.push(`Scraper crashed: ${err.message}`)
       }
 
-      // Update source metadata
+      // Queue source metadata update (batch later)
       const updateData: any = {
         last_scraped_at: now.toISOString(),
         last_result_count: result.inserted,
@@ -108,10 +109,17 @@ export async function GET(req: NextRequest) {
         updateData.last_error = null
       }
 
-      await supabase.from('fliply_sources').update(updateData).eq('id', source.id)
+      sourceUpdates.push({ id: source.id, data: updateData })
 
       results.push({ source: source.name, result })
     }
+
+    // Batch update all source metadata concurrently (instead of sequential N+1)
+    await Promise.all(
+      sourceUpdates.map(({ id, data }) =>
+        supabase.from('fliply_sources').update(data).eq('id', id)
+      )
+    )
 
     // Enrichment now runs on its own cron (/api/cron/enrich every 30 min)
     // This frees the scrape cron to focus on ingestion within its 300s timeout
