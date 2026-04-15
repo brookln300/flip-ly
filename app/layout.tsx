@@ -44,6 +44,9 @@ export const metadata: Metadata = {
     description: 'AI scores Craigslist, OfferUp, estate sales & 20+ sources across 400+ markets. Find the best local deals before anyone else.',
     images: ['/api/og'],
   },
+  alternates: {
+    canonical: 'https://flip-ly.net',
+  },
   robots: {
     index: true,
     follow: true,

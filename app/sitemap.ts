@@ -1,17 +1,31 @@
 import { MetadataRoute } from 'next'
+import { supabase } from './lib/supabase'
 
 /**
  * Dynamic sitemap — tells Google every page on the site.
  * Next.js App Router auto-serves this at /sitemap.xml
  *
- * Google reads this to know what pages exist, how important they are,
- * and how often they change. Without this, Google discovers pages
- * by crawling links — which is slower and misses orphan pages.
+ * Includes all static pages + dynamically generated city SEO pages
+ * from fliply_markets. ~413 markets = ~430 total URLs.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://flip-ly.net'
 
-  return [
+  // Fetch all active market slugs for city SEO pages
+  const { data: markets } = await supabase
+    .from('fliply_markets')
+    .select('slug')
+    .eq('is_active', true)
+    .order('slug', { ascending: true })
+
+  const marketPages: MetadataRoute.Sitemap = (markets || []).map((m: { slug: string }) => ({
+    url: `${baseUrl}/garage-sales/${m.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 0.7,
+  }))
+
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -41,12 +55,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/dashboard`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
     },
     {
       url: `${baseUrl}/why`,
@@ -109,4 +117,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.2,
     },
   ]
+
+  return [...staticPages, ...marketPages]
 }

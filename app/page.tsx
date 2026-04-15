@@ -137,13 +137,13 @@ export default async function Home() {
                 color: 'var(--text-primary)', lineHeight: 1.1, letterSpacing: '-0.03em',
                 marginBottom: 'var(--space-3)',
               }}>
-                Find underpriced items to flip for profit.
+                Find Garage Sales, Estate Sales &amp; Deals Near You
               </h1>
               <p style={{
                 fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6,
                 maxWidth: '480px', marginBottom: 'var(--space-5)',
               }}>
-                We scan Craigslist, OfferUp, EstateSales.net, Eventbrite &amp; more &mdash; every 4 hours &mdash; and score every deal by resale potential.
+                AI scans Craigslist, OfferUp, EstateSales.net &amp; 20+ sources every 4 hours and scores every listing by resale profit potential.
               </p>
 
               {/* CTA row — client component for signup trigger */}
@@ -245,7 +245,7 @@ export default async function Home() {
         {/* ═══ HOW SCORING WORKS — compact inline ═══ */}
         <FadeIn style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-            Every deal gets a flip score
+            AI Deal Scoring: Every Listing Rated 1&ndash;10
           </h2>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: '520px', margin: '0 auto var(--space-6)' }}>
             Our AI weighs demand, margin potential, competition, and sell-through velocity to rate every listing 1&ndash;10.
@@ -335,7 +335,7 @@ export default async function Home() {
         {/* ═══ PRICING ═══ */}
         <FadeIn id="pricing" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
           <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>Simple pricing</h2>
+            <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>Deal Finder Plans &amp; Pricing</h2>
             <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>One good find pays for a year of Pro.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

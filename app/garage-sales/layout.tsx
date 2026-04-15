@@ -3,6 +3,9 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Garage Sales Near You — AI-Scored Deals | Flip-ly.net',
   description: 'Find the best garage sales, estate sales, and yard sales near you. AI scans 20+ sources daily and delivers curated deals to your inbox every Thursday. Free.',
+  alternates: {
+    canonical: 'https://flip-ly.net/garage-sales',
+  },
   openGraph: {
     title: 'Garage Sales Near You — AI-Scored Deals | Flip-ly.net',
     description: 'Stop scrolling Craigslist. Get the best garage sales near you delivered every Thursday. Free, AI-powered, 20+ sources.',

@@ -287,16 +287,7 @@ function ProContent() {
     )
   }
 
-  // Loading state while checking auth
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
-        <div style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Loading...</div>
-      </div>
-    )
-  }
-
-  // DEFAULT: 3-TIER PRICING PAGE
+  // DEFAULT: 3-TIER PRICING PAGE (renders immediately on SSR — no loading gate)
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
       {/* Header */}
@@ -353,7 +344,7 @@ function ProContent() {
           </div>
         )}
 
-        {!isAuthenticated && (
+        {authChecked && !isAuthenticated && (
           <div style={{
             background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
             borderRadius: '8px', padding: '12px 16px', maxWidth: '400px',
