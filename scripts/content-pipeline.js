@@ -222,7 +222,7 @@ async function createBufferPostDraft(text, scheduledAt, platform, promptId, prom
 
   const mutation = `mutation CreatePost($input: PostInput!) {
     createPost(input: $input) {
-      ... on Post { post { id status dueAt } }
+      ... on PostActionPayload { post { id status dueAt } }
       ... on InvalidInputError { message }
       ... on UnexpectedError { message }
     }

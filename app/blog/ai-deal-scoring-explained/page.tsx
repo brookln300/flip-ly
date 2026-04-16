@@ -428,16 +428,33 @@ export default function AiDealScoringExplained() {
 
             {/* ── Read next ── */}
             <div style={{
-              background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-              borderRadius: '10px', padding: '20px 24px', margin: '0 0 40px',
+              display: 'flex', flexDirection: 'column', gap: '12px',
+              margin: '0 0 40px',
             }}>
-              <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-dim)', marginBottom: '8px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-dim)', marginBottom: '0' }}>
                 Read next
               </p>
               <Link href="/blog/estate-sale-flipping-guide" style={{
-                fontSize: '16px', color: 'var(--accent-green)', textDecoration: 'none', fontWeight: 500, lineHeight: 1.4,
+                display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                borderRadius: '10px', padding: '16px 20px', textDecoration: 'none',
               }}>
-                Estate Sale Flipping: How to Find $500+ Deals Before Anyone Else
+                <span style={{ fontSize: '15px', color: 'var(--accent-green)', fontWeight: 500 }}>
+                  Estate Sale Flipping: How to Find $500+ Deals Before Anyone Else
+                </span>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5 }}>
+                  The scoring framework resellers use to filter thousands of listings down to the 3-5 worth driving to.
+                </p>
+              </Link>
+              <Link href="/blog/best-things-to-flip" style={{
+                display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                borderRadius: '10px', padding: '16px 20px', textDecoration: 'none',
+              }}>
+                <span style={{ fontSize: '15px', color: 'var(--accent-green)', fontWeight: 500 }}>
+                  The Best Things to Flip From Estate Sales and Garage Sales (2026 Data)
+                </span>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5 }}>
+                  Power tools, vintage furniture, audio gear, and the sleeper categories most flippers miss.
+                </p>
               </Link>
             </div>
 

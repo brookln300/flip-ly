@@ -297,6 +297,38 @@ export default function EstateSaleFlippingGuide() {
             </aside>
           </div>
 
+          {/* ── Related guides ── */}
+          <div style={{
+            display: 'flex', flexDirection: 'column', gap: '12px',
+            margin: '0 0 40px',
+          }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-dim)', marginBottom: '0' }}>
+              Read next
+            </p>
+            <Link href="/blog/best-things-to-flip" style={{
+              display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+              borderRadius: '10px', padding: '16px 20px', textDecoration: 'none',
+            }}>
+              <span style={{ fontSize: '15px', color: 'var(--accent-green)', fontWeight: 500 }}>
+                The Best Things to Flip From Estate Sales and Garage Sales (2026 Data)
+              </span>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5 }}>
+                Data-backed picks for maximum ROI — power tools, vintage furniture, and the sleeper categories most flippers miss.
+              </p>
+            </Link>
+            <Link href="/blog/ai-deal-scoring-explained" style={{
+              display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+              borderRadius: '10px', padding: '16px 20px', textDecoration: 'none',
+            }}>
+              <span style={{ fontSize: '15px', color: 'var(--accent-green)', fontWeight: 500 }}>
+                How AI Deal Scoring Works: Why a 9/10 Find Is Worth the Drive
+              </span>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5 }}>
+                The 5-factor system that separates a 3/10 listing from a 9/10. How Flip-ly scores thousands of listings so you only drive to the good ones.
+              </p>
+            </Link>
+          </div>
+
           {/* ── Article footer ── */}
           <footer style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',

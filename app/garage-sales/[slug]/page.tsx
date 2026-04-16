@@ -343,6 +343,51 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
         </div>
       </div>
 
+      {/* Related Guides */}
+      <div style={{
+        maxWidth: '56rem', margin: '0 auto',
+        padding: '0 var(--space-4) var(--space-12)',
+      }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 'var(--space-4)' }}>
+          Guides for Resellers
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <Link href="/blog/best-things-to-flip" style={{
+            display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+            borderRadius: '10px', padding: '14px 18px', textDecoration: 'none',
+          }}>
+            <span style={{ fontSize: '14px', color: 'var(--accent-green)', fontWeight: 500 }}>
+              The Best Things to Flip From Estate Sales and Garage Sales
+            </span>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5, margin: '4px 0 0' }}>
+              Power tools, vintage furniture, audio gear — data-backed picks for maximum ROI.
+            </p>
+          </Link>
+          <Link href="/blog/ai-deal-scoring-explained" style={{
+            display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+            borderRadius: '10px', padding: '14px 18px', textDecoration: 'none',
+          }}>
+            <span style={{ fontSize: '14px', color: 'var(--accent-green)', fontWeight: 500 }}>
+              How AI Deal Scoring Works: Why a 9/10 Find Is Worth the Drive
+            </span>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5, margin: '4px 0 0' }}>
+              The 5-factor system behind every score you see on Flip-ly.
+            </p>
+          </Link>
+          <Link href="/blog/estate-sale-flipping-guide" style={{
+            display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+            borderRadius: '10px', padding: '14px 18px', textDecoration: 'none',
+          }}>
+            <span style={{ fontSize: '14px', color: 'var(--accent-green)', fontWeight: 500 }}>
+              Estate Sale Flipping: How to Find $500+ Deals Before Anyone Else
+            </span>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5, margin: '4px 0 0' }}>
+              The scoring framework resellers use to filter thousands of listings.
+            </p>
+          </Link>
+        </div>
+      </div>
+
       {/* Footer */}
       <footer style={{
         borderTop: '1px solid var(--border-subtle)', padding: 'var(--space-6) var(--space-4)',

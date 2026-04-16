@@ -377,20 +377,45 @@ export default function GarageSalesDallas() {
 
             {/* ── Read next ── */}
             <div style={{
-              background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-              borderRadius: '10px', padding: '20px 24px', margin: '24px 0 0',
+              display: 'flex', flexDirection: 'column', gap: '12px',
+              margin: '24px 0 0',
             }}>
-              <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-dim)', marginBottom: '8px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-dim)', marginBottom: '0' }}>
                 Read next
               </p>
-              <Link href="/blog/estate-sale-flipping-guide" style={{
-                fontSize: '16px', color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 600, lineHeight: 1.4,
+              <Link href="/blog/garage-sales-houston" style={{
+                display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                borderRadius: '10px', padding: '16px 20px', textDecoration: 'none',
               }}>
-                Estate Sale Flipping: How to Find $500+ Deals Before Anyone Else
+                <span style={{ fontSize: '15px', color: 'var(--accent-green)', fontWeight: 500 }}>
+                  Houston Garage Sales This Weekend: A Flipper&apos;s Route Guide
+                </span>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5 }}>
+                  From Sugar Land to The Woodlands — plan a profitable Saturday route through Houston&apos;s best sales.
+                </p>
               </Link>
-              <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: 1.5 }}>
-                The scoring framework resellers use to filter thousands of listings down to the 3-5 worth driving to.
-              </p>
+              <Link href="/blog/best-things-to-flip" style={{
+                display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                borderRadius: '10px', padding: '16px 20px', textDecoration: 'none',
+              }}>
+                <span style={{ fontSize: '15px', color: 'var(--accent-green)', fontWeight: 500 }}>
+                  The Best Things to Flip From Estate Sales and Garage Sales (2026 Data)
+                </span>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5 }}>
+                  Data-backed picks for maximum ROI — know what to grab before you get there.
+                </p>
+              </Link>
+              <Link href="/blog/estate-sale-flipping-guide" style={{
+                display: 'block', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+                borderRadius: '10px', padding: '16px 20px', textDecoration: 'none',
+              }}>
+                <span style={{ fontSize: '15px', color: 'var(--accent-green)', fontWeight: 500 }}>
+                  Estate Sale Flipping: How to Find $500+ Deals Before Anyone Else
+                </span>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: 1.5 }}>
+                  The scoring framework resellers use to filter thousands of listings down to the 3-5 worth driving to.
+                </p>
+              </Link>
             </div>
           </div>
 
