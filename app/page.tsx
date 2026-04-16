@@ -149,19 +149,14 @@ export default async function Home() {
               {/* CTA row — client component for signup trigger */}
               <HeroCTA />
 
-              {/* Stats row — server rendered with real data */}
-              <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap' }}>
-                {[
-                  { value: stats.listings > 0 ? stats.listings.toLocaleString() : `${stats.markets}`, label: stats.listings > 0 ? 'deals scored' : 'markets' },
-                  { value: `${stats.sources || '20'}+`, label: 'sources' },
-                  { value: `${stats.markets}`, label: 'markets' },
-                ].map(s => (
-                  <div key={s.label}>
-                    <span style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em', minWidth: '60px', display: 'inline-block' }}>{s.value}</span>
-                    <span style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>{s.label}</span>
-                  </div>
-                ))}
-              </div>
+              {/* Proof line — inline stats, not a grid */}
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.01em' }}>
+                {stats.listings > 0 && (
+                  <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.listings.toLocaleString()}</span> deals scored &middot; </>
+                )}
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.sources || '20'}+</span> sources &middot;{' '}
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.markets}</span> markets
+              </p>
             </div>
           </div>
         </div>
@@ -443,10 +438,7 @@ export default async function Home() {
         {/* ═══ WHAT'S NEW + ROADMAP ═══ */}
         <FadeIn id="whats-new" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
           <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.15)', borderRadius: '20px', padding: '5px 14px', marginBottom: '12px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--accent-green)', boxShadow: '0 0 8px rgba(22,163,74,0.4)', animation: 'pulse-dot 2s ease-in-out infinite' }} />
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent-green)' }}>Actively Building</span>
-            </div>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Changelog</p>
             <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>What&apos;s new &amp; what&apos;s next</h2>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', maxWidth: '380px', margin: '0 auto' }}>
               We ship weekly. Your feedback shapes what we build.
@@ -531,34 +523,34 @@ export default async function Home() {
               <div>
                 <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Product</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <a href="#search" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Search</a>
-                  <a href="#pricing" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Pricing</a>
-                  <a href="/dashboard" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Dashboard</a>
-                  <a href="/blog" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Blog</a>
+                  <a href="#search" className="footer-link">Search</a>
+                  <a href="#pricing" className="footer-link">Pricing</a>
+                  <a href="/dashboard" className="footer-link">Dashboard</a>
+                  <a href="/blog" className="footer-link">Blog</a>
                 </div>
               </div>
               <div>
                 <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Company</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <a href="/about" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>About</a>
-                  <a href="/contact" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Contact</a>
+                  <a href="/about" className="footer-link">About</a>
+                  <a href="/contact" className="footer-link">Contact</a>
                 </div>
               </div>
               <div>
                 <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Legal</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <a href="/privacy" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Privacy</a>
-                  <a href="/terms" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Terms</a>
-                  <a href="/data-deletion" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Data Deletion</a>
-                  <a href="/refund" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Refund Policy</a>
+                  <a href="/privacy" className="footer-link">Privacy</a>
+                  <a href="/terms" className="footer-link">Terms</a>
+                  <a href="/data-deletion" className="footer-link">Data Deletion</a>
+                  <a href="/refund" className="footer-link">Refund Policy</a>
                 </div>
               </div>
               <div>
                 <h4 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>Social</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>X / Twitter</a>
-                  <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>Instagram</a>
-                  <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--text-dim)', fontSize: '13px', textDecoration: 'none' }}>TikTok</a>
+                  <a href="https://x.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" className="footer-link">X / Twitter</a>
+                  <a href="https://instagram.com/ctrl_alt_flip" target="_blank" rel="noopener noreferrer" className="footer-link">Instagram</a>
+                  <a href="https://tiktok.com/@ctrl_alt_flip" target="_blank" rel="noopener noreferrer" className="footer-link">TikTok</a>
                 </div>
               </div>
             </div>

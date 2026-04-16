@@ -20,6 +20,7 @@ export default function SearchSection({ markets }: {
   const [expandedDeal, setExpandedDeal] = useState<number | null>(null)
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [activeIdx, setActiveIdx] = useState(-1)
 
   const popularSearches = [
     'furniture', 'vintage', 'tools', 'electronics', 'kitchen',
@@ -38,6 +39,7 @@ export default function SearchSection({ markets }: {
       const q = searchQuery.toLowerCase()
       const matches = popularSearches.filter(s => s.includes(q) && s !== q).slice(0, 5)
       setSuggestions(matches)
+      setActiveIdx(-1)
     }, 200)
     return () => clearTimeout(timer)
   }, [searchQuery])
@@ -125,14 +127,24 @@ export default function SearchSection({ markets }: {
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <div style={{ position: 'relative', width: '100%' }}>
+                <div style={{ position: 'relative', width: '100%' }} role="combobox" aria-expanded={showSuggestions && suggestions.length > 0} aria-haspopup="listbox" aria-owns="search-suggestions">
                   <input
                     type="text" value={searchQuery}
                     onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true) }}
                     onFocus={() => setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                    onKeyDown={e => {
+                      if (!showSuggestions || suggestions.length === 0) return
+                      if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx(i => Math.min(i + 1, suggestions.length - 1)) }
+                      else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx(i => Math.max(i - 1, -1)) }
+                      else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); const s = suggestions[activeIdx]; setSearchQuery(s); setShowSuggestions(false); setActiveIdx(-1); handleSearch(undefined, s) }
+                      else if (e.key === 'Escape') { setShowSuggestions(false); setActiveIdx(-1) }
+                    }}
                     placeholder="Search tools, vintage, furniture..."
                     aria-label="Search deals"
+                    aria-autocomplete="list"
+                    aria-controls="search-suggestions"
+                    aria-activedescendant={activeIdx >= 0 ? `suggestion-${activeIdx}` : undefined}
                     autoComplete="off"
                     style={{
                       width: '100%', padding: '10px 0', border: 'none', outline: 'none',
@@ -140,28 +152,29 @@ export default function SearchSection({ markets }: {
                     }}
                   />
                   {showSuggestions && suggestions.length > 0 && (
-                    <div style={{
+                    <ul id="search-suggestions" role="listbox" aria-label="Search suggestions" style={{
                       position: 'absolute', top: '100%', left: '-32px', right: '-24px',
                       background: 'var(--bg-card)', border: '1px solid var(--border-default)',
                       borderRadius: '12px', marginTop: '8px', padding: '4px 0',
                       boxShadow: 'var(--shadow-lg)', zIndex: 50,
+                      listStyle: 'none',
                     }}>
-                      {suggestions.map(s => (
-                        <button key={s} type="button"
-                          onMouseDown={() => { setSearchQuery(s); setShowSuggestions(false); handleSearch(undefined, s) }}
+                      {suggestions.map((s, idx) => (
+                        <li key={s} id={`suggestion-${idx}`} role="option" aria-selected={idx === activeIdx}
+                          onMouseDown={() => { setSearchQuery(s); setShowSuggestions(false); setActiveIdx(-1); handleSearch(undefined, s) }}
+                          onMouseEnter={() => setActiveIdx(idx)}
                           style={{
-                            display: 'block', width: '100%', padding: '10px 20px', border: 'none',
-                            background: 'transparent', textAlign: 'left', cursor: 'pointer',
+                            display: 'block', width: '100%', padding: '10px 20px',
+                            cursor: 'pointer',
                             fontSize: '15px', color: 'var(--text-secondary)',
+                            background: idx === activeIdx ? 'var(--bg-surface)' : 'transparent',
                             transition: 'background 0.1s',
                           }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-surface)'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                         >
                           {s}
-                        </button>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   )}
                 </div>
               </div>
@@ -218,7 +231,8 @@ export default function SearchSection({ markets }: {
         <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-6) var(--space-4) 0' }}>
           {searchError ? (
             <div style={{ textAlign: 'center', padding: 'var(--space-6) 0' }}>
-              <p style={{ color: 'var(--accent-red)', fontSize: '14px', marginBottom: '8px' }}>{searchError}</p>
+              <p style={{ color: 'var(--accent-red)', fontSize: '14px', marginBottom: '4px', fontWeight: 600 }}>Search failed</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '12px' }}>Our servers hit a snag. This usually resolves in a few seconds.</p>
               <button onClick={() => handleSearch()} style={{
                 padding: '8px 20px', background: 'var(--bg-surface)', color: 'var(--text-secondary)',
                 border: '1px solid var(--border-default)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer',
@@ -229,8 +243,10 @@ export default function SearchSection({ markets }: {
               <p style={{ fontSize: '15px', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '4px' }}>
                 No deals found{searchQuery ? ` for "${searchQuery}"` : ''}
               </p>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                Try a different search term or select a broader area.
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                {searchMarket
+                  ? 'Try removing the area filter or searching a different term.'
+                  : 'Try a broader term like "furniture" or "tools", or pick a specific area.'}
               </p>
             </div>
           ) : (
