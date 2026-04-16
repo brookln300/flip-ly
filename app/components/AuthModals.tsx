@@ -138,7 +138,7 @@ export default function AuthModals() {
           role="dialog" aria-modal="true" aria-label="Sign up for source links"
           onClick={closeSourceGate} style={{ background: 'rgba(0,0,0,0.5)', cursor: 'pointer' }}>
           <div className="w-full max-w-sm relative" onClick={e => e.stopPropagation()} style={{
-            background: '#ffffff', borderRadius: '16px', cursor: 'default', overflow: 'hidden',
+            background: 'var(--bg-card)', borderRadius: '16px', cursor: 'default', overflow: 'hidden',
             boxShadow: '0 20px 60px rgba(0,0,0,0.15)', padding: '32px 28px', textAlign: 'center',
           }}>
             <button onClick={closeSourceGate} aria-label="Close dialog"
@@ -156,7 +156,7 @@ export default function AuthModals() {
             <button
               onClick={() => { closeSourceGate(); handleGoogleSignIn() }}
               style={{
-                width: '100%', padding: '12px', background: '#fff', color: 'var(--text-primary)',
+                width: '100%', padding: '12px', background: 'var(--bg-card)', color: 'var(--text-primary)',
                 border: '1px solid var(--border-default)', borderRadius: '8px', fontSize: '14px',
                 fontWeight: 600, cursor: 'pointer', marginBottom: '10px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
@@ -187,9 +187,9 @@ export default function AuthModals() {
           role="dialog" aria-modal="true" aria-label={isLoginMode ? 'Log in' : 'Sign up'}
           onClick={handleClose} style={{ background: 'rgba(0,0,0,0.4)', cursor: 'pointer' }}>
           <div className="w-full max-w-md relative" onClick={e => e.stopPropagation()} style={{
-            background: '#ffffff', border: '1px solid var(--border-default)',
+            background: 'var(--bg-card)', border: '1px solid var(--border-default)',
             borderRadius: '16px', cursor: 'default', overflow: 'hidden',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
+            boxShadow: 'var(--shadow-lg)',
           }}>
             <button onClick={handleClose} aria-label="Close dialog"
               className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-sm font-bold"
@@ -218,7 +218,7 @@ export default function AuthModals() {
                   <button onClick={() => handleGoogleSignIn()} type="button" style={{
                     width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                    background: '#ffffff', color: '#1d1d1f', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', cursor: 'pointer',
+                    background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-default)', borderRadius: '6px', cursor: 'pointer',
                   }}>
                     <GoogleIcon />
                     Continue with Google
@@ -251,7 +251,7 @@ export default function AuthModals() {
                   <button onClick={() => handleGoogleSignIn()} type="button" style={{
                     width: '100%', padding: '12px', fontWeight: 700, fontSize: '14px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                    background: '#ffffff', color: '#1d1d1f', border: '1px solid rgba(0,0,0,0.12)', borderRadius: '6px', cursor: 'pointer',
+                    background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-default)', borderRadius: '6px', cursor: 'pointer',
                   }}>
                     <GoogleIcon />
                     Sign up with Google

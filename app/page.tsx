@@ -181,9 +181,9 @@ export default async function Home() {
                 <div key={item.step} style={{ textAlign: 'center' }}>
                   <div style={{
                     width: '44px', height: '44px', borderRadius: '12px', margin: '0 auto 12px',
-                    background: '#ffffff', border: '1px solid var(--border-default)',
+                    background: 'var(--bg-card)', border: '1px solid var(--border-default)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                    boxShadow: 'var(--shadow-sm)',
                   }}>
                     {item.icon === 'search' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>}
                     {item.icon === 'chart' && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>}
@@ -273,7 +273,7 @@ export default async function Home() {
             Here&apos;s what a score looks like
           </p>
           <div style={{
-            background: '#ffffff', border: '1px solid var(--border-default)', borderRadius: '14px',
+            background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: '14px',
             padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
             maxWidth: '520px', margin: '0 auto',
           }}>
@@ -353,7 +353,7 @@ export default async function Home() {
             </div>
             {/* Pro */}
             <div style={{
-              background: '#ffffff', borderRadius: '12px', padding: '24px',
+              background: 'var(--bg-card)', borderRadius: '12px', padding: '24px',
               border: '2px solid var(--accent-green)',
               boxShadow: '0 4px 24px rgba(22,163,74,0.08)',
               position: 'relative',
@@ -454,7 +454,7 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: 'var(--shadow-sm)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                 <CircleCheck size={18} color="var(--accent-green)" strokeWidth={2} aria-hidden="true" />
                 <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Recently shipped</h3>
@@ -481,7 +481,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: 'var(--shadow-sm)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                 <Construction size={18} color="var(--accent-amber)" strokeWidth={2} aria-hidden="true" />
                 <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Coming soon</h3>

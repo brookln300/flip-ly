@@ -1,28 +1,39 @@
 'use client'
 
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense, useEffect, useCallback } from 'react'
 import { useSignup } from './SignupContext'
 
 const FlipShell = lazy(() => import('./FlipShell'))
 
 export default function HomeHeader() {
-  const { openSignup } = useSignup()
-  const [loggedInUser, setLoggedInUser] = useState<any>(null)
+  const { openSignup, loggedInUser } = useSignup()
   const [shellOpen, setShellOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
+  // Close menu on ESC
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.user) setLoggedInUser(data.user) })
-      .catch(() => {})
+    if (!menuOpen) return
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false) }
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [menuOpen])
+
+  // Close menu on resize to desktop
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 640px)')
+    const handler = () => { if (mq.matches) setMenuOpen(false) }
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
   }, [])
+
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
 
   return (
     <>
       <header style={{
         padding: 'var(--space-3) var(--space-4)',
-        background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(0,0,0,0.06)',
+        background: 'var(--bg-overlay)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid var(--border-subtle)',
         position: 'sticky', top: 0, zIndex: 80,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -88,8 +99,93 @@ export default function HomeHeader() {
               Sign Up Free
             </button>
           )}
+          {/* Mobile hamburger */}
+          <button
+            className="sm:hidden"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '36px', height: '36px', padding: 0,
+              background: 'transparent', border: '1px solid var(--border-subtle)',
+              borderRadius: '8px', cursor: 'pointer',
+              marginLeft: '4px',
+            }}
+          >
+            {menuOpen ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
+              </svg>
+            )}
+          </button>
         </nav>
       </header>
+
+      {/* Mobile menu sheet */}
+      {menuOpen && (
+        <div
+          className="sm:hidden"
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 79,
+            background: 'rgba(0,0,0,0.3)',
+          }}
+          onClick={closeMenu}
+        >
+          <nav
+            aria-label="Mobile navigation"
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: 'absolute', top: '52px', left: 0, right: 0,
+              background: 'var(--bg-overlay)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+              borderBottom: '1px solid var(--border-subtle)',
+              padding: '8px 0',
+              animation: 'slideDown 0.15s ease',
+            }}
+          >
+            {[
+              { href: '#search', label: 'Search' },
+              { href: '/blog', label: 'Blog' },
+              { href: '#whats-new', label: "What's New" },
+              { href: '#pricing', label: 'Pricing' },
+              { href: '/about', label: 'About' },
+            ].map(link => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={closeMenu}
+                style={{
+                  display: 'block', padding: '12px 20px',
+                  fontSize: '15px', fontWeight: 500, color: 'var(--text-primary)',
+                  textDecoration: 'none',
+                  borderBottom: '1px solid var(--border-subtle)',
+                }}
+              >
+                {link.label}
+              </a>
+            ))}
+            {!loggedInUser && (
+              <div style={{ padding: '12px 20px' }}>
+                <button
+                  onClick={() => { closeMenu(); openSignup() }}
+                  style={{
+                    width: '100%', padding: '12px', fontSize: '14px', fontWeight: 700,
+                    background: 'var(--accent-green)', color: '#fff', border: 'none',
+                    borderRadius: '8px', cursor: 'pointer',
+                  }}
+                >
+                  Sign Up Free
+                </button>
+              </div>
+            )}
+          </nav>
+        </div>
+      )}
 
       {shellOpen && (
         <Suspense fallback={null}>

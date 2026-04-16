@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
 type SignupContextType = {
   showSignup: boolean
@@ -9,6 +9,8 @@ type SignupContextType = {
   sourceGateOpen: boolean
   openSourceGate: () => void
   closeSourceGate: () => void
+  loggedInUser: any
+  authLoading: boolean
 }
 
 const SignupContext = createContext<SignupContextType>({
@@ -18,6 +20,8 @@ const SignupContext = createContext<SignupContextType>({
   sourceGateOpen: false,
   openSourceGate: () => {},
   closeSourceGate: () => {},
+  loggedInUser: null,
+  authLoading: true,
 })
 
 export function useSignup() {
@@ -27,6 +31,16 @@ export function useSignup() {
 export function SignupProvider({ children }: { children: React.ReactNode }) {
   const [showSignup, setShowSignup] = useState(false)
   const [sourceGateOpen, setSourceGateOpen] = useState(false)
+  const [loggedInUser, setLoggedInUser] = useState<any>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => { if (data?.user) setLoggedInUser(data.user) })
+      .catch(() => {})
+      .finally(() => setAuthLoading(false))
+  }, [])
 
   const openSignup = useCallback(() => setShowSignup(true), [])
   const closeSignup = useCallback(() => setShowSignup(false), [])
@@ -34,7 +48,7 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
   const closeSourceGate = useCallback(() => setSourceGateOpen(false), [])
 
   return (
-    <SignupContext.Provider value={{ showSignup, openSignup, closeSignup, sourceGateOpen, openSourceGate, closeSourceGate }}>
+    <SignupContext.Provider value={{ showSignup, openSignup, closeSignup, sourceGateOpen, openSourceGate, closeSourceGate, loggedInUser, authLoading }}>
       {children}
     </SignupContext.Provider>
   )

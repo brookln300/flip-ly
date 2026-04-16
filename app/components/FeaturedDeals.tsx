@@ -10,40 +10,30 @@ export default function FeaturedDeals({ initialDeals, initialMarketName, markets
   initialMarketName: string
   markets: Record<string, { id: string; slug: string; name: string }[]>
 }) {
-  const { openSignup } = useSignup()
+  const { openSignup, loggedInUser } = useSignup()
   const [featuredDeals, setFeaturedDeals] = useState(initialDeals)
   const [featuredMarketName, setFeaturedMarketName] = useState(initialMarketName)
   const [expandedDeal, setExpandedDeal] = useState<number | null>(null)
-  const [loggedInUser, setLoggedInUser] = useState<any>(null)
 
-  // Check auth and optionally re-fetch for user's market
+  // Re-fetch for user's market when auth resolves
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (!data?.user) return
-        setLoggedInUser(data.user)
-        // If user has a market, fetch deals for their market
-        if (data.user.market_id && Object.keys(markets).length > 0) {
-          let marketSlug = ''
-          for (const ms of Object.values(markets)) {
-            const found = ms.find(m => m.id === data.user.market_id)
-            if (found) {
-              marketSlug = found.slug
-              setFeaturedMarketName(found.name)
-              break
-            }
-          }
-          if (marketSlug) {
-            fetch(`/api/listings?hot=true&limit=8&market=${marketSlug}`)
-              .then(res => res.json())
-              .then(d => { if (d.results?.length) setFeaturedDeals(d.results) })
-              .catch(() => {})
-          }
-        }
-      })
-      .catch(() => {})
-  }, [markets])
+    if (!loggedInUser?.market_id || Object.keys(markets).length === 0) return
+    let marketSlug = ''
+    for (const ms of Object.values(markets)) {
+      const found = ms.find(m => m.id === loggedInUser.market_id)
+      if (found) {
+        marketSlug = found.slug
+        setFeaturedMarketName(found.name)
+        break
+      }
+    }
+    if (marketSlug) {
+      fetch(`/api/listings?hot=true&limit=8&market=${marketSlug}`)
+        .then(res => res.json())
+        .then(d => { if (d.results?.length) setFeaturedDeals(d.results) })
+        .catch(() => {})
+    }
+  }, [loggedInUser, markets])
 
   return (
     <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0' }}>

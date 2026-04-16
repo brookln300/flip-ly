@@ -8,7 +8,7 @@ import { useSignup } from './SignupContext'
 export default function SearchSection({ markets }: {
   markets: Record<string, { id: string; slug: string; name: string }[]>
 }) {
-  const { openSignup } = useSignup()
+  const { openSignup, loggedInUser } = useSignup()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchMarket, setSearchMarket] = useState('')
   const [searching, setSearching] = useState(false)
@@ -18,7 +18,6 @@ export default function SearchSection({ markets }: {
   const [searchError, setSearchError] = useState('')
   const [searchGate, setSearchGate] = useState<any>(null)
   const [expandedDeal, setExpandedDeal] = useState<number | null>(null)
-  const [loggedInUser, setLoggedInUser] = useState<any>(null)
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
 
@@ -42,14 +41,6 @@ export default function SearchSection({ markets }: {
     }, 200)
     return () => clearTimeout(timer)
   }, [searchQuery])
-
-  // Check auth once for deal row gating
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.user) setLoggedInUser(data.user) })
-      .catch(() => {})
-  }, [])
 
   const sortedMarketOptions = useMemo(() => {
     return Object.keys(markets).sort().flatMap(st =>
@@ -127,9 +118,9 @@ export default function SearchSection({ markets }: {
           </p>
           <form onSubmit={handleSearch}>
             <div style={{
-              background: '#ffffff', border: '1px solid var(--border-default)',
+              background: 'var(--bg-card)', border: '1px solid var(--border-default)',
               borderRadius: '16px', padding: '20px 24px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)',
+              boxShadow: 'var(--shadow-md)',
               transition: 'box-shadow 0.2s ease',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
@@ -151,9 +142,9 @@ export default function SearchSection({ markets }: {
                   {showSuggestions && suggestions.length > 0 && (
                     <div style={{
                       position: 'absolute', top: '100%', left: '-32px', right: '-24px',
-                      background: '#fff', border: '1px solid var(--border-default)',
+                      background: 'var(--bg-card)', border: '1px solid var(--border-default)',
                       borderRadius: '12px', marginTop: '8px', padding: '4px 0',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.10)', zIndex: 50,
+                      boxShadow: 'var(--shadow-lg)', zIndex: 50,
                     }}>
                       {suggestions.map(s => (
                         <button key={s} type="button"
