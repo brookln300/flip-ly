@@ -17,6 +17,38 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: 'best-things-to-flip',
+    title: 'The Best Things to Flip From Estate Sales and Garage Sales (2026 Data)',
+    description: 'Power tools, vintage furniture, audio gear, and the sleeper categories most flippers miss. Data-backed picks for maximum ROI.',
+    date: '2026-04-15',
+    readTime: '6 min',
+    tag: 'Strategy',
+  },
+  {
+    slug: 'ai-deal-scoring-explained',
+    title: 'How AI Deal Scoring Works: Why a 9/10 Garage Sale Find Is Worth the Drive',
+    description: 'Five factors that separate a 3/10 listing from a 9/10. How Flip-ly scores thousands of listings so you only drive to the good ones.',
+    date: '2026-04-15',
+    readTime: '4 min',
+    tag: 'How It Works',
+  },
+  {
+    slug: 'garage-sales-dallas',
+    title: 'Garage Sales in Dallas This Weekend: AI-Scored Deals Near You',
+    description: 'DFW has 7.6 million people and thousands of deals every weekend. Here\'s how to find the best ones without wasting your Saturday.',
+    date: '2026-04-15',
+    readTime: '5 min',
+    tag: 'Market Intel',
+  },
+  {
+    slug: 'garage-sales-houston',
+    title: 'Houston Garage Sales This Weekend: A Flipper\'s Route Guide',
+    description: 'From Sugar Land to The Woodlands — how to plan a profitable Saturday route through Houston\'s best estate sales and garage sales.',
+    date: '2026-04-15',
+    readTime: '5 min',
+    tag: 'Market Intel',
+  },
+  {
     slug: 'estate-sale-flipping-guide',
     title: 'Estate Sale Flipping: How to Find $500+ Deals Before Anyone Else',
     description: 'The scoring framework resellers use to filter thousands of listings down to the 3-5 worth driving to. Real numbers, no fluff.',

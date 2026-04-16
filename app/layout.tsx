@@ -127,6 +127,43 @@ const jsonLd = {
         'query-input': 'required name=search_term_string',
       },
     },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Flip-ly',
+      applicationCategory: 'LifestyleApplication',
+      operatingSystem: 'Web',
+      offers: [
+        { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free', description: '15 searches/day, 1 market, weekly digest' },
+        { '@type': 'Offer', price: '5', priceCurrency: 'USD', name: 'Pro (Founding)', description: 'Unlimited search, 3 markets, daily digest, full AI scores' },
+        { '@type': 'Offer', price: '19', priceCurrency: 'USD', name: 'Power (Founding)', description: 'Unlimited everything, instant alerts, trend data' },
+      ],
+      aggregateRating: undefined,
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'How does Flip-ly find garage sales near me?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Flip-ly scans Craigslist, EstateSales.NET, and 20+ local sources across 400+ US markets every few hours. Our AI scores each listing 1-10 based on price signals, category, description quality, and timing so you see the best deals first.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'Is Flip-ly free?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Yes. The free tier includes 15 searches per day, 1 market, and a weekly deals digest. Pro ($5/mo) unlocks unlimited searches, 3 markets, and daily digests. Power ($19/mo) adds instant alerts and trend data.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'What is AI deal scoring?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Every listing gets a score from 1 to 10 based on five factors: price signals (underpriced items), category depth (tools, electronics, furniture), description quality (detail = serious seller), freshness (just posted), and timing (weekend sales). Scores of 8+ are flagged as hot deals worth driving to.' },
+        },
+        {
+          '@type': 'Question',
+          name: 'What cities does Flip-ly cover?',
+          acceptedAnswer: { '@type': 'Answer', text: 'Flip-ly currently covers 400+ markets across the US including Dallas, Houston, Austin, Los Angeles, Phoenix, Seattle, Salt Lake City, South Florida, and San Antonio. New markets are added weekly.' },
+        },
+      ],
+    },
   ],
 }
 
