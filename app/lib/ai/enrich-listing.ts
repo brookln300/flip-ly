@@ -236,6 +236,104 @@ async function fastClassifyBulkEvents(): Promise<number> {
 }
 
 /**
+ * Pre-filter: Fast-classify low-value Craigslist item listings without AI.
+ * CL items average lower deal scores than sale events. Skip obvious junk:
+ * - Generic titles with no brand/model (e.g. "couch for sale", "old dresser")
+ * - Common low-value categories (basic furniture, clothing, kids toys)
+ * - Items with $1 placeholder pricing AND no brand signals
+ *
+ * Items WITH brand names, model numbers, or price signals pass through to AI.
+ */
+async function fastClassifyCLItems(): Promise<number> {
+  // Brand/model signals — if present, send to AI for proper scoring
+  const valueSignals = [
+    // Power tools
+    'dewalt', 'milwaukee', 'makita', 'bosch', 'ridgid', 'ryobi', 'craftsman', 'snap-on', 'snap on',
+    // Electronics
+    'apple', 'iphone', 'ipad', 'macbook', 'samsung', 'sony', 'bose', 'lg', 'dell', 'lenovo',
+    'nvidia', 'xbox', 'playstation', 'ps5', 'ps4', 'nintendo', 'switch', 'oculus', 'meta quest',
+    // Furniture brands
+    'herman miller', 'steelcase', 'pottery barn', 'restoration hardware', 'west elm', 'crate and barrel',
+    'mid-century', 'mid century', 'mcm', 'eames', 'knoll',
+    // Kitchen/appliance
+    'kitchenaid', 'kitchen aid', 'vitamix', 'le creuset', 'wolf', 'viking', 'sub-zero', 'breville',
+    // Music
+    'fender', 'gibson', 'martin', 'taylor', 'yamaha', 'roland', 'marshall', 'mesa boogie',
+    // Outdoor/auto
+    'yeti', 'traeger', 'weber', 'stihl', 'husqvarna', 'honda', 'toro',
+    // Collectibles
+    'vintage', 'antique', 'rare', 'collectible', 'limited edition', 'signed', 'first edition',
+    'sterling silver', 'solid gold', '14k', '18k', 'rolex', 'omega',
+    // Value signals
+    'new in box', 'nib', 'sealed', 'mint condition', 'never used', 'never opened',
+    'retail', 'msrp', 'paid $', 'worth $', 'sells for',
+  ]
+
+  // Low-value patterns — generic items unlikely to have flip margin
+  const junkPatterns = [
+    /^(old|used|nice|good|great|big|small|large)\s+(couch|sofa|dresser|desk|table|chair|bed|mattress|lamp|rug|mirror|shelf|bookcase)/i,
+    /^(couch|sofa|dresser|desk|table|chair|bed frame|mattress|lamp|rug|mirror|shelf|bookcase)\s*(for sale)?$/i,
+    /^(kids|baby|toddler)\s+(clothes|clothing|toys|shoes|items|stuff)/i,
+    /^(women'?s?|men'?s?|girls?|boys?)\s+(clothes|clothing|shoes|jeans|shirts?)/i,
+    /^(misc|miscellaneous|various|assorted|random)\s+(items?|stuff|things|household)/i,
+    /^(moving|must go|need gone|free|curb|curbside)\s*$/i,
+    /^(books|dvds?|cds?|vhs|tapes?|magazines?)\s*(for sale|lot)?$/i,
+    /^(hangers|picture frames?|storage bins?|plastic bins?|cardboard boxes)/i,
+  ]
+
+  const { data: clItems } = await supabase
+    .from('fliply_listings')
+    .select('id, title, description, price_low_cents, source_type')
+    .is('enriched_at', null)
+    .eq('source_type', 'craigslist_rss')
+    .order('scraped_at', { ascending: true })
+    .limit(500)
+
+  if (!clItems || clItems.length === 0) return 0
+
+  let fastScored = 0
+  for (const listing of clItems) {
+    const titleLower = (listing.title || '').toLowerCase()
+    const descLower = (listing.description || '').toLowerCase()
+    const combined = titleLower + ' ' + descLower
+
+    // If it has any brand/value signal, let AI handle it
+    const hasValueSignal = valueSignals.some(s => combined.includes(s))
+    if (hasValueSignal) continue
+
+    // Check if title matches a junk pattern
+    const isJunkTitle = junkPatterns.some(p => p.test(listing.title || ''))
+    const isPlaceholderPrice = listing.price_low_cents === 100
+
+    // Fast-classify if: junk title OR ($1 placeholder + no value signals)
+    if (isJunkTitle || (isPlaceholderPrice && titleLower.length < 40)) {
+      const score = isPlaceholderPrice ? 2 : 3
+      const reason = isPlaceholderPrice
+        ? 'Generic CL item with $1 placeholder price — no brand/model signals'
+        : 'Generic low-value item — no brand, model, or flip indicators'
+
+      const { error } = await supabase.from('fliply_listings').update({
+        ai_description: listing.title,
+        deal_score: score,
+        deal_score_reason: reason,
+        ai_tags: [],
+        event_type: 'listing',
+        resale_flag: false,
+        is_hot: false,
+        enriched_at: new Date().toISOString(),
+      }).eq('id', listing.id)
+
+      if (!error) fastScored++
+    }
+  }
+
+  if (fastScored > 0) {
+    console.log(`[ENRICH] Fast-classified ${fastScored} low-value CL items (skipped AI)`)
+  }
+  return fastScored
+}
+
+/**
  * Process all unenriched listings with priority queue and parallel batching.
  *
  * Priority order:
@@ -255,8 +353,10 @@ export async function enrichAllPending(options?: {
   const BATCH_SIZE = options?.batchSize ?? 15
   const CONCURRENCY = options?.concurrency ?? 5
 
-  // Phase 0: Fast-classify obvious generic events (no AI cost)
-  const fastClassified = await fastClassifyBulkEvents()
+  // Phase 0: Fast-classify obvious junk without AI
+  const fastClassifiedEvents = await fastClassifyBulkEvents()
+  const fastClassifiedCL = await fastClassifyCLItems()
+  const fastClassified = fastClassifiedEvents + fastClassifiedCL
 
   // Phase 1: Priority — time-sensitive listings (event within 48h)
   const { data: urgent } = await supabase
