@@ -17,16 +17,12 @@
       "schedule": "0 23 * * 4"
     },
     {
-      "path": "/api/cron/alerts",
+      "path": "/api/cron/daily-summary",
       "schedule": "0 14 * * *"
     },
     {
       "path": "/api/cron/drip",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/daily-summary",
-      "schedule": "0 21 * * *"
+      "schedule": "0 */3 * * *"
     },
     {
       "path": "/api/cron/morning-briefing",
@@ -38,11 +34,11 @@
     },
     {
       "path": "/api/cron/link-check",
-      "schedule": "0 6,18 * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/discover-sources",
-      "schedule": "0 2,6,10,14,18,22 * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/daily-deals",
@@ -54,7 +50,7 @@
     },
     {
       "path": "/api/cron/resale-radar",
-      "schedule": "0 */2 * * *"
+      "schedule": "0 2,8,14,20 * * *"
     }
   ]
 }
