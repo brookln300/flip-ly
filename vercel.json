@@ -38,7 +38,7 @@
     },
     {
       "path": "/api/cron/discover-sources",
-      "schedule": "0 6 * * *"
+      "schedule": "0 6,14,22 * * *"
     },
     {
       "path": "/api/cron/daily-deals",
