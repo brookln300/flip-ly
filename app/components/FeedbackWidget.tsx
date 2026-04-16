@@ -25,7 +25,7 @@ export default function FeedbackWidget() {
           onClick={() => setShowFeedback(false)} style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)' }}>
           <div onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: '420px',
-            background: '#ffffff', border: '1px solid var(--border-default)',
+            background: 'var(--bg-card)', border: '1px solid var(--border-default)',
             borderRadius: '16px', padding: 'var(--space-6)',
             boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
           }}>

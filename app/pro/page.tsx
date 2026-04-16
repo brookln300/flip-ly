@@ -389,7 +389,7 @@ function ProContent() {
 
           {/* Pro — highlighted with green accent */}
           <div style={{
-            background: '#fff', border: '2px solid var(--accent-green)',
+            background: 'var(--bg-card)', border: '2px solid var(--accent-green)',
             borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
             position: 'relative',
             boxShadow: '0 8px 32px rgba(22,163,74,0.12), 0 0 0 1px rgba(22,163,74,0.05)',
@@ -533,7 +533,7 @@ function ProContent() {
         {/* ═══ FLIP MATH — ROI calculator ═══ */}
         <div style={{
           maxWidth: '640px', margin: 'var(--space-12) auto 0',
-          background: '#fff', border: '1px solid var(--border-subtle)',
+          background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
           borderRadius: '16px', padding: 'var(--space-8) var(--space-6)',
           textAlign: 'center',
         }}>

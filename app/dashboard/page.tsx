@@ -67,13 +67,13 @@ const DASH_CSS = `
   .dash-fade-d2 { animation-delay: 0.12s }
   .dash-fade-d3 { animation-delay: 0.18s }
   .dash-fade-d4 { animation-delay: 0.24s }
-  .dash-row:hover { background: #fafafa !important }
+  .dash-row:hover { background: var(--bg-surface-hover) !important }
   .dash-row { transition: all 0.15s ease }
   .dash-tag:hover { border-color: rgba(22,163,74,0.4) !important; color: var(--accent-green) !important; background: rgba(22,163,74,0.04) !important }
   .dash-tag-active { border-color: var(--accent-green) !important; color: #fff !important; background: var(--accent-green) !important }
   .dash-search:focus-within { border-color: var(--accent-green) !important; box-shadow: 0 0 0 3px rgba(22,163,74,0.1) !important }
   .dash-stat { position: relative; overflow: hidden; transition: all 0.2s ease }
-  .dash-stat:hover { border-color: var(--border-active) !important; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.06) }
+  .dash-stat:hover { border-color: var(--border-active) !important; transform: translateY(-1px); box-shadow: var(--shadow-md) }
   .dash-btn:hover { opacity: 0.9; transform: translateY(-0.5px) }
   .dash-btn-outline:hover { border-color: var(--border-active) !important; background: var(--bg-surface) !important }
   .dash-action { opacity: 0; transition: opacity 0.15s }
@@ -86,7 +86,7 @@ const DASH_CSS = `
   .dash-img-thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: var(--bg-surface); border: 1px solid var(--border-subtle) }
   .dash-score-tip { position: relative; cursor: help }
   .dash-score-tip:hover .dash-tip-text { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto }
-  .dash-tip-text { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px); background: var(--text-primary); color: #fff; padding: 6px 10px; border-radius: 8px; font-size: 11px; white-space: nowrap; max-width: 240px; white-space: normal; opacity: 0; pointer-events: none; transition: all 0.15s ease; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.15) }
+  .dash-tip-text { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(4px); background: var(--text-primary); color: var(--bg-primary); padding: 6px 10px; border-radius: 8px; font-size: 11px; white-space: nowrap; max-width: 240px; white-space: normal; opacity: 0; pointer-events: none; transition: all 0.15s ease; z-index: 50; box-shadow: var(--shadow-md) }
   .dash-date-pill { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap }
   .dash-tag-sm { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 500; background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border-subtle) }
   @media (max-width: 640px) {
@@ -296,7 +296,7 @@ function StatCard({ label, value, sub, icon, accentColor }: {
   const color = accentColor || 'var(--text-primary)'
   return (
     <div className="dash-stat" style={{
-      background: '#fff',
+      background: 'var(--bg-card)',
       border: '1px solid var(--border-subtle)',
       borderRadius: '14px',
       padding: '18px 18px 16px',
@@ -393,7 +393,7 @@ function ListingRow({ listing, isSaved, onToggleSave, isPro }: {
   const hasDetails = listing.description || listing.deal_reason || listing.address || (listing.tags && listing.tags.length > 0)
 
   return (
-    <div style={{ background: '#fff' }}>
+    <div style={{ background: 'var(--bg-card)' }}>
       {/* ── Main row ── */}
       <div className="dash-row" style={{
         display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
@@ -923,7 +923,7 @@ export default function Dashboard() {
         {/* Search bar skeleton */}
         <div className="skel" style={{ width: '100%', height: '44px', borderRadius: '10px', marginBottom: '24px' }} />
         {/* Deal rows skeleton */}
-        <div style={{ background: '#fff', borderRadius: '14px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: '14px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
           {[0,1,2,3,4,5].map(j => (
             <div key={j} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderBottom: j < 5 ? '1px solid var(--border-subtle)' : 'none' }}>
               <div className="skel" style={{ width: '36px', height: '36px', borderRadius: '8px', flexShrink: 0 }} />
@@ -984,7 +984,7 @@ export default function Dashboard() {
           position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
           background: 'var(--text-primary)', color: '#fff', padding: '10px 20px',
           borderRadius: '10px', fontSize: '13px', fontFamily: font, fontWeight: 500,
-          zIndex: 100, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          zIndex: 100, boxShadow: 'var(--shadow-md)',
           animation: 'fadeIn 0.2s ease',
         }}>
           {toastMsg}
@@ -1004,8 +1004,8 @@ export default function Dashboard() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: '#fff', borderRadius: '18px', padding: '32px 28px',
-              maxWidth: '400px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              background: 'var(--bg-card)', borderRadius: '18px', padding: '32px 28px',
+              maxWidth: '400px', width: '100%', boxShadow: 'var(--shadow-lg)',
               textAlign: 'center',
             }}
           >
@@ -1040,7 +1040,7 @@ export default function Dashboard() {
                   }}
                   style={{
                     display: 'block', width: '100%', padding: '8px 12px', marginBottom: '4px',
-                    background: '#fff', border: '1px solid var(--border-default)', borderRadius: '8px',
+                    background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: '8px',
                     fontFamily: font, fontSize: '13px', color: 'var(--text-primary)', cursor: 'pointer',
                     textAlign: 'left', transition: 'background 0.1s',
                   }}
@@ -1071,7 +1071,7 @@ export default function Dashboard() {
       {/* ═══ HEADER ═══ */}
       <header style={{
         padding: '0 max(20px, calc((100% - 960px) / 2))',
-        background: 'rgba(255,255,255,0.88)',
+        background: 'var(--bg-overlay)',
         backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid var(--border-subtle)',
         position: 'sticky', top: 0, zIndex: 80,
@@ -1117,8 +1117,8 @@ export default function Dashboard() {
               {showMarketPicker && (
                 <div className="dash-dropdown" style={{
                   position: 'absolute', top: '100%', right: 0, marginTop: '4px',
-                  background: '#fff', border: '1px solid var(--border-default)',
-                  borderRadius: '10px', boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
+                  background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                  borderRadius: '10px', boxShadow: 'var(--shadow-lg)',
                   padding: '6px', minWidth: '200px', maxHeight: '280px', overflowY: 'auto',
                   zIndex: 90,
                 }}>
@@ -1218,7 +1218,7 @@ export default function Dashboard() {
         <div className="dash-fade" style={{ marginBottom: '20px' }}>
           <form onSubmit={handleSearch}>
             <div className="dash-search" style={{
-              background: '#fff', border: '1px solid var(--border-default)',
+              background: 'var(--bg-card)', border: '1px solid var(--border-default)',
               borderRadius: '12px', padding: '3px', display: 'flex', gap: '3px',
               transition: 'all 0.2s',
             }}>
@@ -1329,7 +1329,7 @@ export default function Dashboard() {
         {showAdvFilters && (
           <div className="dash-fade" style={{
             marginBottom: '16px', padding: '14px 16px',
-            background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '12px',
+            background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px',
           }}>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
               {/* Price range */}
@@ -1461,9 +1461,9 @@ export default function Dashboard() {
             <div style={{ marginBottom: '32px' }}>
               {/* Route header card */}
               <div style={{
-                background: '#fff', borderRadius: '14px',
+                background: 'var(--bg-card)', borderRadius: '14px',
                 border: '1px solid var(--border-subtle)', overflow: 'hidden',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                boxShadow: 'var(--shadow-sm)',
                 marginBottom: '12px',
               }}>
                 <div style={{
@@ -1654,7 +1654,7 @@ export default function Dashboard() {
                         <div style={{
                           position: 'absolute', inset: 0,
                           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                          background: 'rgba(255,255,255,0.7)',
+                          background: 'var(--bg-overlay)',
                         }}>
                           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: font, margin: '0 0 4px' }}>
                             +{gatedStops.length} more stops
@@ -1737,9 +1737,9 @@ export default function Dashboard() {
             </div>
           )}
           <div style={{
-            background: '#fff', borderRadius: '14px',
+            background: 'var(--bg-card)', borderRadius: '14px',
             border: '1px solid var(--border-subtle)', overflow: 'hidden',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+            boxShadow: 'var(--shadow-sm)',
           }}>
             {displayListings.length === 0 ? (
               <div style={{ padding: '48px 20px', textAlign: 'center' }}>
@@ -1785,7 +1785,7 @@ export default function Dashboard() {
         {/* ═══ BOTTOM CARDS ═══ */}
         <div className="dash-bottom-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '32px' }}>
           {/* Digest card */}
-          <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: 'var(--shadow-sm)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--accent-green)', boxShadow: '0 0 8px rgba(22,163,74,0.3)', animation: 'pulse 2s ease-in-out infinite' }} />
               <h3 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, fontFamily: font }}>Weekly Digest</h3>
@@ -1804,7 +1804,7 @@ export default function Dashboard() {
           </div>
 
           {/* Account card */}
-          <div style={{ background: '#fff', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '14px', padding: '20px', boxShadow: 'var(--shadow-sm)' }}>
             <h3 style={{ color: 'var(--text-primary)', fontSize: '13px', fontWeight: 600, fontFamily: font, marginBottom: '12px' }}>Account</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontFamily: font }}>
               {[
