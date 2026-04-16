@@ -96,7 +96,13 @@ async function callAnthropic(model: string, system: string, messages: any[], max
 
     if (!res.ok) {
       const err = await res.text()
-      console.error(`[AI] API error ${res.status}:`, err.substring(0, 200))
+      // Parse structured error if possible for clearer logs
+      let errorDetail = err.substring(0, 500)
+      try {
+        const parsed = JSON.parse(err)
+        errorDetail = `${parsed.error?.type}: ${parsed.error?.message}`
+      } catch {}
+      console.error(`[AI] API error ${res.status} (${model}):`, errorDetail)
       return { text: '', parsed: null, inputTokens: 0, outputTokens: 0, model, estimatedCost: 0 }
     }
 

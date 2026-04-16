@@ -152,14 +152,23 @@ async function processChunk(listings: any[], batchSize: number, concurrency: num
   }
 
   // Process in waves of CONCURRENCY parallel batches
+  let failedBatches = 0
   for (let w = 0; w < batches.length; w += concurrency) {
     const wave = batches.slice(w, w + concurrency)
     const results = await Promise.allSettled(
       wave.map(batch => enrichListingBatch(batch))
     )
     for (const r of results) {
-      if (r.status === 'fulfilled') totalEnriched += r.value
+      if (r.status === 'fulfilled') {
+        totalEnriched += r.value
+      } else {
+        failedBatches++
+        console.error(`[ENRICH] Batch failed: ${r.reason?.message || r.reason}`)
+      }
     }
+  }
+  if (failedBatches > 0) {
+    console.warn(`[ENRICH] ${failedBatches}/${batches.length} batches failed`)
   }
 
   return totalEnriched
@@ -242,9 +251,9 @@ export async function enrichAllPending(options?: {
   batchSize?: number
   concurrency?: number
 }): Promise<{ enriched: number; fastClassified: number; batches: number }> {
-  const MAX_LISTINGS = options?.maxListings ?? 500
-  const BATCH_SIZE = options?.batchSize ?? 10
-  const CONCURRENCY = options?.concurrency ?? 3
+  const MAX_LISTINGS = options?.maxListings ?? 750
+  const BATCH_SIZE = options?.batchSize ?? 15
+  const CONCURRENCY = options?.concurrency ?? 5
 
   // Phase 0: Fast-classify obvious generic events (no AI cost)
   const fastClassified = await fastClassifyBulkEvents()
@@ -277,7 +286,7 @@ export async function enrichAllPending(options?: {
     .select('id, title, description, price_text, price_low_cents, city, state, event_date, source_type')
     .is('enriched_at', null)
     .order('scraped_at', { ascending: true })
-    .limit(Math.min(finalRemaining, 50))  // Cap Eventbrite overflow at 50 per run
+    .limit(Math.min(finalRemaining, 100))  // Cap Eventbrite overflow at 100 per run
 
   // Deduplicate (a listing could appear in multiple phases)
   const seen = new Set<string>()

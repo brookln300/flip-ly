@@ -34,9 +34,9 @@ export async function GET(req: NextRequest) {
       .is('enriched_at', null)
 
     const result = await enrichAllPending({
-      maxListings: parseInt(params.get('max') || '500'),
-      batchSize: parseInt(params.get('batch') || '10'),
-      concurrency: parseInt(params.get('concurrency') || '3'),
+      maxListings: parseInt(params.get('max') || '750'),
+      batchSize: parseInt(params.get('batch') || '15'),
+      concurrency: parseInt(params.get('concurrency') || '5'),
     })
 
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
