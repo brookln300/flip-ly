@@ -35,9 +35,8 @@ function utm(url: string, content?: string): string {
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
-  const isForce = new URL(req.url).searchParams.get('force') === 'true'
 
-  if (!isForce && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

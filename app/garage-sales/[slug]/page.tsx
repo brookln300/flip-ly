@@ -55,7 +55,7 @@ async function getListingSummary(marketId: string): Promise<ListingSummary> {
       .from('fliply_sources')
       .select('source_type')
       .eq('market_id', marketId)
-      .eq('status', 'active'),
+      .eq('is_active', true),
     supabase
       .from('fliply_listings')
       .select('deal_score')

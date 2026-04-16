@@ -1,22 +1,22 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '../../lib/auth'
+import { requireAdmin } from '../../lib/auth'
 
 /**
- * Test digest endpoint — triggers a real digest email for the logged-in user.
+ * Test digest endpoint — triggers a real digest email (admin only).
  *
- * GET /api/test-digest — sends digest to current user
- * GET /api/test-digest?email=foo@bar.com — sends to specific email (must match a user)
+ * GET /api/test-digest — sends digest to admin's email
+ * GET /api/test-digest?email=foo@bar.com — sends to specific email
  */
 export async function GET(req: NextRequest) {
-  const session = await getSession()
-  if (!session) {
-    return NextResponse.json({ error: 'Not logged in' }, { status: 401 })
+  const admin = await requireAdmin(req)
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { searchParams } = new URL(req.url)
-  const email = searchParams.get('email') || session.email
+  const email = searchParams.get('email') || admin.email
 
   // Call the real digest endpoint in test mode
   const digestUrl = new URL('/api/cron/weekly-digest', req.url)

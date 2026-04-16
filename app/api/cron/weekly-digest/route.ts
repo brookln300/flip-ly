@@ -109,8 +109,7 @@ export async function GET(req: NextRequest) {
   const isTest = searchParams.get('test') === 'true'
   const testEmail = searchParams.get('email')
 
-  // Allow test mode without auth (but require email param)
-  if (!isTest && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

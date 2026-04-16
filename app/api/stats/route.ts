@@ -9,7 +9,7 @@ export async function GET() {
 
     const [listingsRes, sourcesRes, marketsRes, scoredThisWeekRes, usersRes] = await Promise.all([
       supabase.from('fliply_listings').select('id', { count: 'exact', head: true }),
-      supabase.from('fliply_sources').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+      supabase.from('fliply_sources').select('id', { count: 'exact', head: true }).eq('is_active', true),
       supabase.from('fliply_markets').select('id', { count: 'exact', head: true }),
       supabase.from('fliply_listings').select('id', { count: 'exact', head: true })
         .not('deal_score', 'is', null)

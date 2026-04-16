@@ -19,7 +19,7 @@ async function getStats() {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
   const [listingsRes, sourcesRes, marketsRes, scoredRes, usersRes, mwlRes] = await Promise.all([
     supabase.from('fliply_listings').select('id', { count: 'exact', head: true }),
-    supabase.from('fliply_sources').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    supabase.from('fliply_sources').select('id', { count: 'exact', head: true }).eq('is_active', true),
     supabase.from('fliply_markets').select('id', { count: 'exact', head: true }),
     supabase.from('fliply_listings').select('id', { count: 'exact', head: true }).not('deal_score', 'is', null).gte('scraped_at', sevenDaysAgo),
     supabase.from('fliply_users').select('id', { count: 'exact', head: true }),

@@ -27,7 +27,7 @@ export function trackEvent(
         params: {
           ...params,
           engagement_time_msec: '1',
-          session_id: `${Date.now()}`,
+          session_id: userId ? `${userId.slice(0, 8)}-${new Date().toISOString().slice(0, 13)}` : `anon-${new Date().toISOString().slice(0, 13)}`,
         },
       },
     ],

@@ -100,10 +100,11 @@ export async function POST(req: NextRequest) {
 
         if ((winnersCount ?? 0) >= MAX_LEVEL7_WINNERS) {
           // Log their correct attempt but mark as 'capped'
+          const cappedHash = createHash('sha256').update(normalizedPassword).digest('hex').slice(0, 16)
           await supabase.from('fliply_shell_attempts').insert({
             agent_name: sanitizedAgentName,
             level_attempted: level,
-            password_tried: normalizedPassword,
+            password_tried: cappedHash,
             result: 'capped',
             ip_address: ip,
             user_agent: userAgent,
@@ -140,11 +141,12 @@ export async function POST(req: NextRequest) {
       partialReveal = getPartialReveal(LEVEL_PASSWORDS[level], attemptsAtLevel)
     }
 
-    // Log attempt to database
+    // Log attempt to database (hash password to avoid storing plaintext)
+    const passwordHash = createHash('sha256').update(normalizedPassword).digest('hex').slice(0, 16)
     await supabase.from('fliply_shell_attempts').insert({
       agent_name: sanitizedAgentName,
       level_attempted: level,
-      password_tried: normalizedPassword,
+      password_tried: passwordHash,
       result,
       ip_address: ip,
       user_agent: userAgent,

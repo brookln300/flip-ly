@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BOT_TOKEN = process.env.CLAUDECODE_BOT_TOKEN!;
 const TG_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+const ALLOWED_CHAT_IDS = (process.env.CLAUDECODE_ALLOWED_CHATS || process.env.ALLOWED_CHAT_ID || '').split(',').map(s => s.trim()).filter(Boolean);
 
 // ─── Telegram helpers ───────────────────────────────────────────
 async function sendMessage(chatId: number | string, text: string, opts: Record<string, unknown> = {}) {
@@ -11,6 +12,53 @@ async function sendMessage(chatId: number | string, text: string, opts: Record<s
     body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML", ...opts }),
   });
   return res.json();
+}
+
+// ─── Safe math evaluator (no eval/Function) ────────────────────
+function safeMathEval(expr: string): number | null {
+  const tokens = expr.match(/(\d+\.?\d*|[+\-*/()])/g);
+  if (!tokens) return null;
+  let pos = 0;
+  function parseExpr(): number {
+    let result = parseTerm();
+    while (pos < tokens!.length && (tokens![pos] === '+' || tokens![pos] === '-')) {
+      const op = tokens![pos++];
+      const right = parseTerm();
+      result = op === '+' ? result + right : result - right;
+    }
+    return result;
+  }
+  function parseTerm(): number {
+    let result = parseFactor();
+    while (pos < tokens!.length && (tokens![pos] === '*' || tokens![pos] === '/')) {
+      const op = tokens![pos++];
+      const right = parseFactor();
+      result = op === '*' ? result * right : result / right;
+    }
+    return result;
+  }
+  function parseFactor(): number {
+    if (tokens![pos] === '(') {
+      pos++;
+      const result = parseExpr();
+      if (tokens![pos] === ')') pos++;
+      return result;
+    }
+    if (tokens![pos] === '-') {
+      pos++;
+      return -parseFactor();
+    }
+    const num = parseFloat(tokens![pos++]);
+    if (isNaN(num)) return 0;
+    return num;
+  }
+  try {
+    const result = parseExpr();
+    if (!isFinite(result)) return null;
+    return result;
+  } catch {
+    return null;
+  }
 }
 
 // ─── Command handlers ───────────────────────────────────────────
@@ -53,23 +101,15 @@ const COMMANDS: Record<string, (chatId: number, args: string) => Promise<string>
     return `🕐 <b>CDT:</b> ${cdt}\n🌍 <b>UTC:</b> ${utc}`;
   },
 
-  ip: async () => {
-    try {
-      const res = await fetch("https://httpbin.org/ip");
-      const data = await res.json();
-      return `🌐 Server IP: <code>${data.origin}</code>`;
-    } catch {
-      return "❌ Could not fetch IP info";
-    }
-  },
+  ip: async () => "ℹ️ IP info disabled for security.",
 
   calc: async (_chatId: number, args: string) => {
     if (!args) return "Usage: /calc <expression>\nExample: /calc 2 + 2";
     try {
-      // Safe eval — only allow math characters
       const sanitized = args.replace(/[^0-9+\-*/.() ]/g, "");
-      if (!sanitized) return "❌ Invalid expression";
-      const result = Function(`"use strict"; return (${sanitized})`)();
+      if (!sanitized || sanitized.length > 100) return "❌ Invalid expression";
+      const result = safeMathEval(sanitized);
+      if (result === null) return "❌ Could not evaluate expression";
       return `🧮 <code>${args}</code> = <b>${result}</b>`;
     } catch {
       return "❌ Could not evaluate expression";
@@ -99,6 +139,12 @@ export async function POST(req: NextRequest) {
     }
 
     const chatId = message.chat.id;
+
+    // Auth: only respond to allowed chats
+    if (ALLOWED_CHAT_IDS.length > 0 && !ALLOWED_CHAT_IDS.includes(String(chatId))) {
+      return NextResponse.json({ ok: true });
+    }
+
     const text = message.text.trim();
 
     // Parse command
