@@ -2,6 +2,8 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import Link from 'next/link'
+import { getFoundingSnapshot } from '../../lib/founding'
+import { getPowerVisibility } from '../../lib/pricing'
 
 interface MarketData {
   id: string
@@ -134,6 +136,9 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
   const summary = await getListingSummary(market.id)
   const cityName = market.display_name || market.name
   const hasListings = summary.total > 0
+  const founding = getFoundingSnapshot()
+  const proPrice = founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice
+  const powerSentence = getPowerVisibility() === 'public' ? ' Power ($19/mo) adds unlimited markets and instant alerts.' : ''
 
   return (
     <main id="main" className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
@@ -325,7 +330,7 @@ export default async function CityPage({ params }: { params: Promise<{ slug: str
             },
             {
               q: `Is Flip-ly free to use?`,
-              a: `Yes. The free tier includes 15 searches per day, one market, and a weekly email digest. Pro ($5/mo) adds unlimited searches, 3 markets, and daily digests. Power ($19/mo) adds unlimited markets and instant alerts.`,
+              a: `Yes. The free tier includes 15 searches per day, one market, and a weekly email digest. Pro ($${proPrice}/mo) adds unlimited searches, 3 markets, and daily digests.${powerSentence}`,
             },
             {
               q: `How often are ${cityName} listings updated?`,

@@ -4,6 +4,8 @@ import Providers from './components/Providers'
 import GoogleAnalytics from './components/GoogleAnalytics'
 import CookieConsentBanner from './components/CookieConsentBanner'
 import ConsentGatedAnalytics from './components/ConsentGatedAnalytics'
+import { getFoundingSnapshot } from './lib/founding'
+import { getPowerVisibility, PRICES } from './lib/pricing'
 import './globals.css'
 
 const inter = Inter({
@@ -74,6 +76,28 @@ export const metadata: Metadata = {
  * star ratings, FAQ dropdowns, sitelinks, and knowledge panels.
  * Most small sites don't bother. We do. Costs nothing, helps a lot.
  */
+// Pricing snapshot captured at render time. Layout is statically rendered
+// by default — redeploy is required for the JSON-LD to reflect an env-var
+// change (FOUNDING_DEADLINE or NEXT_PUBLIC_POWER_VISIBILITY).
+const _founding = getFoundingSnapshot()
+const _powerVisibility = getPowerVisibility()
+const _proPrice = _founding.priceVariant === 'founding' ? _founding.foundingPrice : _founding.normalPrice
+const _powerPrice = _founding.priceVariant === 'founding' ? PRICES.power.founding : PRICES.power.regular
+const _proName = _founding.priceVariant === 'founding' ? 'Pro (Founding)' : 'Pro'
+const _powerName = _founding.priceVariant === 'founding' ? 'Power (Founding)' : 'Power'
+
+const _offers: Array<Record<string, string>> = [
+  { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free', description: '15 searches/day, 1 market, weekly digest' },
+  { '@type': 'Offer', price: String(_proPrice), priceCurrency: 'USD', name: _proName, description: 'Unlimited search, 3 markets, daily digest, full AI scores' },
+]
+if (_powerVisibility === 'public') {
+  _offers.push({ '@type': 'Offer', price: String(_powerPrice), priceCurrency: 'USD', name: _powerName, description: 'Unlimited everything, instant alerts, trend data' })
+}
+
+const _faqFreeAnswer = _powerVisibility === 'public'
+  ? `Yes. The free tier includes 15 searches per day, 1 market, and a weekly deals digest. Pro ($${_proPrice}/mo) unlocks unlimited searches, 3 markets, and daily digests. Power ($${_powerPrice}/mo) adds instant alerts and trend data.`
+  : `Yes. The free tier includes 15 searches per day, 1 market, and a weekly deals digest. Pro ($${_proPrice}/mo) unlocks unlimited searches, 3 markets, and daily digests.`
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -132,11 +156,7 @@ const jsonLd = {
       name: 'Flip-ly',
       applicationCategory: 'LifestyleApplication',
       operatingSystem: 'Web',
-      offers: [
-        { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free', description: '15 searches/day, 1 market, weekly digest' },
-        { '@type': 'Offer', price: '5', priceCurrency: 'USD', name: 'Pro (Founding)', description: 'Unlimited search, 3 markets, daily digest, full AI scores' },
-        { '@type': 'Offer', price: '19', priceCurrency: 'USD', name: 'Power (Founding)', description: 'Unlimited everything, instant alerts, trend data' },
-      ],
+      offers: _offers,
       aggregateRating: undefined,
     },
     {
@@ -150,7 +170,7 @@ const jsonLd = {
         {
           '@type': 'Question',
           name: 'Is Flip-ly free?',
-          acceptedAnswer: { '@type': 'Answer', text: 'Yes. The free tier includes 15 searches per day, 1 market, and a weekly deals digest. Pro ($5/mo) unlocks unlimited searches, 3 markets, and daily digests. Power ($19/mo) adds instant alerts and trend data.' },
+          acceptedAnswer: { '@type': 'Answer', text: _faqFreeAnswer },
         },
         {
           '@type': 'Question',

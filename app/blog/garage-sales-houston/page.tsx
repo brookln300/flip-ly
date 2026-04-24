@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getFoundingSnapshot } from '../../lib/founding'
 
 export const metadata: Metadata = {
   title: 'Houston Garage Sales This Weekend: A Flipper\'s Route Guide — Flip-ly.net',
@@ -18,6 +19,9 @@ export const metadata: Metadata = {
 }
 
 export default function GarageSalesHouston() {
+  const founding = getFoundingSnapshot()
+  const proPrice = founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice
+  const isFounding = founding.priceVariant === 'founding'
   const articleJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -316,7 +320,7 @@ export default function GarageSalesHouston() {
                 <li style={{ marginBottom: '12px' }}><strong style={{ color: 'var(--text-primary)' }}>Plan your route Thursday night.</strong> Top 5 sales, clustered by neighborhood. Saturday is execution, not research.</li>
               </ol>
               <p style={prose}>
-                Need unlimited searches and multiple markets? <strong style={{ color: 'var(--text-primary)' }}>Pro is $5/mo</strong> (founding price, locked for life). That&apos;s one good flip paying for a year of the tool.
+                Need unlimited searches and multiple markets? <strong style={{ color: 'var(--text-primary)' }}>Pro is ${proPrice}/mo</strong>{isFounding ? ' (founding price, locked for life)' : ''}. That&apos;s one good flip paying for a year of the tool.
               </p>
             </section>
 

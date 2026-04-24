@@ -475,6 +475,13 @@ export default function RetroPage() {
   const [featuredDeals, setFeaturedDeals] = useState<Deal[]>([])
   const [featuredLoading, setFeaturedLoading] = useState(true)
 
+  // Pricing snapshot — drives Pro card numbers + founder-lock copy.
+  // Defaults match the founding variant so SSR markup matches client-
+  // hydrated markup until /api/founding responds.
+  const [proFoundingPrice, setProFoundingPrice] = useState(5)
+  const [proNormalPrice, setProNormalPrice] = useState(9)
+  const [priceVariant, setPriceVariant] = useState<'founding' | 'regular'>('founding')
+
   // Sparkle trail
   const sparkleRef = useRef<HTMLDivElement>(null)
 
@@ -517,6 +524,19 @@ export default function RetroPage() {
       }
     }
     loadFeatured()
+  }, [])
+
+  // Load pricing snapshot (drives Pro card numbers + founder-lock copy)
+  useEffect(() => {
+    fetch('/api/founding')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return
+        if (typeof data.foundingPrice === 'number') setProFoundingPrice(data.foundingPrice)
+        if (typeof data.normalPrice === 'number') setProNormalPrice(data.normalPrice)
+        if (data.priceVariant === 'regular' || data.priceVariant === 'founding') setPriceVariant(data.priceVariant)
+      })
+      .catch(() => {})
   }, [])
 
   // Sparkle trail
@@ -1389,8 +1409,12 @@ export default function RetroPage() {
                 PRO
               </div>
               <div style={{ marginBottom: '2px' }}>
-                <span style={{ textDecoration: 'line-through', color: '#555', fontFamily: 'Courier New', fontSize: '16px' }}>$9</span>
-                {' '}
+                {priceVariant === 'founding' && (
+                  <>
+                    <span style={{ textDecoration: 'line-through', color: '#555', fontFamily: 'Courier New', fontSize: '16px' }}>${proNormalPrice}</span>
+                    {' '}
+                  </>
+                )}
                 <span style={{
                   fontFamily: 'Courier New',
                   color: '#FFB81C',
@@ -1398,13 +1422,19 @@ export default function RetroPage() {
                   fontWeight: 900,
                   textShadow: '0 0 10px #FFB81C',
                 }}>
-                  $5
+                  ${priceVariant === 'founding' ? proFoundingPrice : proNormalPrice}
                 </span>
                 <span style={{ color: '#888', fontFamily: 'Comic Sans MS', fontSize: '12px' }}>/mo</span>
               </div>
-              <div className="blink" style={{ color: '#0FFF50', fontSize: '10px', fontFamily: 'Comic Sans MS', marginBottom: '8px', fontWeight: 700 }}>
-                FOUNDING PRICE — LOCKED 4 LIFE!!
-              </div>
+              {priceVariant === 'founding' ? (
+                <div className="blink" style={{ color: '#0FFF50', fontSize: '10px', fontFamily: 'Comic Sans MS', marginBottom: '8px', fontWeight: 700 }}>
+                  FOUNDING PRICE — LOCKED 4 LIFE!!
+                </div>
+              ) : (
+                <div style={{ color: '#888', fontSize: '10px', fontFamily: 'Comic Sans MS', marginBottom: '8px', fontWeight: 700 }}>
+                  MONTH-2-MONTH :: CANCEL ANYTIME
+                </div>
+              )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
                 {[
                   '🔥 UNLIMITED searches',

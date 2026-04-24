@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { getFoundingSnapshot } from '../lib/founding'
+import { getPowerVisibility } from '../lib/pricing'
 
 export const metadata = {
   title: 'Why Flip-ly? — Flip-ly.net',
@@ -6,6 +8,9 @@ export const metadata = {
 }
 
 export default function WhyPage() {
+  const founding = getFoundingSnapshot()
+  const proPrice = founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice
+  const showPower = getPowerVisibility() === 'public'
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       {/* Header */}
@@ -84,8 +89,10 @@ export default function WhyPage() {
             </h2>
             <div className="mt-2 p-5 rounded-lg" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}><strong style={{ color: 'var(--text-primary)' }}>Free</strong> &mdash; 15 searches/day, 1 market, weekly digest on Thursdays.</p>
-              <p className="text-sm mt-3" style={{ color: 'var(--text-secondary)' }}><strong style={{ color: 'var(--accent-green)' }}>Pro ($5/mo)</strong> &mdash; Unlimited searches, 3 markets, full score breakdowns, saved searches. Cancel anytime.</p>
-              <p className="text-sm mt-3" style={{ color: 'var(--text-secondary)' }}><strong style={{ color: 'var(--accent-purple)' }}>Power ($19/mo)</strong> &mdash; Unlimited everything, instant alerts, category trends, 90-day history.</p>
+              <p className="text-sm mt-3" style={{ color: 'var(--text-secondary)' }}><strong style={{ color: 'var(--accent-green)' }}>Pro (${proPrice}/mo)</strong> &mdash; Unlimited searches, 3 markets, full score breakdowns, saved searches. Cancel anytime.</p>
+              {showPower && (
+                <p className="text-sm mt-3" style={{ color: 'var(--text-secondary)' }}><strong style={{ color: 'var(--accent-purple)' }}>Power ($19/mo)</strong> &mdash; Unlimited everything, instant alerts, category trends, 90-day history.</p>
+              )}
             </div>
           </section>
 

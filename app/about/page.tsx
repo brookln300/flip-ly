@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { getFoundingSnapshot } from '../lib/founding'
+import { getPowerVisibility } from '../lib/pricing'
 
 export const metadata = {
   title: 'About — Flip-ly.net',
@@ -6,6 +8,9 @@ export const metadata = {
 }
 
 export default function About() {
+  const founding = getFoundingSnapshot()
+  const proPrice = founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice
+  const showPower = getPowerVisibility() === 'public'
   return (
     <div className="min-h-screen px-6 py-16 max-w-3xl mx-auto" style={{ background: 'var(--bg-primary)', color: 'var(--text-secondary)' }}>
       <Link href="/" className="text-sm no-underline mb-8 inline-block" style={{ color: 'var(--accent-green)' }}>
@@ -38,8 +43,10 @@ export default function About() {
           <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Plans</h2>
           <div className="mt-2 p-4 rounded" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: '8px' }}>
             <p><strong style={{ color: 'var(--text-primary)' }}>Free</strong> — 15 searches/day, 1 market, weekly digest on Thursdays.</p>
-            <p className="mt-2"><strong style={{ color: 'var(--accent-green)' }}>Pro ($5/mo)</strong> — Unlimited searches, 3 markets, full score breakdowns, saved searches. Cancel anytime.</p>
-            <p className="mt-2"><strong style={{ color: 'var(--accent-purple)' }}>Power ($19/mo)</strong> — Unlimited everything, instant alerts, category trends, 90-day history.</p>
+            <p className="mt-2"><strong style={{ color: 'var(--accent-green)' }}>Pro (${proPrice}/mo)</strong> — Unlimited searches, 3 markets, full score breakdowns, saved searches. Cancel anytime.</p>
+            {showPower && (
+              <p className="mt-2"><strong style={{ color: 'var(--accent-purple)' }}>Power ($19/mo)</strong> — Unlimited everything, instant alerts, category trends, 90-day history.</p>
+            )}
           </div>
         </section>
 

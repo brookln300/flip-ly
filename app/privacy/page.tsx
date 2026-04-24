@@ -35,7 +35,7 @@ export default function Privacy() {
           </ul>
 
           <h3 className="font-bold mt-4 mb-1" style={{ color: 'var(--text-secondary)' }}>Payment Information</h3>
-          <p>If you subscribe to a paid plan (Pro at $5/mo or Power at $19/mo), payment is processed entirely by <strong>Stripe</strong>. We never see, store, or have access to your credit card number. We store only your Stripe customer ID and subscription ID to manage your account status.</p>
+          <p>If you subscribe to a paid plan, payment is processed entirely by <strong>Stripe</strong>. We never see, store, or have access to your credit card number. We store only your Stripe customer ID and subscription ID to manage your account status.</p>
 
           <h3 className="font-bold mt-4 mb-1" style={{ color: 'var(--text-secondary)' }}>Search Activity</h3>
           <ul className="list-disc ml-6 space-y-1">

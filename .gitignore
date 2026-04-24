@@ -9,3 +9,5 @@ node_modules/
 
 # Generated media (Imagen/Veo output)
 generated/
+
+.vercel

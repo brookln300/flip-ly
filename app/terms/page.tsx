@@ -36,10 +36,9 @@ export default function Terms() {
         </section>
 
         <section>
-          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>4. Free, Pro, and Power Tiers</h2>
+          <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>4. Free and Paid Tiers</h2>
           <p><strong style={{ color: 'var(--accent-green)' }}>Free accounts</strong> include up to 15 searches per day, score number only, and a weekly email digest.</p>
-          <p className="mt-2"><strong style={{ color: 'var(--accent-green)' }}>Pro accounts</strong> ($5/month) include unlimited searches, full score breakdowns with source URLs, 3 markets, saved searches, and early digest access. Billed monthly through Stripe. Cancel anytime.</p>
-          <p className="mt-2"><strong style={{ color: 'var(--accent-purple)' }}>Power accounts</strong> ($19/month) include everything in Pro plus unlimited markets, instant deal alerts, category trends, and 90-day deal history. Billed monthly through Stripe. Cancel anytime.</p>
+          <p className="mt-2"><strong style={{ color: 'var(--accent-green)' }}>Paid accounts</strong> include unlimited searches, full score breakdowns with source URLs, additional markets, saved searches, and early digest access. Higher tiers with unlimited markets, instant alerts, category trends, and extended history may be offered from time to time. All paid plans are billed monthly through Stripe and may be cancelled anytime. Current plan availability, features, and pricing are shown at <Link href="/pro" style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>flip-ly.net/pro</Link>.</p>
           <p className="mt-2">Refunds are governed by our <Link href="/refund" style={{ color: "var(--accent-green)", textDecoration: "underline" }}>Refund Policy</Link> &mdash; 7-day no-questions-asked window on any charge.</p>
         </section>
 

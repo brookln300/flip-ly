@@ -664,6 +664,8 @@ export default function Dashboard() {
   const [toastMsg, setToastMsg] = useState('')
   const [activeMarketSlug, setActiveMarketSlug] = useState<string>('')
   const [showOnboarding, setShowOnboarding] = useState(false)
+  // Pro upsell price — fetched once from /api/founding; defaults to founding $5.
+  const [upsellProPrice, setUpsellProPrice] = useState(5)
   const marketRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
@@ -700,6 +702,18 @@ export default function Dashboard() {
         setLoading(false)
       })
       .catch(() => { setLoading(false); window.location.href = '/' })
+  }, [])
+
+  // ── Load pricing snapshot for the Pro upsell CTA ──
+  useEffect(() => {
+    fetch('/api/founding')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return
+        const active = data.priceVariant === 'regular' ? data.normalPrice : data.foundingPrice
+        if (typeof active === 'number') setUpsellProPrice(active)
+      })
+      .catch(() => {})
   }, [])
 
   // ── Load listings + saved deals ──
@@ -1666,7 +1680,7 @@ export default function Dashboard() {
                             padding: '9px 22px', background: 'var(--accent-green)', color: '#fff',
                             borderRadius: '8px', fontSize: '13px', fontWeight: 600, textDecoration: 'none', fontFamily: font,
                           }}>
-                            Go Pro — $5/mo
+                            Go Pro — ${upsellProPrice}/mo
                           </a>
                         </div>
                       </div>

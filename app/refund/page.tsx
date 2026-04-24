@@ -20,7 +20,7 @@ export default function RefundPolicy() {
       <div className="space-y-6 text-sm" style={{ lineHeight: 1.8, fontFamily: 'var(--font-primary)' }}>
         <section>
           <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>1. Cancellation</h2>
-          <p>Cancel your Pro ($5/mo) or Power ($19/mo) subscription anytime from your dashboard or by emailing <span style={{ color: 'var(--accent-green)' }}>hello@flip-ly.net</span>. Cancellation takes effect at the end of your current billing period &mdash; you keep access until then. No cancellation fees.</p>
+          <p>Cancel your paid subscription anytime from your dashboard or by emailing <span style={{ color: 'var(--accent-green)' }}>hello@flip-ly.net</span>. Cancellation takes effect at the end of your current billing period &mdash; you keep access until then. No cancellation fees.</p>
         </section>
 
         <section>
@@ -40,7 +40,7 @@ export default function RefundPolicy() {
 
         <section>
           <h2 className="text-lg font-bold mb-2" style={{ color: 'var(--text-primary)' }}>4. Founding Member Pricing</h2>
-          <p>If you cancel and later resubscribe, your founding member price ($5/mo Pro or $19/mo Power) is preserved. The lock is tied to your account, not your subscription.</p>
+          <p>If you enrolled in a paid plan during an advertised founding member window and later cancel, your founding member rate is preserved on resubscription. The lock is tied to the account that enrolled during the founding window, not to the subscription record. Users who did not enroll during a founding window are billed at then-current rates shown at <Link href="/pro" style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>flip-ly.net/pro</Link>.</p>
         </section>
 
         <section>
