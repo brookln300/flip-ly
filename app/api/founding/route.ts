@@ -6,35 +6,33 @@ import {
   initFoundingCountdown,
   isRedisHealthy,
 } from '../../lib/redis'
+import {
+  FOUNDING_TOTAL_SLOTS,
+  getFoundingSnapshot,
+} from '../../lib/founding'
+import { getPowerVisibility } from '../../lib/pricing'
 
-// Founding member window: 14 days from launch, 88 slots
-const FOUNDING_DEADLINE = '2026-04-26T00:00:00Z'
-const FOUNDING_TOTAL_SLOTS = 88
-const FOUNDING_PRICE = 5
-const NORMAL_PRICE = 9
+const { deadline: FOUNDING_DEADLINE, foundingPrice: FOUNDING_PRICE, normalPrice: NORMAL_PRICE } = getFoundingSnapshot()
 
 export async function GET(req: NextRequest) {
   const redisUp = await isRedisHealthy()
 
+  const powerVisibility = getPowerVisibility()
+
   if (!redisUp) {
     // Fallback: compute from current time only (no live slot tracking)
-    const deadline = new Date(FOUNDING_DEADLINE)
-    const now = new Date()
-    const active = deadline > now
-    const msRemaining = Math.max(0, deadline.getTime() - now.getTime())
+    const founding = getFoundingSnapshot()
 
     return NextResponse.json({
-      active,
-      deadline: FOUNDING_DEADLINE,
+      active: founding.active,
+      deadline: founding.deadline,
       slotsRemaining: null, // unknown without Redis
       totalSlots: FOUNDING_TOTAL_SLOTS,
       foundingPrice: FOUNDING_PRICE,
       normalPrice: NORMAL_PRICE,
-      timeRemaining: {
-        days: Math.floor(msRemaining / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((msRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60)),
-      },
+      priceVariant: founding.priceVariant,
+      powerVisibility,
+      timeRemaining: founding.timeRemaining,
       source: 'fallback',
     })
   }
@@ -43,9 +41,7 @@ export async function GET(req: NextRequest) {
   await initFoundingCountdown(FOUNDING_DEADLINE, FOUNDING_TOTAL_SLOTS)
 
   const countdown = await getFoundingCountdown()
-  const deadline = countdown.deadline ? new Date(countdown.deadline) : new Date(FOUNDING_DEADLINE)
-  const now = new Date()
-  const msRemaining = Math.max(0, deadline.getTime() - now.getTime())
+  const resolvedFounding = getFoundingSnapshot(countdown.deadline ? new Date(countdown.deadline) : new Date())
 
   return NextResponse.json({
     active: countdown.active,
@@ -54,11 +50,9 @@ export async function GET(req: NextRequest) {
     totalSlots: FOUNDING_TOTAL_SLOTS,
     foundingPrice: FOUNDING_PRICE,
     normalPrice: NORMAL_PRICE,
-    timeRemaining: {
-      days: Math.floor(msRemaining / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((msRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-      minutes: Math.floor((msRemaining % (1000 * 60 * 60)) / (1000 * 60)),
-    },
+    priceVariant: resolvedFounding.priceVariant,
+    powerVisibility,
+    timeRemaining: resolvedFounding.timeRemaining,
     slotsClaimed: FOUNDING_TOTAL_SLOTS - countdown.slotsRemaining,
     source: 'redis',
   })

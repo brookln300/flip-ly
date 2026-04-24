@@ -1321,7 +1321,7 @@ export default function RetroPage() {
           <p style={{ textAlign: 'center', color: '#c0c0c0', fontFamily: 'Comic Sans MS', fontSize: '11px', margin: '0 0 10px' }}>
             One good flip pays 4 a whole year of Pro!! No brainer!! 🧠
           </p>
-          <div className="retro-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+          <div className="retro-grid-3" style={{ display: 'grid', gridTemplateColumns: (process.env.NEXT_PUBLIC_POWER_VISIBILITY === 'public') ? '1fr 1fr 1fr' : '1fr 1fr', gap: '8px' }}>
             {/* Free */}
             <div className="price-card">
               <div style={{
@@ -1389,7 +1389,7 @@ export default function RetroPage() {
                 PRO
               </div>
               <div style={{ marginBottom: '2px' }}>
-                <span style={{ textDecoration: 'line-through', color: '#555', fontFamily: 'Courier New', fontSize: '16px' }}>$12</span>
+                <span style={{ textDecoration: 'line-through', color: '#555', fontFamily: 'Courier New', fontSize: '16px' }}>$9</span>
                 {' '}
                 <span style={{
                   fontFamily: 'Courier New',
@@ -1421,7 +1421,8 @@ export default function RetroPage() {
               </a>
             </div>
 
-            {/* Power */}
+            {/* Power — rendered only when NEXT_PUBLIC_POWER_VISIBILITY=public */}
+            {process.env.NEXT_PUBLIC_POWER_VISIBILITY === 'public' && (
             <div className="price-card power">
               <div style={{
                 fontFamily: 'Papyrus, cursive',
@@ -1466,6 +1467,7 @@ export default function RetroPage() {
                 GO POWER MODE!!
               </a>
             </div>
+            )}
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '10px' }}>

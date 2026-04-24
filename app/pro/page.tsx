@@ -3,12 +3,36 @@
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect, useRef, useCallback } from 'react'
 import ShellTrigger from '../components/ShellTrigger'
+import { clearAuthIntent, readAuthIntent, trackFunnelEvent } from '../lib/analytics-client'
 
 interface UserData {
   id: string
   email: string
   is_premium: boolean
   subscription_tier: string | null
+}
+
+type PriceVariant = 'founding' | 'regular'
+type PowerVisibility = 'hidden' | 'waitlist' | 'public'
+
+interface FoundingState {
+  active: boolean
+  foundingPrice: number
+  normalPrice: number
+  priceVariant: PriceVariant
+  powerVisibility: PowerVisibility
+  slotsRemaining: number | null
+  daysRemaining: number
+}
+
+const DEFAULT_FOUNDING: FoundingState = {
+  active: true,
+  foundingPrice: 5,
+  normalPrice: 9,
+  priceVariant: 'founding',
+  powerVisibility: 'hidden',
+  slotsRemaining: null,
+  daysRemaining: 0,
 }
 
 function ProContent() {
@@ -19,10 +43,15 @@ function ProContent() {
   const [user, setUser] = useState<UserData | null>(null)
   const [authChecked, setAuthChecked] = useState(false)
   const [activated, setActivated] = useState(false)
+  const [founding, setFounding] = useState<FoundingState>(DEFAULT_FOUNDING)
   const tierParam = params.get('tier')
   const isPower = tierParam === 'power'
+  const powerPurchasable = founding.powerVisibility === 'public'
+  const showPower = powerPurchasable
   const autoTriggered = useRef(false)
   const pollCount = useRef(0)
+  const pricingTracked = useRef(false)
+  const cancelledTracked = useRef(false)
 
   // Fetch user via custom JWT (works for ALL auth methods)
   const fetchUser = useCallback(async () => {
@@ -47,6 +76,56 @@ function ProContent() {
   const isAuthenticated = authChecked && user !== null
   const isAlreadyPro = user?.is_premium === true || ['pro', 'power', 'admin'].includes(user?.subscription_tier || '')
 
+  useEffect(() => {
+    if (!authChecked || pricingTracked.current) return
+
+    pricingTracked.current = true
+    trackFunnelEvent('pricing_viewed', {
+      surface: 'pro_page',
+      logged_in: isAuthenticated,
+    })
+
+    fetch('/api/founding')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return
+        const snapshot: FoundingState = {
+          active: !!data.active,
+          foundingPrice: typeof data.foundingPrice === 'number' ? data.foundingPrice : DEFAULT_FOUNDING.foundingPrice,
+          normalPrice: typeof data.normalPrice === 'number' ? data.normalPrice : DEFAULT_FOUNDING.normalPrice,
+          priceVariant: data.priceVariant === 'regular' ? 'regular' : 'founding',
+          powerVisibility: data.powerVisibility === 'public' || data.powerVisibility === 'waitlist' ? data.powerVisibility : 'hidden',
+          slotsRemaining: typeof data.slotsRemaining === 'number' ? data.slotsRemaining : null,
+          daysRemaining: data.timeRemaining?.days ?? 0,
+        }
+        setFounding(snapshot)
+        if (snapshot.active) {
+          trackFunnelEvent('founding_badge_shown', {
+            surface: 'pro_page',
+            slots_remaining: snapshot.slotsRemaining ?? -1,
+            days_remaining: snapshot.daysRemaining,
+            logged_in: isAuthenticated,
+          })
+        }
+      })
+      .catch(() => {})
+  }, [authChecked, isAuthenticated])
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    const pendingAuth = readAuthIntent()
+    if (!pendingAuth) return
+
+    trackFunnelEvent('auth_completed_with_plan_intent', {
+      intent: pendingAuth.intent,
+      method: pendingAuth.method,
+      surface: pendingAuth.surface,
+      logged_in: true,
+    })
+    clearAuthIntent()
+  }, [isAuthenticated])
+
   // Auto-dismiss error after 5 seconds
   useEffect(() => {
     if (!error) return
@@ -55,8 +134,21 @@ function ProContent() {
   }, [error])
 
   const handleUpgrade = async (tier: 'pro' | 'power') => {
+    // When Power is not purchasable, coerce any power request back to pro so
+    // stale links (?tier=power) and auto-triggers don't hit a 403.
+    const effectiveTier: 'pro' | 'power' = tier === 'power' && !powerPurchasable ? 'pro' : tier
+    trackFunnelEvent('plan_selected', {
+      tier: effectiveTier,
+      surface: 'pro_page',
+      logged_in: isAuthenticated,
+      price_variant: founding.priceVariant,
+    })
     if (!isAuthenticated) {
-      window.location.href = isPower ? '/?signup=pro&next=/pro?tier=power' : '/?signup=pro'
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('fliply_plan_surface', 'pro_page')
+      }
+      const next = effectiveTier === 'power' ? '/?signup=pro&next=/pro?tier=power' : '/?signup=pro'
+      window.location.href = next
       return
     }
     // Guard: if already subscribed, send to portal instead of creating a new checkout
@@ -70,7 +162,7 @@ function ProContent() {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({ tier: effectiveTier }),
       })
       const data = await res.json()
       if (data.url) {
@@ -111,13 +203,16 @@ function ProContent() {
     }
   }
 
-  // Auto-trigger checkout if arriving from landing page with ?tier=power
+  // Auto-trigger checkout if arriving from landing page with ?tier=power.
+  // Skip entirely when Power isn't purchasable — a stale link should land on
+  // the Pro card, not throw the user into a 403 from /api/stripe/checkout.
   useEffect(() => {
+    if (!powerPurchasable) return
     if (isPower && isAuthenticated && !isAlreadyPro && !loading && !autoTriggered.current) {
       autoTriggered.current = true
       handleUpgrade('power')
     }
-  }, [isPower, isAuthenticated, isAlreadyPro, loading])
+  }, [isPower, isAuthenticated, isAlreadyPro, loading, powerPurchasable])
 
   // POST-CHECKOUT SUCCESS — poll for webhook completion
   useEffect(() => {
@@ -136,6 +231,18 @@ function ProContent() {
     }, 2000)
     return () => clearInterval(poll)
   }, [status])
+
+  useEffect(() => {
+    if (status !== 'cancelled' || cancelledTracked.current) return
+
+    cancelledTracked.current = true
+    trackFunnelEvent('checkout_session_abandoned', {
+      tier: isPower && powerPurchasable ? 'power' : 'pro',
+      surface: 'pro_page',
+      logged_in: isAuthenticated,
+      price_variant: founding.priceVariant,
+    })
+  }, [isAuthenticated, isPower, powerPurchasable, founding.priceVariant, status])
 
   if (status === 'success') {
     return (
@@ -157,7 +264,9 @@ function ProContent() {
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
             {activated
-              ? 'Your founding price is locked for life. Full score breakdowns, unlimited searches, and daily digests are now active.'
+              ? (founding.priceVariant === 'founding'
+                  ? 'Your founding price is locked for life. Full score breakdowns, unlimited searches, and daily digests are now active.'
+                  : 'Full score breakdowns, unlimited searches, and daily digests are now active.')
               : 'Activating your subscription... This takes just a moment.'}
           </p>
           <a href="/dashboard" style={{
@@ -182,7 +291,8 @@ function ProContent() {
             No worries
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
-            The free tier still gives you 15 searches/day and a weekly digest. Founding pricing is available while spots last.
+            The free tier still gives you 15 searches/day and a weekly digest.
+            {founding.priceVariant === 'founding' ? ' Founding pricing is available while spots last.' : ''}
           </p>
           <a href="/" style={{
             color: 'var(--accent-green)', textDecoration: 'underline', fontSize: '14px',
@@ -228,7 +338,7 @@ function ProContent() {
             You&apos;re on {tierLabel}
           </h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: 1.7, marginBottom: '32px' }}>
-            Your founding price is locked for life. Full score breakdowns, unlimited searches, and daily digests are active.
+            Full score breakdowns, unlimited searches, and daily digests are active.
           </p>
 
           {error && (
@@ -261,7 +371,7 @@ function ProContent() {
             </a>
           </div>
 
-          {user?.subscription_tier !== 'power' && user?.subscription_tier !== 'admin' && (
+          {powerPurchasable && user?.subscription_tier !== 'power' && user?.subscription_tier !== 'admin' && (
             <div style={{
               marginTop: '48px', padding: '24px',
               background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
@@ -271,7 +381,7 @@ function ProContent() {
                 Upgrade to Power?
               </p>
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
-                Unlimited markets, instant alerts, and trend data — $19/mo founding price.
+                Unlimited markets, instant alerts, and trend data.
               </p>
               <button onClick={() => handleUpgrade('power')} disabled={loading} style={{
                 padding: '10px 20px', background: '#8b5cf6', color: '#fff',
@@ -351,13 +461,16 @@ function ProContent() {
             margin: '0 auto var(--space-8)', textAlign: 'center',
           }}>
             <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-              <a href={isPower ? '/?signup=pro&next=/pro?tier=power' : '/?signup=pro'} style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>Sign up or log in</a> first to choose a plan.
+              <a href={isPower && powerPurchasable ? '/?signup=pro&next=/pro?tier=power' : '/?signup=pro'} style={{ color: 'var(--accent-green)', textDecoration: 'underline' }}>Sign up or log in</a> first to choose a plan.
             </p>
           </div>
         )}
 
-        {/* 3-tier grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ maxWidth: '900px', margin: '0 auto', alignItems: 'stretch' }}>
+        {/* Pricing grid — 2 cols (Free + Pro) or 3 cols (add Power) */}
+        <div
+          className={`grid grid-cols-1 ${showPower ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4`}
+          style={{ maxWidth: showPower ? '900px' : '640px', margin: '0 auto', alignItems: 'stretch' }}
+        >
 
           {/* Free */}
           <div style={{
@@ -408,11 +521,18 @@ function ProContent() {
             </div>
             <div style={{ fontSize: '13px', color: 'var(--accent-green)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px', marginTop: '8px' }}>Pro</div>
             <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
-              $5<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+              ${founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice}
+              <span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>
-              <span style={{ textDecoration: 'line-through', opacity: 0.5 }}>$12/mo</span>{' '}
-              Founding price &middot; Locked for life
+              {founding.priceVariant === 'founding' ? (
+                <>
+                  <span style={{ textDecoration: 'line-through', opacity: 0.5 }}>${founding.normalPrice}/mo</span>{' '}
+                  Founding price &middot; Locked for life
+                </>
+              ) : (
+                <>Month-to-month &middot; Cancel anytime</>
+              )}
             </div>
             <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 2.4, listStyle: 'none', padding: 0, flex: 1 }}>
               {['Unlimited searches', '3 markets', 'Full score breakdown', 'Daily + weekly digest', '3 saved searches'].map(f => (
@@ -430,42 +550,44 @@ function ProContent() {
               boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
               transition: 'all 0.15s',
             }}>
-              {loading ? 'Loading...' : !isAuthenticated ? 'Sign Up for Pro' : 'Start Pro — $5/mo'}
+              {loading ? 'Loading...' : !isAuthenticated ? 'Sign Up for Pro' : `Start Pro — $${founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice}/mo`}
             </button>
           </div>
 
-          {/* Power */}
-          <div style={{
-            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
-            display: 'flex', flexDirection: 'column',
-          }}>
-            <div style={{ fontSize: '13px', color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Power</div>
-            <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
-              $19<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>
-              <span style={{ textDecoration: 'line-through', opacity: 0.5 }}>$39/mo</span>{' '}
-              Founding price &middot; Locked for life
-            </div>
-            <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0, flex: 1 }}>
-              {['Unlimited searches', 'Unlimited markets', 'Breakdown + trends', 'Daily + instant alerts', 'Unlimited saved searches'].map(f => (
-                <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <button onClick={() => handleUpgrade('power')} disabled={loading} style={{
-              display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
-              background: 'transparent', color: 'var(--text-secondary)',
-              border: '1px solid var(--border-active)', borderRadius: '8px',
-              fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
-              transition: 'all 0.15s',
+          {/* Power — rendered only when NEXT_PUBLIC_POWER_VISIBILITY=public */}
+          {showPower && (
+            <div style={{
+              background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
+              borderRadius: '12px', padding: 'var(--space-6)', textAlign: 'center',
+              display: 'flex', flexDirection: 'column',
             }}>
-              {loading ? 'Loading...' : !isAuthenticated ? 'Sign Up for Power' : 'Go Power'}
-            </button>
-          </div>
+              <div style={{ fontSize: '13px', color: '#8b5cf6', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Power</div>
+              <div style={{ fontSize: '40px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                $19<span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>/mo</span>
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: 'var(--space-4)' }}>
+                <span style={{ textDecoration: 'line-through', opacity: 0.5 }}>$39/mo</span>{' '}
+                Founding price &middot; Locked for life
+              </div>
+              <ul style={{ textAlign: 'left', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 2.4, listStyle: 'none', padding: 0, flex: 1 }}>
+                {['Unlimited searches', 'Unlimited markets', 'Breakdown + trends', 'Daily + instant alerts', 'Unlimited saved searches'].map(f => (
+                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => handleUpgrade('power')} disabled={loading} style={{
+                display: 'block', width: '100%', marginTop: 'var(--space-6)', padding: '12px 24px',
+                background: 'transparent', color: 'var(--text-secondary)',
+                border: '1px solid var(--border-active)', borderRadius: '8px',
+                fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
+                transition: 'all 0.15s',
+              }}>
+                {loading ? 'Loading...' : !isAuthenticated ? 'Sign Up for Power' : 'Go Power'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Trust / urgency strip */}
@@ -505,7 +627,9 @@ function ProContent() {
                 <th style={{ textAlign: 'left', padding: '8px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Feature</th>
                 <th style={{ textAlign: 'center', padding: '8px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Free</th>
                 <th style={{ textAlign: 'center', padding: '8px 0', color: 'var(--accent-green)', fontWeight: 600 }}>Pro</th>
-                <th style={{ textAlign: 'center', padding: '8px 0', color: '#8b5cf6', fontWeight: 600 }}>Power</th>
+                {showPower && (
+                  <th style={{ textAlign: 'center', padding: '8px 0', color: '#8b5cf6', fontWeight: 600 }}>Power</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -523,7 +647,9 @@ function ProContent() {
                   <td style={{ padding: '10px 0', color: 'var(--text-secondary)' }}>{feature}</td>
                   <td style={{ padding: '10px 0', textAlign: 'center', color: free === '—' ? 'var(--border-active)' : 'var(--text-dim)' }}>{free}</td>
                   <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-secondary)', fontWeight: pro === 'Unlimited' || pro === 'Full access' ? 600 : 400 }}>{pro}</td>
-                  <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-secondary)', fontWeight: power === 'Unlimited' || power === 'Full access' ? 600 : 400 }}>{power}</td>
+                  {showPower && (
+                    <td style={{ padding: '10px 0', textAlign: 'center', color: 'var(--text-secondary)', fontWeight: power === 'Unlimited' || power === 'Full access' ? 600 : 400 }}>{power}</td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -621,16 +747,20 @@ function ProContent() {
             Ready to flip smarter?
           </p>
           <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px' }}>
-            Lock in founding pricing before it&apos;s gone.
+            {founding.priceVariant === 'founding' ? 'Lock in founding pricing before it\u2019s gone.' : 'Cancel anytime. One good find pays for a year.'}
           </p>
-          <button onClick={() => handleUpgrade(isPower ? 'power' : 'pro')} disabled={loading} style={{
-            background: loading ? 'var(--border-active)' : isPower ? '#8b5cf6' : 'var(--accent-green)', color: '#fff',
+          <button onClick={() => handleUpgrade(isPower && powerPurchasable ? 'power' : 'pro')} disabled={loading} style={{
+            background: loading ? 'var(--border-active)' : (isPower && powerPurchasable) ? '#8b5cf6' : 'var(--accent-green)', color: '#fff',
             border: 'none', padding: '14px 36px', borderRadius: '10px',
             fontSize: '16px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer',
-            boxShadow: isPower ? '0 2px 12px rgba(139,92,246,0.3)' : '0 2px 12px rgba(22,163,74,0.3)',
+            boxShadow: (isPower && powerPurchasable) ? '0 2px 12px rgba(139,92,246,0.3)' : '0 2px 12px rgba(22,163,74,0.3)',
             transition: 'all 0.15s',
           }}>
-            {loading ? 'Loading...' : isPower ? 'Go Power — $19/mo' : 'Start Pro — $5/mo'}
+            {loading
+              ? 'Loading...'
+              : (isPower && powerPurchasable)
+                ? 'Go Power \u2014 $19/mo'
+                : `Start Pro \u2014 $${founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice}/mo`}
           </button>
           <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '12px' }}>
             Cancel anytime &middot; Secure checkout via Stripe

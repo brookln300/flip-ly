@@ -1,9 +1,10 @@
 'use client'
 
 import { useSignup } from './SignupContext'
+import { trackFunnelEvent } from '../lib/analytics-client'
 
 export default function HeroCTA({ variant }: { variant?: 'free-tier' }) {
-  const { openSignup } = useSignup()
+  const { openSignup, loggedInUser } = useSignup()
 
   if (variant === 'free-tier') {
     return (
@@ -18,7 +19,14 @@ export default function HeroCTA({ variant }: { variant?: 'free-tier' }) {
   return (
     <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: 'var(--space-5)', flexWrap: 'wrap' }}>
       <button
-        onClick={openSignup}
+        onClick={() => {
+          trackFunnelEvent('plan_selected', {
+            tier: 'free',
+            surface: 'hero_cta',
+            logged_in: !!loggedInUser,
+          })
+          openSignup()
+        }}
         style={{
           background: 'var(--accent-green)', color: '#fff', border: 'none',
           padding: '13px 28px', borderRadius: '10px', fontSize: '15px', fontWeight: 600,

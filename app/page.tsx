@@ -9,7 +9,11 @@ import ShellTrigger from './components/ShellTrigger'
 import FadeIn from './components/FadeIn'
 import HeroCTA from './components/HeroCTA'
 import HeroBackground from './components/HeroBackground'
+import PricingLink from './components/PricingLink'
+import PricingSectionTracker from './components/PricingSectionTracker'
 import { TrendingUp, DollarSign, Tags, Zap, CircleCheck, Construction, Check, Circle } from 'lucide-react'
+import { getFoundingSnapshot } from './lib/founding'
+import { getPowerVisibility } from './lib/pricing'
 
 /* ══════════════════════════════════════════════════════════
    Server-side data fetching — runs at request time, no waterfall
@@ -90,6 +94,11 @@ export default async function Home() {
     getMarkets(),
     getFeaturedDeals(),
   ])
+
+  const founding = getFoundingSnapshot()
+  const powerVisibility = getPowerVisibility()
+  const showPower = powerVisibility === 'public'
+  const proPrice = founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice
 
   return (
     <SignupProvider>
@@ -329,11 +338,14 @@ export default async function Home() {
 
         {/* ═══ PRICING ═══ */}
         <FadeIn id="pricing" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
+          <div style={{ position: 'relative' }}>
+            <PricingSectionTracker />
+          </div>
           <div style={{ textAlign: 'center', marginBottom: 'var(--space-8)' }}>
             <h2 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>Deal Finder Plans &amp; Pricing</h2>
             <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>One good find pays for a year of Pro.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className={`grid grid-cols-1 ${showPower ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} gap-4`}>
             {/* Free */}
             <div style={{ background: 'var(--bg-surface)', borderRadius: '12px', padding: '24px', border: '1px solid var(--border-subtle)' }}>
               <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '4px' }}>Free</p>
@@ -365,11 +377,17 @@ export default async function Home() {
                 </p>
               )}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
-                <span style={{ textDecoration: 'line-through', color: 'var(--text-dim)', fontSize: '16px', marginRight: '2px' }}>$12</span>
-                <span style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>$5</span>
+                {founding.priceVariant === 'founding' && (
+                  <span style={{ textDecoration: 'line-through', color: 'var(--text-dim)', fontSize: '16px', marginRight: '2px' }}>${founding.normalPrice}</span>
+                )}
+                <span style={{ fontSize: '28px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>${proPrice}</span>
                 <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>/mo</span>
               </div>
-              <p style={{ fontSize: '12px', color: 'var(--accent-green)', marginBottom: '16px', fontWeight: 600 }}>Founding price &middot; Locked for life</p>
+              {founding.priceVariant === 'founding' ? (
+                <p style={{ fontSize: '12px', color: 'var(--accent-green)', marginBottom: '16px', fontWeight: 600 }}>Founding price &middot; Locked for life</p>
+              ) : (
+                <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '16px', fontWeight: 600 }}>Month-to-month &middot; Cancel anytime</p>
+              )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                 <span><strong>Unlimited</strong> searches</span>
                 <span>3 markets</span>
@@ -377,14 +395,15 @@ export default async function Home() {
                 <span>Full score breakdowns</span>
                 <span>Direct source links</span>
               </div>
-              <a href="/pro" className="pricing-cta-pro" style={{
+              <PricingLink href="/pro" label="Upgrade to Pro" tier="pro" surface="landing_pricing" className="pricing-cta-pro" style={{
                 display: 'block', width: '100%', marginTop: '20px', padding: '10px', fontSize: '13px', fontWeight: 700,
                 background: 'var(--accent-green)', color: '#fff', border: 'none', textAlign: 'center',
                 borderRadius: '8px', cursor: 'pointer', textDecoration: 'none',
                 transition: 'background 0.2s, box-shadow 0.2s',
-              }}>Upgrade to Pro</a>
+              }} />
             </div>
-            {/* Power */}
+            {/* Power — rendered only when NEXT_PUBLIC_POWER_VISIBILITY=public */}
+            {showPower && (
             <div style={{ background: 'var(--bg-surface)', borderRadius: '12px', padding: '24px', border: '1px solid var(--border-subtle)' }}>
               <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-purple)', marginBottom: '4px' }}>Power</p>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
@@ -400,13 +419,14 @@ export default async function Home() {
                 <span>Category intelligence</span>
                 <span>Priority support</span>
               </div>
-              <a href="/pro?tier=power" className="pricing-cta-power" style={{
+              <PricingLink href="/pro?tier=power" label="Go Power" tier="power" surface="landing_pricing" className="pricing-cta-power" style={{
                 display: 'block', width: '100%', marginTop: '20px', padding: '10px', fontSize: '13px', fontWeight: 600,
                 background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border-default)', textAlign: 'center',
                 borderRadius: '8px', cursor: 'pointer', textDecoration: 'none',
                 transition: 'border-color 0.2s, color 0.2s, box-shadow 0.2s',
-              }}>Go Power</a>
+              }} />
             </div>
+            )}
           </div>
           {/* Trust strip */}
           <div style={{

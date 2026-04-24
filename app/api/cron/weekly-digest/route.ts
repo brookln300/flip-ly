@@ -8,6 +8,7 @@ import { sendTelegramAlert } from '../../../lib/telegram'
 import { sendEmail } from '../../../lib/email/send'
 import { getUnsubscribeUrl } from '../../../lib/unsubscribe'
 import { isPremiumUser } from '../../../lib/user-tier'
+import { getFoundingSnapshot } from '../../../lib/founding'
 
 function addUtm(url: string, source: string, medium: string, campaign: string, content?: string): string {
   try {
@@ -369,6 +370,8 @@ function buildDigestEmail(
       </div>`
     : ''
 
+  const snapshot = getFoundingSnapshot()
+  const proPrice = snapshot.priceVariant === 'founding' ? snapshot.foundingPrice : snapshot.normalPrice
   const proUpsell = isPro ? '' : `
     <div style="background:#f8f8f8;border:1px solid #e5e5e5;border-radius:8px;padding:20px;margin:20px 24px;text-align:center;">
       <p style="color:#000;font-size:15px;font-weight:600;margin:0 0 4px;">
@@ -378,7 +381,7 @@ function buildDigestEmail(
         Pro members see AI scores, get Google Maps links, route clusters, and this email 6 hours earlier.
       </p>
       <a href="${utm('https://flip-ly.net/pro', 'upsell-cta')}" style="display:inline-block;padding:10px 28px;background:#16a34a;color:#fff;text-decoration:none;font-weight:700;font-size:14px;border-radius:6px;">
-        Go Pro — $5/mo
+        Go Pro — $${proPrice}/mo
       </a>
     </div>`
 

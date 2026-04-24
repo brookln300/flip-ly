@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { clearAuthIntent, readAuthIntent, trackFunnelEvent } from '../lib/analytics-client'
 
 type SignupContextType = {
   showSignup: boolean
@@ -41,6 +42,21 @@ export function SignupProvider({ children }: { children: React.ReactNode }) {
       .catch(() => {})
       .finally(() => setAuthLoading(false))
   }, [])
+
+  useEffect(() => {
+    if (!loggedInUser) return
+
+    const pendingAuth = readAuthIntent()
+    if (!pendingAuth) return
+
+    trackFunnelEvent('auth_completed_with_plan_intent', {
+      intent: pendingAuth.intent,
+      method: pendingAuth.method,
+      surface: pendingAuth.surface,
+      logged_in: true,
+    })
+    clearAuthIntent()
+  }, [loggedInUser])
 
   const openSignup = useCallback(() => setShowSignup(true), [])
   const closeSignup = useCallback(() => setShowSignup(false), [])

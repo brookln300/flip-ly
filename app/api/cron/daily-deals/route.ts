@@ -7,6 +7,7 @@ import { sendEmail } from '../../../lib/email/send'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { getUnsubscribeUrl } from '../../../lib/unsubscribe'
 import { isPremiumUser } from '../../../lib/user-tier'
+import { getFoundingSnapshot } from '../../../lib/founding'
 
 /**
  * Daily Deals Email — Auto-deploys from Resend with current listings.
@@ -203,6 +204,8 @@ function buildDailyDealsEmail(
     </tr>`
   }).join('')
 
+  const snapshot = getFoundingSnapshot()
+  const proPrice = snapshot.priceVariant === 'founding' ? snapshot.foundingPrice : snapshot.normalPrice
   const proUpsell = isPro ? '' : `
   <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:20px 0;text-align:center;">
     <p style="color:#166534;font-size:14px;font-weight:600;margin:0 0 4px;">
@@ -212,7 +215,7 @@ function buildDailyDealsEmail(
       Pro members see all ${totalAvailable} deals with AI scores, direct links, and full analysis.
     </p>
     <a href="${utm('https://flip-ly.net/pro', 'upsell')}" style="display:inline-block;padding:10px 24px;background:#16a34a;color:#fff;text-decoration:none;font-weight:700;font-size:13px;border-radius:6px;">
-      Go Pro — $5/mo
+      Go Pro — $${proPrice}/mo
     </a>
   </div>`
 

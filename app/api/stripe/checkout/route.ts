@@ -5,16 +5,11 @@ import Stripe from 'stripe'
 import { getSession } from '../../../lib/auth'
 import { supabase } from '../../../lib/supabase'
 import { trackEvent } from '../../../lib/analytics'
+import { isPowerPurchasable, resolveCheckoutPrice, type PaidTier } from '../../../lib/pricing'
 
 const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null
-
-// Stripe Price IDs — create these in Stripe Dashboard as recurring monthly prices
-const PRICE_IDS: Record<string, string | undefined> = {
-  pro: process.env.STRIPE_PRO_PRICE_ID,
-  power: process.env.STRIPE_POWER_PRICE_ID,
-}
 
 export async function POST(req: NextRequest) {
   if (!stripe) {
@@ -28,15 +23,23 @@ export async function POST(req: NextRequest) {
   }
 
   // Parse tier from request body (default: pro)
-  let tier = 'pro'
+  let tier: PaidTier = 'pro'
   try {
     const body = await req.json()
     if (body.tier === 'power') tier = 'power'
   } catch {}
 
-  const priceId = PRICE_IDS[tier]
+  // Block Power purchases when visibility isn't 'public' (launch: Free + Pro only)
+  if (tier === 'power' && !isPowerPurchasable()) {
+    return NextResponse.json({ error: 'Power tier not available' }, { status: 403 })
+  }
+
+  const { priceId, variantUsed, variantRequested, fellBack } = resolveCheckoutPrice(tier)
   if (!priceId) {
-    return NextResponse.json({ error: `${tier} tier not configured` }, { status: 503 })
+    return NextResponse.json({ error: `${tier}/${variantRequested} price not configured` }, { status: 503 })
+  }
+  if (fellBack) {
+    console.warn(`[Stripe] Requested ${tier}/${variantRequested} price missing; fell back to founding price id`)
   }
 
   try {
@@ -104,22 +107,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Omit payment_method_types so Stripe serves dynamic methods (Link + wallets
+    // + card) per the account's Dashboard → Payment methods configuration.
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: 'subscription',
       success_url: `${req.nextUrl.origin}/pro?status=success`,
       cancel_url: `${req.nextUrl.origin}/pro?status=cancelled`,
-      metadata: { fliply_user_id: user.id, tier },
+      allow_promotion_codes: true,
+      metadata: { fliply_user_id: user.id, tier, price_variant: variantUsed },
       phone_number_collection: { enabled: false },
       subscription_data: {
-        metadata: { fliply_user_id: user.id, tier },
+        metadata: { fliply_user_id: user.id, tier, price_variant: variantUsed },
       },
     })
 
     trackEvent('pro_checkout_started', {
       stripe_session_id: checkoutSession.id,
+      tier,
+      price_variant: variantUsed,
+    }, user.id)
+    trackEvent('checkout_session_created', {
+      stripe_session_id: checkoutSession.id,
+      tier,
+      price_variant: variantUsed,
     }, user.id)
 
     return NextResponse.json({ url: checkoutSession.url })

@@ -12,6 +12,8 @@
  */
 
 import { getUnsubscribeUrl } from '../unsubscribe'
+import { getFoundingSnapshot } from '../founding'
+import { getPowerVisibility } from '../pricing'
 
 interface TemplateVars {
   email: string
@@ -41,6 +43,17 @@ export async function getDripEmailHtml(
 
   const resolvedPreview = previewText || previewTexts[templateKey] || ''
   const wrap = (content: string) => wrapEmail(content, resolvedPreview, vars.email)
+
+  // Pricing snapshot — drives what price the soft-pitch / fomo / hard-convert
+  // emails quote at render time. Founding ads $5 while the window is open,
+  // regular $9 after. Power is suppressed entirely when visibility != 'public'.
+  const founding = getFoundingSnapshot()
+  const proPrice = founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice
+  const powerPurchasable = getPowerVisibility() === 'public'
+  const priceTag = `From $${proPrice}/month`
+  const priceSub = founding.priceVariant === 'founding'
+    ? 'Early adopter pricing — locked in for life.'
+    : 'Month-to-month. Cancel anytime.'
 
   const templates: Record<string, () => string> = {
     'welcome': () => wrap(`
@@ -166,8 +179,8 @@ export async function getDripEmailHtml(
         </table>
       </div>
       <div style="text-align:center;margin:24px 0;">
-        <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0 0 4px;">From $5/month</p>
-        <p style="color:#999;font-size:12px;margin:0 0 16px;">Early adopter pricing — locked in for life.</p>
+        <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0 0 4px;">${priceTag}</p>
+        <p style="color:#999;font-size:12px;margin:0 0 16px;">${priceSub}</p>
         <a href="https://flip-ly.net/pro?utm_source=email&utm_medium=drip&utm_campaign=soft-pitch&utm_content=cta" style="${btnStyle}">
           Upgrade to Pro
         </a>
@@ -197,8 +210,8 @@ export async function getDripEmailHtml(
         The early birds who show up at opening get the best finds. Pro gives you that edge.
       </p>
       <div style="text-align:center;margin:24px 0;">
-        <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0 0 4px;">From $5/month</p>
-        <p style="color:#999;font-size:12px;margin:0 0 16px;">Early adopter pricing — locked in for life.</p>
+        <p style="color:#16a34a;font-size:28px;font-weight:700;margin:0 0 4px;">${priceTag}</p>
+        <p style="color:#999;font-size:12px;margin:0 0 16px;">${priceSub}</p>
         <a href="https://flip-ly.net/pro?utm_source=email&utm_medium=drip&utm_campaign=fomo&utm_content=cta" style="${btnStyle}">
           Get Early Access
         </a>
@@ -225,11 +238,13 @@ export async function getDripEmailHtml(
         2. Want to get more out of it?
       </p>
       <p style="color:#555;font-size:14px;line-height:1.7;">
-        Pro is $5/month and Power is $19/month — early adopter prices, locked in for life. You get deals early, unlimited searches, full AI score breakdowns, and more. One good find pays for a year.
+        ${powerPurchasable
+          ? `Pro is $${proPrice}/month and Power is $19/month — ${founding.priceVariant === 'founding' ? 'early adopter prices, locked in for life' : 'month-to-month, cancel anytime'}. You get deals early, unlimited searches, full AI score breakdowns, and more. One good find pays for a year.`
+          : `Pro is $${proPrice}/month — ${founding.priceVariant === 'founding' ? 'early adopter pricing, locked in for life' : 'month-to-month, cancel anytime'}. You get deals early, unlimited searches, full AI score breakdowns, and more. One good find pays for a year.`}
       </p>
       <div style="text-align:center;margin:24px 0;">
         <a href="https://flip-ly.net/pro?utm_source=email&utm_medium=drip&utm_campaign=hard-convert&utm_content=cta" style="${btnStyle}">
-          See plans — from $5/month
+          See plans — from $${proPrice}/month
         </a>
       </div>
       <p style="color:#555;font-size:14px;line-height:1.7;">
@@ -257,10 +272,14 @@ export async function getDripEmailHtml(
  * Pro upgrade confirmation — sent immediately when Stripe confirms payment.
  * This is the highest-intent moment in the funnel. Make it count.
  */
-export function getProUpgradeEmail(email: string, tier: string): string {
+export function getProUpgradeEmail(email: string, tier: string, priceVariant?: 'founding' | 'regular'): string {
   const username = email.split('@')[0]
   const tierLabel = tier === 'power' ? 'Power' : 'Pro'
-  const price = tier === 'power' ? '$19' : '$5'
+  const snapshot = getFoundingSnapshot()
+  const variant = priceVariant ?? snapshot.priceVariant
+  const proPrice = variant === 'founding' ? snapshot.foundingPrice : snapshot.normalPrice
+  const price = tier === 'power' ? '$19' : `$${proPrice}`
+  const rateLabel = variant === 'founding' ? 'founding rate' : 'rate'
 
   return wrapEmail(`
     <h1 style="color:#000;font-size:22px;margin:0 0 16px;font-weight:700;">
@@ -278,7 +297,7 @@ export function getProUpgradeEmail(email: string, tier: string): string {
       </table>
     </div>
     <p style="color:#555;font-size:14px;line-height:1.7;">
-      Your founding rate of <strong style="color:#000;">${esc(price)}/month</strong> is locked in for life. It won't change even when prices go up.
+      Your ${rateLabel} of <strong style="color:#000;">${esc(price)}/month</strong>${variant === 'founding' ? ' is locked in for life. It won\'t change even when prices go up.' : '.'}
     </p>
     <div style="text-align:center;margin:24px 0;">
       <a href="https://flip-ly.net?utm_source=email&utm_medium=transactional&utm_campaign=pro-upgrade&utm_content=cta" style="${btnStyle}">

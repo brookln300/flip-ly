@@ -48,6 +48,8 @@ export async function POST(req: NextRequest) {
         if (userId) {
           const rawTier = session.metadata?.tier || 'pro'
           const tier = ['pro', 'power'].includes(rawTier) ? rawTier : 'pro'
+          const rawVariant = session.metadata?.price_variant
+          const priceVariant = rawVariant === 'regular' ? 'regular' : 'founding'
 
           // Activate subscription in database
           await supabase
@@ -62,6 +64,13 @@ export async function POST(req: NextRequest) {
 
           trackEvent('pro_subscription_activated', {
             subscription_id: subscriptionId,
+            price_variant: priceVariant,
+          }, userId)
+          trackEvent('checkout_session_completed', {
+            stripe_session_id: session.id,
+            subscription_id: subscriptionId,
+            tier,
+            price_variant: priceVariant,
           }, userId)
 
           // Redis: invalidate cached session (tier just changed) + decrement founding slots
@@ -89,7 +98,7 @@ export async function POST(req: NextRequest) {
             const subject = tier === 'power'
               ? "You're on Power — here's what's unlocked"
               : "You're on Pro — here's what's unlocked"
-            const html = getProUpgradeEmail(proUser.email, tier)
+            const html = getProUpgradeEmail(proUser.email, tier, priceVariant)
 
             const { id: resendMessageId } = await sendEmail({
               to: proUser.email,
