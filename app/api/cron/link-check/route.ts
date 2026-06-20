@@ -20,7 +20,7 @@ import { sendTelegramAlert } from '../../../lib/telegram'
 const BATCH_SIZE = 50
 const MAX_BATCHES = 12          // 50 * 12 = 600 listings per run max
 const FETCH_TIMEOUT_MS = 4000
-const MAX_CONSECUTIVE_FAILS = 2 // delete after 2 failed checks (CL links die fast)
+const MAX_CONSECUTIVE_FAILS = 4 // hide only after 4 failed checks — avoid nuking on transient errors
 
 async function checkUrl(url: string): Promise<{ status: number | null; alive: boolean }> {
   try {
@@ -37,9 +37,13 @@ async function checkUrl(url: string): Promise<{ status: number | null; alive: bo
     })
     clearTimeout(timeout)
 
+    // 401/403/405/429 mean the server is up but blocking/limiting our HEAD probe
+    // (Craigslist does this constantly). The listing is almost certainly still live —
+    // treat as alive so a transient block never deletes a real deal.
+    const blocked = res.status === 401 || res.status === 403 || res.status === 405 || res.status === 429
     return {
       status: res.status,
-      alive: res.status >= 200 && res.status < 400,
+      alive: (res.status >= 200 && res.status < 400) || blocked,
     }
   } catch {
     return { status: null, alive: false }
@@ -48,7 +52,8 @@ async function checkUrl(url: string): Promise<{ status: number | null; alive: bo
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Fail closed: if CRON_SECRET is unset, "Bearer undefined" would authorize anyone.
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -69,9 +74,11 @@ export async function GET(req: NextRequest) {
       .lt('scraped_at', sevenDaysAgo)
 
     if (prePurged && prePurged > 0) {
+      // Soft-delete (hide via expires_at) rather than hard DELETE — the cleanup
+      // cron GCs by age. Keeps link-check from ever destroying recoverable rows.
       await supabase
         .from('fliply_listings')
-        .delete()
+        .update({ expires_at: new Date().toISOString() })
         .eq('source_type', 'craigslist_rss')
         .lt('scraped_at', sevenDaysAgo)
       totalDead += prePurged
@@ -126,7 +133,7 @@ export async function GET(req: NextRequest) {
           .in('id', aliveIds)
       }
       if (deadIds.length > 0) {
-        await supabase.from('fliply_listings').delete().in('id', deadIds)
+        await supabase.from('fliply_listings').update({ expires_at: new Date().toISOString() }).in('id', deadIds)
       }
       for (const s of suspectUpdates) {
         await supabase.from('fliply_listings')
@@ -192,11 +199,11 @@ export async function GET(req: NextRequest) {
           .in('id', aliveIds)
       }
 
-      // Delete dead listings
+      // Hide dead listings (soft-delete via expires_at; cleanup cron GCs by age)
       if (deadIds.length > 0) {
         await supabase
           .from('fliply_listings')
-          .delete()
+          .update({ expires_at: new Date().toISOString() })
           .in('id', deadIds)
       }
 

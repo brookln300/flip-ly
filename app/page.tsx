@@ -21,21 +21,18 @@ import { getPowerVisibility } from './lib/pricing'
 
 async function getStats() {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const [listingsRes, sourcesRes, marketsRes, scoredRes, usersRes, mwlRes] = await Promise.all([
+  const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString()
+  const [listingsRes, sourcesRes, freshRes, mwlRes] = await Promise.all([
     supabase.from('fliply_listings').select('id', { count: 'exact', head: true }),
     supabase.from('fliply_sources').select('id', { count: 'exact', head: true }).eq('is_active', true),
-    supabase.from('fliply_markets').select('id', { count: 'exact', head: true }),
-    supabase.from('fliply_listings').select('id', { count: 'exact', head: true }).not('deal_score', 'is', null).gte('scraped_at', sevenDaysAgo),
-    supabase.from('fliply_users').select('id', { count: 'exact', head: true }),
-    supabase.from('fliply_listings').select('market_id').gte('scraped_at', sevenDaysAgo).not('market_id', 'is', null).limit(500),
+    supabase.from('fliply_listings').select('id', { count: 'exact', head: true }).gte('scraped_at', twoDaysAgo),
+    supabase.from('fliply_listings').select('market_id').gte('scraped_at', sevenDaysAgo).not('market_id', 'is', null).limit(1000),
   ])
   const uniqueMarkets = new Set((mwlRes.data || []).map((r: any) => r.market_id))
   return {
     listings: listingsRes.count || 0,
-    sources: sourcesRes.count || 20,
-    markets: marketsRes.count || 413,
-    dealsScoredThisWeek: scoredRes.count || 0,
-    totalUsers: usersRes.count || 0,
+    sources: sourcesRes.count || 0,
+    freshTwoDays: freshRes.count || 0,
     marketsWithListings: uniqueMarkets.size,
   }
 }
@@ -67,16 +64,17 @@ async function getFeaturedDeals() {
   const { data } = await supabase
     .from('fliply_listings')
     .select('*')
-    .eq('is_hot', true)
+    .gte('deal_score', 7)
     .or(`event_date.is.null,event_date.gte.${today}`)
     .or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
     .gte('scraped_at', maxAge)
     .order('deal_score', { ascending: false, nullsFirst: false })
+    .order('scraped_at', { ascending: false })
     .limit(8)
   if (!data?.length) return []
   return data.map((d: any) => ({
-    id: d.id, title: d.title, price: d.price || 'Not listed',
-    city: d.city, date: d.event_date, time: d.event_time,
+    id: d.id, title: d.title, price: d.price_text || 'Not listed',
+    city: d.city, date: d.event_date, time: d.event_time_text,
     hot: d.is_hot, source: d.source_type,
     event_type: d.event_type, deal_score: d.deal_score,
     deal_reason: d.deal_score_reason,
@@ -84,21 +82,47 @@ async function getFeaturedDeals() {
   }))
 }
 
+// Highest real scored deal — drives the honest "what a score looks like" card.
+async function getTopDeal() {
+  const maxAge = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+  const { data } = await supabase
+    .from('fliply_listings')
+    .select('title, ai_description, description, deal_score, deal_score_reason, price_text, ai_tags, event_type, city, state')
+    .gte('deal_score', 7)
+    .gte('scraped_at', maxAge)
+    .order('deal_score', { ascending: false })
+    .order('scraped_at', { ascending: false })
+    .limit(1)
+  return data?.[0] || null
+}
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  garage_sale: 'Garage Sale', estate_sale: 'Estate Sale', moving_sale: 'Moving Sale',
+  flea_market: 'Flea Market', auction: 'Auction', community_sale: 'Community Sale',
+  thrift: 'Thrift', listing: 'Listing', event: 'Event',
+}
+
 /* ══════════════════════════════════════════════════════════
    MAIN PAGE — Server Component shell with client islands
    ══════════════════════════════════════════════════════════ */
 
 export default async function Home() {
-  const [stats, markets, featuredDeals] = await Promise.all([
+  const [stats, markets, featuredDeals, topDeal] = await Promise.all([
     getStats(),
     getMarkets(),
     getFeaturedDeals(),
+    getTopDeal(),
   ])
 
   const founding = getFoundingSnapshot()
   const powerVisibility = getPowerVisibility()
   const showPower = powerVisibility === 'public'
   const proPrice = founding.priceVariant === 'founding' ? founding.foundingPrice : founding.normalPrice
+
+  const topScore = topDeal?.deal_score ?? 0
+  const topScoreColor = topScore >= 9 ? 'var(--score-excellent)' : topScore >= 7 ? 'var(--accent-amber)' : 'var(--text-muted)'
+  const topScoreBg = topScore >= 9 ? 'rgba(22,163,74,0.1)' : topScore >= 7 ? 'rgba(217,119,6,0.1)' : 'var(--bg-surface)'
+  const topScoreBorder = topScore >= 9 ? 'rgba(22,163,74,0.2)' : topScore >= 7 ? 'rgba(217,119,6,0.2)' : 'var(--border-subtle)'
 
   return (
     <SignupProvider>
@@ -130,7 +154,7 @@ export default async function Home() {
             display: 'flex', alignItems: 'center',
             minHeight: '520px',
           }}>
-            <div style={{ maxWidth: '520px' }}>
+            <div style={{ maxWidth: '540px' }}>
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '6px',
                 background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.25)',
@@ -142,29 +166,33 @@ export default async function Home() {
                 Live — scanning now
               </div>
               <h1 style={{
-                fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 700,
-                color: 'var(--text-primary)', lineHeight: 1.1, letterSpacing: '-0.03em',
+                fontSize: 'clamp(28px, 4vw, 46px)', fontWeight: 800,
+                color: 'var(--text-primary)', lineHeight: 1.05, letterSpacing: '-0.035em',
                 marginBottom: 'var(--space-3)',
               }}>
-                Find Garage Sales, Estate Sales &amp; Deals Near You
+                Underpriced local deals, <span style={{ color: 'var(--accent-green)' }}>scored before you scroll.</span>
               </h1>
               <p style={{
                 fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6,
                 maxWidth: '480px', marginBottom: 'var(--space-5)',
               }}>
-                AI scans Craigslist, OfferUp, EstateSales.net &amp; 20+ sources every 4 hours and scores every listing by resale profit potential.
+                Flip-ly scans your local Craigslist and event listings around the clock, then rates every garage sale, estate sale, and resale item <strong>1&ndash;10 for real resale-flip margin</strong> &mdash; so the money-makers float to the top.
               </p>
 
               {/* CTA row — client component for signup trigger */}
               <HeroCTA />
 
-              {/* Proof line — inline stats, not a grid */}
+              {/* Proof line — inline stats, real DB numbers */}
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.01em' }}>
                 {stats.listings > 0 && (
-                  <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.listings.toLocaleString()}</span> deals scored &middot; </>
+                  <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.listings.toLocaleString()}</span> listings tracked &middot; </>
                 )}
-                <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.sources || '20'}+</span> sources &middot;{' '}
-                <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.markets}</span> markets
+                {stats.sources > 0 && (
+                  <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.sources}</span> active feeds &middot; </>
+                )}
+                {stats.freshTwoDays > 0 && (
+                  <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.freshTwoDays.toLocaleString()}</span> new in 48h</>
+                )}
               </p>
             </div>
           </div>
@@ -178,9 +206,9 @@ export default async function Home() {
           <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-10) var(--space-4)' }}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {[
-                { step: '1', label: 'We scan', desc: 'Craigslist, OfferUp, EstateSales.net, Eventbrite, and 20+ local sources — every 4 hours.', icon: 'search' },
-                { step: '2', label: 'AI scores', desc: 'Every listing rated 1-10 by resale value, demand signals, and profit margin potential.', icon: 'chart' },
-                { step: '3', label: 'You flip', desc: 'See the best deals before everyone else. Show up first, buy low, sell high.', icon: 'dollar' },
+                { step: '1', label: 'We scan', desc: 'Every active Craigslist region and local event feed in your market, refreshed around the clock.', icon: 'search' },
+                { step: '2', label: 'AI scores', desc: 'Each listing rated 1-10 on demand, margin, and how far below typical resale it’s priced — with the reasoning shown.', icon: 'chart' },
+                { step: '3', label: 'You flip', desc: 'Sort by score, see the best deals first, and grab them before everyone else scrolling raw Craigslist does.', icon: 'dollar' },
               ].map(item => (
                 <div key={item.step} style={{ textAlign: 'center' }}>
                   <div style={{
@@ -198,25 +226,23 @@ export default async function Home() {
                 </div>
               ))}
             </div>
-            {/* Named sources */}
+            {/* Named sources — honest: what we actually scan today */}
             <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', lineHeight: 1.8 }}>
               Scanning{' '}
-              {['Craigslist', 'EstateSales.net', 'Eventbrite', 'OfferUp', 'Facebook Marketplace', 'Nextdoor'].map((name, i) => (
-                <span key={name}>
-                  <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{name}</span>
-                  {i < 5 ? <span style={{ margin: '0 6px', color: 'var(--text-dim)' }}>&middot;</span> : ''}
-                </span>
-              ))}
-              {' '}<span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>+ {stats.sources ? stats.sources - 6 : 14} more</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Craigslist</span>
+              <span style={{ margin: '0 6px', color: 'var(--text-dim)' }}>&middot;</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Eventbrite</span>
+              {' '}<span style={{ color: 'var(--text-dim)' }}>across {stats.marketsWithListings > 0 ? stats.marketsWithListings : 'live'} active metros</span>
+              <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}> &mdash; more sources rolling out</span>
             </p>
           </div>
         </FadeIn>
 
-        {/* ═══ FEATURED DEALS — client island with server-fetched initial data ═══ */}
+        {/* ═══ FEATURED DEALS — client island with server-fetched initial data (real ≥7 scores) ═══ */}
         <FeaturedDeals initialDeals={featuredDeals} initialMarketName="Dallas / Fort Worth" markets={markets} />
 
-        {/* ═══ SOCIAL PROOF STRIP — merged ═══ */}
-        {(stats.dealsScoredThisWeek > 0 || stats.totalUsers > 0) && (
+        {/* ═══ SOCIAL PROOF STRIP — activity, not vanity counts ═══ */}
+        {(stats.listings > 0 || stats.marketsWithListings > 0) && (
           <div style={{
             background: 'var(--bg-surface)', borderTop: '1px solid var(--border-subtle)',
             borderBottom: '1px solid var(--border-subtle)', padding: '20px var(--space-4)',
@@ -226,14 +252,14 @@ export default async function Home() {
               fontSize: '13px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)',
               margin: 0, letterSpacing: '0.01em',
             }}>
-              {stats.dealsScoredThisWeek > 0 && (
-                <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.dealsScoredThisWeek.toLocaleString()}</span> deals scored this week</>
+              {stats.listings > 0 && (
+                <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.listings.toLocaleString()}</span> listings tracked</>
               )}
-              {stats.dealsScoredThisWeek > 0 && stats.totalUsers > 0 && (
-                <span style={{ margin: '0 10px', color: 'var(--text-dim)' }}>&middot;</span>
-              )}
-              {stats.totalUsers > 0 && (
-                <><span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.totalUsers.toLocaleString()}</span> members</>
+              {stats.freshTwoDays > 0 && (
+                <>
+                  <span style={{ margin: '0 10px', color: 'var(--text-dim)' }}>&middot;</span>
+                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{stats.freshTwoDays.toLocaleString()}</span> added in the last 48h
+                </>
               )}
               {stats.marketsWithListings > 0 && (
                 <>
@@ -245,7 +271,6 @@ export default async function Home() {
           </div>
         )}
 
-        {/* ═══ HOW SCORING WORKS ═══ */}
         {/* ═══ HOW SCORING WORKS — compact inline ═══ */}
         <FadeIn style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-12) var(--space-4) 0', textAlign: 'center' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
@@ -271,10 +296,11 @@ export default async function Home() {
           </div>
         </FadeIn>
 
-        {/* ═══ SCORE BREAKDOWN EXAMPLE — shows visitors what a real score looks like ═══ */}
+        {/* ═══ SCORE BREAKDOWN EXAMPLE — a REAL top-scored listing from the database ═══ */}
+        {topDeal && (
         <FadeIn style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-10) var(--space-4) 0' }}>
           <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', textAlign: 'center', marginBottom: 'var(--space-4)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Here&apos;s what a score looks like
+            A real score from today&apos;s scan
           </p>
           <div style={{
             background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: '14px',
@@ -282,59 +308,58 @@ export default async function Home() {
             maxWidth: '520px', margin: '0 auto',
           }}>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-              {/* Score badge */}
+              {/* Score badge — real score, color-coded */}
               <div style={{
                 width: '48px', height: '48px', borderRadius: '10px', flexShrink: 0,
-                background: 'rgba(22,163,74,0.1)', border: '1px solid rgba(22,163,74,0.2)',
+                background: topScoreBg, border: `1px solid ${topScoreBorder}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', fontWeight: 700, color: 'var(--score-excellent)' }}>9</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', fontWeight: 700, color: topScoreColor }}>{topDeal.deal_score}</span>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <span style={{
-                    padding: '1px 6px', fontSize: '9px', fontWeight: 600, borderRadius: '3px',
-                    background: 'rgba(124,58,237,0.08)', color: 'var(--accent-purple)',
-                    border: '1px solid rgba(124,58,237,0.12)',
-                  }}>Estate Sale</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                  {topDeal.event_type && (
+                    <span style={{
+                      padding: '1px 6px', fontSize: '9px', fontWeight: 600, borderRadius: '3px',
+                      background: 'rgba(124,58,237,0.08)', color: 'var(--accent-purple)',
+                      border: '1px solid rgba(124,58,237,0.12)',
+                    }}>{EVENT_TYPE_LABELS[topDeal.event_type] || topDeal.event_type}</span>
+                  )}
                   <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    DeWalt 20V MAX 5-Tool Combo Kit
+                    {topDeal.title}
                   </span>
                 </div>
-                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '6px 0 10px' }}>
-                  Complete DeWalt 20V tool set including drill, impact driver, circular saw, reciprocating saw, and work light with two batteries and charger. Excellent condition, barely used.
-                </p>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: '0 0 10px', fontStyle: 'italic' }}>
-                  <span style={{ color: 'var(--accent-green)', fontWeight: 600, fontStyle: 'normal' }}>AI insight:</span>{' '}
-                  DeWalt 20V 5-tool combo at $60 — typically resells for $180-220 on eBay. Strong 3x flip margin with high demand.
-                </p>
+                {(topDeal.ai_description || topDeal.description) && (
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '6px 0 10px' }}>
+                    {topDeal.ai_description || topDeal.description}
+                  </p>
+                )}
+                {topDeal.deal_score_reason && (
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.5, margin: '0 0 10px', fontStyle: 'italic' }}>
+                    <span style={{ color: 'var(--accent-green)', fontWeight: 600, fontStyle: 'normal' }}>AI insight:</span>{' '}
+                    {topDeal.deal_score_reason}
+                  </p>
+                )}
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                  {['tools', 'electronics'].map(tag => (
+                  {(topDeal.ai_tags || []).slice(0, 3).map((tag: string) => (
                     <span key={tag} style={{
                       fontSize: '10px', fontWeight: 500, color: 'var(--text-muted)',
                       background: 'var(--bg-surface)', padding: '2px 8px', borderRadius: '4px',
                       border: '1px solid var(--border-subtle)',
                     }}>{tag}</span>
                   ))}
-                  <span style={{
-                    fontSize: '10px', fontWeight: 600, color: 'var(--accent-green)',
-                    background: 'rgba(22,163,74,0.06)', padding: '2px 8px', borderRadius: '4px',
-                    border: '1px solid rgba(22,163,74,0.12)',
-                  }}>68% below typical</span>
-                  <span style={{
-                    fontSize: '10px', fontWeight: 600, color: 'var(--accent-amber)',
-                    background: 'rgba(217,119,6,0.06)', padding: '2px 8px', borderRadius: '4px',
-                    border: '1px solid rgba(217,119,6,0.12)',
-                  }}>Flip potential</span>
-                  <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>$60</span>
+                  {topDeal.price_text && (
+                    <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)' }}>{topDeal.price_text}</span>
+                  )}
                 </div>
               </div>
             </div>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: 'var(--space-3)' }}>
-            Pro members see full breakdowns, price context, and flip indicators on every listing.
+            Pro members see full breakdowns, price context, and direct source links on every listing.
           </p>
         </FadeIn>
+        )}
 
         {/* ═══ PRICING ═══ */}
         <FadeIn id="pricing" style={{ maxWidth: '48rem', margin: '0 auto', padding: 'var(--space-16) var(--space-4) 0' }}>
@@ -371,11 +396,6 @@ export default async function Home() {
                 padding: '3px 12px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.05em',
               }}>Most popular</div>
               <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--accent-green)', marginBottom: '4px' }}>Pro</p>
-              {stats.totalUsers > 0 && (
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 2px', fontFamily: 'var(--font-mono)' }}>
-                  Join {stats.totalUsers.toLocaleString()} members
-                </p>
-              )}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
                 {founding.priceVariant === 'founding' && (
                   <span style={{ textDecoration: 'line-through', color: 'var(--text-dim)', fontSize: '16px', marginRight: '2px' }}>${founding.normalPrice}</span>
@@ -529,9 +549,8 @@ export default async function Home() {
             textAlign: 'center',
           }}>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: 500 }}>
-              You&apos;re early. We launched weeks ago and ship improvements daily.{' '}
-              <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>Founding members lock in current pricing for life</span>{' '}
-              &mdash; it goes up as we add more sources and features.
+              You&apos;re early &mdash; we ship improvements every week, and{' '}
+              <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>your feedback shapes what we build next</span>.
             </p>
           </div>
         </FadeIn>

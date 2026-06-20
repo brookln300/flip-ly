@@ -15,7 +15,8 @@ export async function GET(req: NextRequest) {
   // Auth: require CRON_SECRET for automated + manual triggers
   const authHeader = req.headers.get('authorization')
   const forceAll = new URL(req.url).searchParams.get('force') === 'true'
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Fail closed: if CRON_SECRET is unset, "Bearer undefined" would authorize anyone.
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -24,12 +25,15 @@ export async function GET(req: NextRequest) {
   const sourceUpdates: { id: string; data: any }[] = []
 
   try {
-    // Fetch all active, approved sources that are due for scraping
+    // Fetch all active, approved sources that are due for scraping.
+    // Order by least-recently-scraped so a time-boxed run rotates coverage
+    // across all sources instead of always starting from the same ones.
     const { data: sources } = await supabase
       .from('fliply_sources')
       .select('*')
       .eq('is_active', true)
       .eq('is_approved', true)
+      .order('last_scraped_at', { ascending: true, nullsFirst: true })
 
     if (!sources || sources.length === 0) {
       return NextResponse.json({ message: 'No active sources to scrape', results: [] })
@@ -37,7 +41,18 @@ export async function GET(req: NextRequest) {
 
     const now = new Date()
 
+    // Stay safely under the 300s function budget (leave room for the batch
+    // metadata update + summary). Without this the cron 504s and the source
+    // metadata never gets written, so the same sources get re-scraped forever.
+    const TIME_BUDGET_MS = 230_000
+    let stoppedEarly = false
+
     for (const source of sources) {
+      if (Date.now() - start > TIME_BUDGET_MS) {
+        stoppedEarly = true
+        console.warn(`[SCRAPE] Time budget reached after ${results.length} sources — stopping early; remaining sources run next cron.`)
+        break
+      }
       // Check if due for scraping (skip check if force=true)
       if (!forceAll && source.last_scraped_at) {
         const lastScraped = new Date(source.last_scraped_at)

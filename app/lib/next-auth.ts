@@ -64,6 +64,10 @@ export const authOptions: NextAuthOptions = {
 
         if (!user) return null
 
+        // OAuth-only accounts are stored with an empty password_hash. Never let a
+        // password attempt validate against a blank/non-bcrypt hash — reject outright.
+        if (!user.password_hash || !user.password_hash.startsWith('$2')) return null
+
         const valid = await bcrypt.compare(credentials.password, user.password_hash)
         if (!valid) return null
 

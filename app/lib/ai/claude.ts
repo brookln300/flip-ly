@@ -77,47 +77,77 @@ function parseResponse<T>(text: string): T | null {
 
 // ── Core API Call ─────────────────────────────────────────────
 
+const REQUEST_TIMEOUT_MS = 60_000
+const MAX_ATTEMPTS = 2
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 async function callAnthropic(model: string, system: string, messages: any[], maxTokens: number): Promise<ClaudeResult> {
+  const empty: ClaudeResult = { text: '', parsed: null, inputTokens: 0, outputTokens: 0, model, estimatedCost: 0 }
+
   if (!ANTHROPIC_API_KEY) {
-    console.log('[AI] No ANTHROPIC_API_KEY — skipping')
-    return { text: '', parsed: null, inputTokens: 0, outputTokens: 0, model, estimatedCost: 0 }
+    console.error('[AI] FATAL: ANTHROPIC_API_KEY is not set — enrichment cannot score listings. Set it in the Vercel project env.')
+    return empty
   }
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({ model, max_tokens: maxTokens, system, messages }),
-    })
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({ model, max_tokens: maxTokens, system, messages }),
+        signal: controller.signal,
+      })
+      clearTimeout(timer)
 
-    if (!res.ok) {
-      const err = await res.text()
-      // Parse structured error if possible for clearer logs
-      let errorDetail = err.substring(0, 500)
-      try {
-        const parsed = JSON.parse(err)
-        errorDetail = `${parsed.error?.type}: ${parsed.error?.message}`
-      } catch {}
-      console.error(`[AI] API error ${res.status} (${model}):`, errorDetail)
-      return { text: '', parsed: null, inputTokens: 0, outputTokens: 0, model, estimatedCost: 0 }
+      if (!res.ok) {
+        const err = await res.text()
+        let errorDetail = err.substring(0, 500)
+        try {
+          const parsed = JSON.parse(err)
+          errorDetail = `${parsed.error?.type}: ${parsed.error?.message}`
+        } catch {}
+        console.error(`[AI] API error ${res.status} (${model}):`, errorDetail)
+
+        // Auth/permission errors will NOT fix on retry — fail fast and loudly.
+        if (res.status === 401 || res.status === 403) {
+          console.error('[AI] AUTH FAILURE — ANTHROPIC_API_KEY is invalid, revoked, or out of credit. Enrichment is disabled until the key is replaced in Vercel env.')
+          return empty
+        }
+        // Retry transient errors (rate limit / overloaded / 5xx).
+        if ((res.status === 429 || res.status === 529 || res.status >= 500) && attempt < MAX_ATTEMPTS) {
+          await sleep(1200 * attempt)
+          continue
+        }
+        return empty
+      }
+
+      const data = await res.json()
+      const text = data.content?.[0]?.text || ''
+      const inputTokens = data.usage?.input_tokens || 0
+      const outputTokens = data.usage?.output_tokens || 0
+      const cost = estimateCost(model, inputTokens, outputTokens)
+
+      console.log(`[AI] ${model.split('-').slice(0, 2).join('-')} | ${inputTokens}in/${outputTokens}out | ~$${cost.toFixed(4)}`)
+      return { text, parsed: parseResponse(text), inputTokens, outputTokens, model, estimatedCost: cost }
+    } catch (err: any) {
+      clearTimeout(timer)
+      const isAbort = err?.name === 'AbortError'
+      console.error(`[AI] Call ${isAbort ? 'timed out' : 'failed'} (attempt ${attempt}/${MAX_ATTEMPTS}):`, err?.message || err)
+      if (attempt < MAX_ATTEMPTS) {
+        await sleep(1200 * attempt)
+        continue
+      }
+      return empty
     }
-
-    const data = await res.json()
-    const text = data.content?.[0]?.text || ''
-    const inputTokens = data.usage?.input_tokens || 0
-    const outputTokens = data.usage?.output_tokens || 0
-    const cost = estimateCost(model, inputTokens, outputTokens)
-
-    console.log(`[AI] ${model.split('-').slice(0, 2).join('-')} | ${inputTokens}in/${outputTokens}out | ~$${cost.toFixed(4)}`)
-    return { text, parsed: parseResponse(text), inputTokens, outputTokens, model, estimatedCost: cost }
-  } catch (err: any) {
-    console.error('[AI] Call failed:', err.message)
-    return { text: '', parsed: null, inputTokens: 0, outputTokens: 0, model, estimatedCost: 0 }
   }
+  return empty
 }
 
 // ── Public API ────────────────────────────────────────────────

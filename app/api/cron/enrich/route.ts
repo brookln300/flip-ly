@@ -19,7 +19,8 @@ import { supabase } from '../../../lib/supabase'
  */
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Fail closed: if CRON_SECRET is unset, "Bearer undefined" would authorize anyone.
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -42,8 +43,18 @@ export async function GET(req: NextRequest) {
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
     const remainingBacklog = (backlog || 0) - result.enriched - result.fastClassified
 
-    // Only alert on significant runs or problems
-    if (result.enriched > 0 || result.fastClassified > 0) {
+    // ── Health alert: AI batches ran but scored nothing → key/credit problem ──
+    // This is the signature of an invalid/revoked ANTHROPIC_API_KEY (401) or
+    // exhausted credit: real listings get sent to the model but none come back scored.
+    if (result.batches > 0 && result.enriched === 0) {
+      await sendTelegramAlert(
+        `🚨 <b>Enrichment NOT scoring</b>\n` +
+        `${result.batches} AI batches ran but 0 listings were enriched.\n` +
+        `Almost always an invalid/expired ANTHROPIC_API_KEY or no credit.\n` +
+        `Fix: replace ANTHROPIC_API_KEY in Vercel → Settings → Environment Variables, then redeploy.\n` +
+        `Backlog: ~${Math.max(0, remainingBacklog)} listings waiting.`
+      )
+    } else if (result.enriched > 0 || result.fastClassified > 0) {
       await sendTelegramAlert(
         `<b>Enrich Complete</b> (${elapsed}s)\n` +
         `AI enriched: ${result.enriched} (${result.batches} batches)\n` +
