@@ -21,7 +21,7 @@ Rules:
   * 1-3: Common item at or above typical market price, no flip margin
   * 4-5: Decent item, priced near market value, minimal profit opportunity
   * 6-7: Known brand/model priced 20-40% below typical resale value. Clear margin exists.
-  * 8-9: Specific high-demand item priced 40-60%+ below known resale. Brand items like DeWalt, Milwaukee, Herman Miller, KitchenAid, mid-century modern pieces, vintage audio.
+  * 8-9: Specific high-demand item priced 40-60%+ below known resale. Brand items like DeWalt, Milwaukee, Herman Miller, KitchenAid, mid-century modern pieces, vintage audio, retro video games & consoles (N64, SNES, Sega Genesis, GameCube), sealed LEGO sets, graded/vintage trading cards.
   * 10: Collector/rare item at garage sale pricing. Resale 3x+ likely.
   Only score 8+ when there are concrete signals of profit opportunity.
 - deal_score_reason: One sentence with specific evidence. For items: reference likely resale value if you can estimate it (e.g. "DeWalt 20V set at $60, typically resells for $120-150").
@@ -175,67 +175,6 @@ async function processChunk(listings: any[], batchSize: number, concurrency: num
 }
 
 /**
- * Pre-filter: Aggressively fast-classify Eventbrite events that are NOT
- * garage sales, estate sales, or resale events. Eventbrite avg deal_score
- * is 2.3 — only 2% produce high-value listings. Don't waste AI calls.
- *
- * Only Eventbrite listings with sale/resale keywords get sent to AI.
- * Everything else gets auto-scored as a generic event.
- */
-async function fastClassifyBulkEvents(): Promise<number> {
-  // Keywords that indicate this Eventbrite event IS worth AI-enriching
-  const resaleSignals = [
-    'garage sale', 'yard sale', 'estate sale', 'moving sale',
-    'flea market', 'swap meet', 'rummage sale', 'thrift',
-    'antique', 'vintage', 'collectible', 'auction',
-    'liquidation', 'clearance', 'everything must go',
-    'barn sale', 'tag sale', 'community sale',
-    'furniture', 'tools', 'electronics',
-  ]
-
-  // Fetch ALL unenriched Eventbrite listings (aggressive — process up to 500)
-  const { data: bulkEvents } = await supabase
-    .from('fliply_listings')
-    .select('id, title, description, source_type')
-    .is('enriched_at', null)
-    .eq('source_type', 'eventbrite_api')
-    .order('scraped_at', { ascending: true })
-    .limit(500)
-
-  if (!bulkEvents || bulkEvents.length === 0) return 0
-
-  let fastScored = 0
-  for (const listing of bulkEvents) {
-    const titleLower = (listing.title || '').toLowerCase()
-    const descLower = (listing.description || '').toLowerCase()
-    const combined = titleLower + ' ' + descLower
-
-    // If it matches ANY resale signal, let AI handle it
-    const hasResaleSignal = resaleSignals.some(s => combined.includes(s))
-
-    if (!hasResaleSignal) {
-      // No resale signal = generic event, skip AI entirely
-      const { error } = await supabase.from('fliply_listings').update({
-        ai_description: listing.title,
-        deal_score: 2,
-        deal_score_reason: 'Non-resale event — no garage sale, estate sale, or flip indicators',
-        ai_tags: [],
-        event_type: 'event',
-        is_hot: false,
-        enriched_at: new Date().toISOString(),
-      }).eq('id', listing.id)
-
-      if (!error) fastScored++
-    }
-  }
-
-  if (fastScored > 0) {
-    console.log(`[ENRICH] Fast-classified ${fastScored} non-resale Eventbrite events (skipped AI)`)
-  }
-  return fastScored
-}
-
-/**
  * Pre-filter: Fast-classify low-value Craigslist item listings without AI.
  * CL items average lower deal scores than sale events. Skip obvious junk:
  * - Generic titles with no brand/model (e.g. "couch for sale", "old dresser")
@@ -264,6 +203,12 @@ async function fastClassifyCLItems(): Promise<number> {
     // Collectibles
     'vintage', 'antique', 'rare', 'collectible', 'limited edition', 'signed', 'first edition',
     'sterling silver', 'solid gold', '14k', '18k', 'rolex', 'omega',
+    // Retro games & collectibles (the proven Dallas wedge)
+    'n64', 'nintendo 64', 'snes', 'super nintendo', 'nes', 'gamecube', 'game boy', 'gameboy', 'game gear',
+    'sega', 'genesis', 'dreamcast', 'saturn', 'atari', 'turbografx', 'neo geo', 'ps1', 'ps2', 'ps3', 'psp',
+    'gamecube', 'retro game', 'retro games', 'arcade', 'amiibo', 'pokemon', 'magic the gathering', 'mtg',
+    'yugioh', 'trading card', 'trading cards', 'graded', 'psa 10', 'funko', 'lego set', 'sealed lego',
+    'comic', 'comics', 'vinyl record', 'vinyl records',
     // Value signals
     'new in box', 'nib', 'sealed', 'mint condition', 'never used', 'never opened',
     'retail', 'msrp', 'paid $', 'worth $', 'sells for',
@@ -353,10 +298,10 @@ export async function enrichAllPending(options?: {
   const BATCH_SIZE = options?.batchSize ?? 15
   const CONCURRENCY = options?.concurrency ?? 5
 
-  // Phase 0: Fast-classify obvious junk without AI
-  const fastClassifiedEvents = await fastClassifyBulkEvents()
-  const fastClassifiedCL = await fastClassifyCLItems()
-  const fastClassified = fastClassifiedEvents + fastClassifiedCL
+  // Phase 0: Fast-classify obvious low-value CL junk without AI.
+  // (Eventbrite ingestion was dropped 2026-06-21 — concerts/classes polluted
+  //  the score column with flat "2"s and burned AI spend.)
+  const fastClassified = await fastClassifyCLItems()
 
   // Phase 1: Priority — time-sensitive listings (event within 48h)
   const { data: urgent } = await supabase
@@ -368,8 +313,8 @@ export async function enrichAllPending(options?: {
     .order('event_date', { ascending: true })
     .limit(Math.floor(MAX_LISTINGS * 0.3))
 
-  // Phase 2: HIGH VALUE — Craigslist, AI extract, estate sales, local sites
-  // These sources avg 5.5+ deal score vs Eventbrite's 2.3. Process them first.
+  // Phase 2: HIGH VALUE — Craigslist, AI extract, estate sales, local sites.
+  // These are the resale-bearing sources; process them first.
   const remaining = MAX_LISTINGS - (urgent?.length || 0)
   const { data: highValue } = await supabase
     .from('fliply_listings')
@@ -379,14 +324,14 @@ export async function enrichAllPending(options?: {
     .order('scraped_at', { ascending: true })
     .limit(Math.floor(remaining * 0.8))  // 80% of remaining capacity to high-value sources
 
-  // Phase 3: Remaining Eventbrite (only ones that passed the resale signal filter)
+  // Phase 3: Any remaining unenriched listings (oldest first), capped per run.
   const finalRemaining = remaining - (highValue?.length || 0)
   const { data: overflow } = await supabase
     .from('fliply_listings')
     .select('id, title, description, price_text, price_low_cents, city, state, event_date, source_type')
     .is('enriched_at', null)
     .order('scraped_at', { ascending: true })
-    .limit(Math.min(finalRemaining, 100))  // Cap Eventbrite overflow at 100 per run
+    .limit(Math.min(finalRemaining, 100))  // Cap overflow at 100 per run
 
   // Deduplicate (a listing could appear in multiple phases)
   const seen = new Set<string>()

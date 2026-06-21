@@ -6,10 +6,9 @@ import { supabase } from '../../../lib/supabase'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { trackEvent } from '../../../lib/analytics'
 import { scrapeCraigslist } from '../../../lib/scrapers/craigslist'
-import { scrapeEventbrite } from '../../../lib/scrapers/eventbrite'
 import { scrapeWithAI } from '../../../lib/scrapers/ai-extract'
 import { scrapeEstateSalesNet } from '../../../lib/scrapers/estatesales-net'
-import type { ScraperResult, CraigslistConfig, EventbriteConfig, AiExtractConfig, EstateSalesNetConfig } from '../../../lib/scrapers/types'
+import type { ScraperResult, CraigslistConfig, AiExtractConfig, EstateSalesNetConfig } from '../../../lib/scrapers/types'
 
 export async function GET(req: NextRequest) {
   // Auth: require CRON_SECRET for automated + manual triggers
@@ -70,7 +69,9 @@ export async function GET(req: NextRequest) {
             result = await scrapeCraigslist(source.id, source.market_id, source.config as CraigslistConfig)
             break
           case 'eventbrite_api':
-            result = await scrapeEventbrite(source.id, source.market_id, source.config as EventbriteConfig)
+            // Eventbrite ingestion retired 2026-06-21 (non-resale events polluted
+            // the feed). Sources are deactivated; skip if any slip through.
+            result.errors.push('Eventbrite ingestion retired')
             break
           case 'ai_extract':
             result = await scrapeWithAI(source.id, source.market_id, source.config as AiExtractConfig)

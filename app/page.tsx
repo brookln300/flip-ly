@@ -60,11 +60,14 @@ async function getMarkets() {
 
 async function getFeaturedDeals() {
   const today = new Date().toISOString().split('T')[0]
-  const maxAge = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const maxAge = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+  // Best real deals available right now. The score-desc order surfaces the
+  // strongest finds first; threshold is ≥5 (not ≥7) so the grid stays full of
+  // genuine scores while the AI scoring backlog catches up after a key rotation.
   const { data } = await supabase
     .from('fliply_listings')
     .select('*')
-    .gte('deal_score', 7)
+    .gte('deal_score', 5)
     .or(`event_date.is.null,event_date.gte.${today}`)
     .or(`expires_at.is.null,expires_at.gte.${new Date().toISOString()}`)
     .gte('scraped_at', maxAge)
@@ -176,7 +179,7 @@ export default async function Home() {
                 fontSize: '16px', color: 'var(--text-secondary)', lineHeight: 1.6,
                 maxWidth: '480px', marginBottom: 'var(--space-5)',
               }}>
-                Flip-ly scans your local Craigslist and event listings around the clock, then rates every garage sale, estate sale, and resale item <strong>1&ndash;10 for real resale-flip margin</strong> &mdash; so the money-makers float to the top.
+                Flip-ly scans your local Craigslist around the clock and rates every garage sale, estate sale, and resale item &mdash; from retro games and collectibles to tools and furniture &mdash; <strong>1&ndash;10 for real resale-flip margin</strong>, so the money-makers float to the top. Strongest right now in Dallas&ndash;Fort Worth.
               </p>
 
               {/* CTA row — client component for signup trigger */}
@@ -206,7 +209,7 @@ export default async function Home() {
           <div style={{ maxWidth: '70rem', margin: '0 auto', padding: 'var(--space-10) var(--space-4)' }}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               {[
-                { step: '1', label: 'We scan', desc: 'Every active Craigslist region and local event feed in your market, refreshed around the clock.', icon: 'search' },
+                { step: '1', label: 'We scan', desc: 'Every active Craigslist region in your market, refreshed around the clock.', icon: 'search' },
                 { step: '2', label: 'AI scores', desc: 'Each listing rated 1-10 on demand, margin, and how far below typical resale it’s priced — with the reasoning shown.', icon: 'chart' },
                 { step: '3', label: 'You flip', desc: 'Sort by score, see the best deals first, and grab them before everyone else scrolling raw Craigslist does.', icon: 'dollar' },
               ].map(item => (
@@ -230,8 +233,6 @@ export default async function Home() {
             <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)', lineHeight: 1.8 }}>
               Scanning{' '}
               <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Craigslist</span>
-              <span style={{ margin: '0 6px', color: 'var(--text-dim)' }}>&middot;</span>
-              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Eventbrite</span>
               {' '}<span style={{ color: 'var(--text-dim)' }}>across {stats.marketsWithListings > 0 ? stats.marketsWithListings : 'live'} active metros</span>
               <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}> &mdash; more sources rolling out</span>
             </p>
