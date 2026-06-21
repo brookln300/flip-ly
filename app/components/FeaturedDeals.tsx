@@ -28,7 +28,9 @@ export default function FeaturedDeals({ initialDeals, initialMarketName, markets
       }
     }
     if (marketSlug) {
-      fetch(`/api/listings?hot=true&limit=8&market=${marketSlug}`)
+      // Top-scored browse for the user's market (not hot=true, which requires
+      // score ≥8 and would empty the grid in markets without a top-tier find).
+      fetch(`/api/listings?limit=8&market=${marketSlug}`)
         .then(res => res.json())
         .then(d => { if (d.results?.length) setFeaturedDeals(d.results) })
         .catch(() => {})

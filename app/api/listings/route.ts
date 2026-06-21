@@ -122,7 +122,7 @@ export async function GET(req: NextRequest) {
             is_premium: false,
             weekly_limit_hits: weeklyHits,
           },
-          _meta: { real_data: true, scraped_sources: ['craigslist', 'eventbrite'] },
+          _meta: { real_data: true, scraped_sources: ['craigslist'] },
         })
       }
 
@@ -178,7 +178,7 @@ export async function GET(req: NextRequest) {
             searches_max: FREE_SEARCH_LIMIT,
             is_premium: false,
           },
-          _meta: { real_data: true, scraped_sources: ['craigslist', 'eventbrite'] },
+          _meta: { real_data: true, scraped_sources: ['craigslist'] },
         })
       }
 
@@ -227,7 +227,7 @@ export async function GET(req: NextRequest) {
             searches_max: FREE_SEARCH_LIMIT,
             is_premium: isPremium,
           },
-          _meta: { real_data: true, scraped_sources: ['craigslist', 'eventbrite'], search_method: 'invalid_market' },
+          _meta: { real_data: true, scraped_sources: ['craigslist'], search_method: 'invalid_market' },
         })
       }
     }
@@ -582,7 +582,7 @@ export async function GET(req: NextRequest) {
     },
     _meta: {
       real_data: true,
-      scraped_sources: ['craigslist', 'eventbrite'],
+      scraped_sources: ['craigslist'],
       search_method: searchMethod,
       freshness: {
         newest: newestListing?.toISOString() || null,
