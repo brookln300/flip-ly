@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
         { name: 'sequence', value: 'welcome' },
         { name: 'template', value: 'welcome' },
       ],
+      category: 'marketing',
     })
 
     if (!sendError) {

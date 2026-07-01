@@ -114,6 +114,7 @@ export async function GET(req: NextRequest) {
             { name: 'sequence', value: 'daily-deals' },
             { name: 'tier', value: isPro ? 'pro' : 'free' },
           ],
+          category: 'marketing',
         })
 
         if (sendErr) throw new Error(sendErr)

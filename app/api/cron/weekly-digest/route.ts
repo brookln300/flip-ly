@@ -228,6 +228,7 @@ export async function GET(req: NextRequest) {
             { name: 'sequence', value: 'digest' },
             { name: 'tier', value: isPro ? 'pro' : 'free' },
           ],
+          category: 'marketing',
         })
 
         if (sendError) throw new Error(sendError)

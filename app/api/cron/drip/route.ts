@@ -144,6 +144,7 @@ export async function GET(req: NextRequest) {
             { name: 'step', value: String(step.step_order) },
             { name: 'template', value: step.template_key },
           ],
+          category: 'marketing',
         })
 
         if (sendError) {

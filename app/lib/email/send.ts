@@ -14,6 +14,11 @@ const FROM = process.env.RESEND_FROM_ADDRESS || 'flip-ly.net <hello@flip-ly.net>
  * - Unique X-Entity-Ref-ID (prevents Gmail threading unrelated emails)
  * - Proper Reply-To
  * - Consistent from address
+ *
+ * Marketing kill-switch: while flip-ly runs as a private DFW power-tool,
+ * bulk/marketing email (digests, drip, daily-deals, alert emails) is OFF by
+ * default. Transactional email (signup, receipts) always sends. Flip marketing
+ * back on by setting MARKETING_EMAILS_ENABLED=true in the environment.
  */
 export async function sendEmail(opts: {
   to: string
@@ -21,7 +26,15 @@ export async function sendEmail(opts: {
   html: string
   replyTo?: string
   tags?: { name: string; value: string }[]
+  category?: 'transactional' | 'marketing'
 }): Promise<{ id?: string; error?: string }> {
+  const category = opts.category ?? 'transactional'
+
+  if (category === 'marketing' && process.env.MARKETING_EMAILS_ENABLED !== 'true') {
+    console.log(`[EMAIL] Skipped — marketing disabled: ${opts.subject} → ${opts.to}`)
+    return { error: 'marketing-disabled' }
+  }
+
   if (!resend) {
     console.log(`[EMAIL] Skipped — no RESEND_API_KEY: ${opts.subject} → ${opts.to}`)
     return { error: 'no-api-key' }
