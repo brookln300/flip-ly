@@ -41,6 +41,12 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// DFW-only lockdown: flip-ly runs as a private Dallas/Fort Worth dealfinder.
+// AI source discovery (Claude Haiku research = real $) is restricted to the DFW
+// market so new-signup markets elsewhere can never silently burn API budget.
+// Widen this list to re-open discovery to other markets.
+const DISCOVERY_MARKET_IDS = ['08170240-45d0-47cf-8b6d-7fdbc3443dbe'] // Dallas / Fort Worth
+
 // ── Job 1: Research local sources for unresearched markets ──────
 async function runSourceDiscovery(results: { researched: number; sources_found: number; errors: string[] }) {
   // Find markets that have users (is_active) but haven't been researched yet
@@ -49,6 +55,7 @@ async function runSourceDiscovery(results: { researched: number; sources_found: 
     .select('id, name, display_name, state, cl_subdomain')
     .is('local_sources_researched_at', null)
     .eq('is_active', true)
+    .in('id', DISCOVERY_MARKET_IDS) // DFW-only: never research/spend outside these markets
     .order('user_count', { ascending: false })
     .limit(2) // Process 2 per invocation to stay under timeout
 

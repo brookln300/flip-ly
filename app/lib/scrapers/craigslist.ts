@@ -18,6 +18,15 @@ const CL_CATEGORIES: Record<string, { label: string; eventType: string }> = {
   zip: { label: 'Free Stuff', eventType: 'listing' },
   hsa: { label: 'Household', eventType: 'listing' },
   foa: { label: 'General For Sale', eventType: 'listing' },
+  pha: { label: 'Photo & Video', eventType: 'listing' },
+  sya: { label: 'Computers', eventType: 'listing' },
+  jwa: { label: 'Jewelry', eventType: 'listing' },
+  hva: { label: 'Heavy Equipment', eventType: 'listing' },
+  bia: { label: 'Bikes', eventType: 'listing' },
+  taa: { label: 'Toys & Games', eventType: 'listing' },
+  moa: { label: 'Cell Phones', eventType: 'listing' },
+  ema: { label: 'CDs/DVD/Media', eventType: 'listing' },
+  pta: { label: 'Auto Parts', eventType: 'listing' },
 }
 
 // ── SAPI searchPath → CL URL category code mapping ──
