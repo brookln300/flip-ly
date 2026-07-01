@@ -31,6 +31,9 @@ Rules:
 - resale_flag: true if specific items mentioned likely have 2x+ resale value on eBay/marketplace. For individual items with clear brand/model, be more aggressive with this flag — if the asking price is clearly below known market value, flag it.
 - price_low_cents: If you can infer a low price from the title/description (e.g. "$5", "FREE"), return it in cents. Otherwise null.
 - price_high_cents: If you can infer a high price or range (e.g. "$5-$50"), return high end in cents. Otherwise null.
+- trust_score: 1-5 integer. How legit/safe this listing looks to a buyer. 5 = detailed, specific, credible. 3 = ordinary with some unknowns. 1 = high risk: vague, stock-photo language, price too-good-to-be-true, scam/reseller patterns, or missing location/details.
+- trust_flags: Array from ONLY: stock_photo, vague_description, price_too_good, no_location, bulk_reseller, scam_pattern. Empty array if none apply.
+- negotiation_tips: One short, practical sentence — a smart opening offer and/or the key thing to check or ask in person before buying. Specific to the item.
 
 CRITICAL — $1 PLACEHOLDER PRICING:
 On Craigslist, individual item listings priced at exactly $1 are almost NEVER actually $1. Sellers use $1 as a placeholder because Craigslist requires a price. It means "make an offer" or "see description for real price."
@@ -49,6 +52,9 @@ interface EnrichmentResult {
   resale_flag: boolean
   price_low_cents?: number | null
   price_high_cents?: number | null
+  trust_score?: number | null
+  trust_flags?: string[]
+  negotiation_tips?: string | null
 }
 
 /**
@@ -81,7 +87,7 @@ Source: ${l.source_type || 'unknown'}`
   const { parsed } = await callHaiku<EnrichmentResult[]>({
     system: SYSTEM_PROMPT,
     userMessage: `Analyze these ${listings.length} listings. Return a JSON array with one object per listing, in order.\n\n${userMessage}`,
-    maxTokens: 4000,
+    maxTokens: 5000,
   })
 
   if (!parsed || !Array.isArray(parsed)) {
@@ -118,6 +124,9 @@ Source: ${l.source_type || 'unknown'}`
       event_type: result.event_type || null,
       resale_flag: finalResaleFlag,
       is_hot: finalScore >= 8,
+      trust_score: typeof result.trust_score === 'number' ? result.trust_score : null,
+      trust_flags: result.trust_flags || [],
+      negotiation_tips: result.negotiation_tips || null,
       enriched_at: new Date().toISOString(),
     }
 
@@ -250,12 +259,21 @@ async function fastClassifyCLItems(): Promise<number> {
     const isJunkTitle = junkPatterns.some(p => p.test(listing.title || ''))
     const isPlaceholderPrice = listing.price_low_cents === 100
 
-    // Fast-classify if: junk title OR ($1 placeholder + no value signals)
-    if (isJunkTitle || (isPlaceholderPrice && titleLower.length < 40)) {
-      const score = isPlaceholderPrice ? 2 : 3
+    // Price-floor filter (cost floor-reducer): a real, cheap price ($1.01–$12)
+    // with no brand/value signal has almost no flip ceiling — not worth an AI call.
+    // Excludes $1 placeholders (handled above) and FREE items (0 = often good flips).
+    const priceCents = listing.price_low_cents
+    const isCheapNoSignal = typeof priceCents === 'number'
+      && priceCents > 100 && priceCents <= 1200
+
+    // Fast-classify if: junk title OR ($1 placeholder + short title) OR cheap-no-signal
+    if (isJunkTitle || (isPlaceholderPrice && titleLower.length < 40) || isCheapNoSignal) {
+      const score = (isPlaceholderPrice || isCheapNoSignal) ? 2 : 3
       const reason = isPlaceholderPrice
         ? 'Generic CL item with $1 placeholder price — no brand/model signals'
-        : 'Generic low-value item — no brand, model, or flip indicators'
+        : isCheapNoSignal
+          ? 'Low-priced item with no brand/model/value signal — minimal flip ceiling'
+          : 'Generic low-value item — no brand, model, or flip indicators'
 
       const { error } = await supabase.from('fliply_listings').update({
         ai_description: listing.title,
@@ -293,7 +311,7 @@ export async function enrichAllPending(options?: {
   maxListings?: number
   batchSize?: number
   concurrency?: number
-}): Promise<{ enriched: number; fastClassified: number; batches: number }> {
+}): Promise<{ enriched: number; fastClassified: number; batches: number; capReached?: boolean }> {
   const MAX_LISTINGS = options?.maxListings ?? 750
   const BATCH_SIZE = options?.batchSize ?? 15
   const CONCURRENCY = options?.concurrency ?? 5
@@ -303,6 +321,28 @@ export async function enrichAllPending(options?: {
   //  the score column with flat "2"s and burned AI spend.)
   const fastClassified = await fastClassifyCLItems()
 
+  // ── Guardrail: hard daily AI spend cap ──────────────────────────
+  // Output-token cost is set by how many listings reach the model. Cap the
+  // number of AI-enriched listings per day so a first-fill or repost storm
+  // can't run up an unbounded Anthropic bill. Fast-classify (free) is unaffected.
+  const DAILY_CAP = parseInt(process.env.ENRICH_DAILY_AI_CAP || '3000', 10)
+  const today = new Date().toISOString().split('T')[0]
+  const { data: usageRow } = await supabase
+    .from('fliply_ai_usage')
+    .select('ai_enriched')
+    .eq('day', today)
+    .maybeSingle()
+  const usedToday = usageRow?.ai_enriched || 0
+  const remainingCap = Math.max(0, DAILY_CAP - usedToday)
+
+  if (remainingCap === 0) {
+    console.warn(`[ENRICH] Daily AI cap reached (${usedToday}/${DAILY_CAP}) — AI paused, fast-classify only`)
+    return { enriched: 0, fastClassified, batches: 0, capReached: true }
+  }
+
+  // Never enrich more than the remaining daily budget in this run.
+  const effectiveMax = Math.min(MAX_LISTINGS, remainingCap)
+
   // Phase 1: Priority — time-sensitive listings (event within 48h)
   const { data: urgent } = await supabase
     .from('fliply_listings')
@@ -311,11 +351,11 @@ export async function enrichAllPending(options?: {
     .gte('event_date', new Date().toISOString().split('T')[0])
     .lte('event_date', new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0])
     .order('event_date', { ascending: true })
-    .limit(Math.floor(MAX_LISTINGS * 0.3))
+    .limit(Math.floor(effectiveMax * 0.3))
 
   // Phase 2: HIGH VALUE — Craigslist, AI extract, estate sales, local sites.
   // These are the resale-bearing sources; process them first.
-  const remaining = MAX_LISTINGS - (urgent?.length || 0)
+  const remaining = effectiveMax - (urgent?.length || 0)
   const { data: highValue } = await supabase
     .from('fliply_listings')
     .select('id, title, description, price_text, price_low_cents, city, state, event_date, source_type')
@@ -352,6 +392,15 @@ export async function enrichAllPending(options?: {
   const totalEnriched = await processChunk(allListings, BATCH_SIZE, CONCURRENCY)
   const totalBatches = Math.ceil(allListings.length / BATCH_SIZE)
 
-  console.log(`[ENRICH] ${totalEnriched} enriched (${fastClassified} fast-classified) in ${totalBatches} batches | ${allListings.length} processed`)
-  return { enriched: totalEnriched, fastClassified, batches: totalBatches }
+  // Record today's AI usage against the daily cap.
+  if (totalEnriched > 0) {
+    await supabase.from('fliply_ai_usage').upsert(
+      { day: today, ai_enriched: usedToday + totalEnriched, updated_at: new Date().toISOString() },
+      { onConflict: 'day' }
+    )
+  }
+
+  const capReached = usedToday + totalEnriched >= DAILY_CAP
+  console.log(`[ENRICH] ${totalEnriched} enriched (${fastClassified} fast-classified) in ${totalBatches} batches | ${allListings.length} processed | AI budget ${usedToday + totalEnriched}/${DAILY_CAP}`)
+  return { enriched: totalEnriched, fastClassified, batches: totalBatches, capReached }
 }

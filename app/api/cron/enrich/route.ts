@@ -4,6 +4,7 @@ export const maxDuration = 300
 import { NextRequest, NextResponse } from 'next/server'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { enrichAllPending } from '../../../lib/ai/enrich-listing'
+import { runDealAlerts } from '../../../lib/alerts/match'
 import { supabase } from '../../../lib/supabase'
 
 /**
@@ -43,10 +44,26 @@ export async function GET(req: NextRequest) {
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
     const remainingBacklog = (backlog || 0) - result.enriched - result.fastClassified
 
+    // Fire saved-search deal alerts for newly-enriched high-score listings (non-fatal).
+    let alertsSent = 0
+    try {
+      alertsSent = await runDealAlerts()
+    } catch (e: any) {
+      console.error('[ALERTS] runDealAlerts failed:', e?.message)
+    }
+
     // ── Health alert: AI batches ran but scored nothing → key/credit problem ──
     // This is the signature of an invalid/revoked ANTHROPIC_API_KEY (401) or
     // exhausted credit: real listings get sent to the model but none come back scored.
-    if (result.batches > 0 && result.enriched === 0) {
+    if (result.capReached && result.enriched === 0 && result.fastClassified === 0) {
+      // AI paused for the day by the spend guardrail — not an error.
+      await sendTelegramAlert(
+        `💸 <b>Enrichment paused — daily AI cap reached</b>\n` +
+        `AI scoring is off for the rest of today to cap Anthropic spend.\n` +
+        `Fast-classify still runs. Raise ENRICH_DAILY_AI_CAP in Vercel to lift it.\n` +
+        `Backlog waiting: ~${Math.max(0, remainingBacklog)}.`
+      )
+    } else if (result.batches > 0 && result.enriched === 0) {
       await sendTelegramAlert(
         `🚨 <b>Enrichment NOT scoring</b>\n` +
         `${result.batches} AI batches ran but 0 listings were enriched.\n` +
@@ -69,6 +86,7 @@ export async function GET(req: NextRequest) {
       enriched: result.enriched,
       fast_classified: result.fastClassified,
       batches: result.batches,
+      alerts_sent: alertsSent,
       backlog_before: backlog,
       backlog_remaining: Math.max(0, remainingBacklog),
     })
