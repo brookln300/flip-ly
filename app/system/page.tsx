@@ -31,7 +31,7 @@ async function getData() {
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const today = new Date().toISOString().split('T')[0]
   const [srcRes, totalRes, scoredRes, hotRes, new24Res, backlogRes, usageRes, frozenSrcRes, frozenMktRes] = await Promise.all([
-    supabase.from('fliply_sources').select('name, config, last_scraped_at, last_result_count, consecutive_failures, scrape_error, is_active').eq('market_id', DFW_MARKET_ID).eq('source_type', 'craigslist_rss').eq('is_active', true),
+    supabase.from('fliply_sources').select('name, config, last_scraped_at, last_result_count, consecutive_failures, last_error, is_active').eq('market_id', DFW_MARKET_ID).eq('source_type', 'craigslist_rss').eq('is_active', true),
     supabase.from('fliply_listings').select('id', { count: 'exact', head: true }).eq('market_id', DFW_MARKET_ID),
     supabase.from('fliply_listings').select('id', { count: 'exact', head: true }).eq('market_id', DFW_MARKET_ID).not('deal_score', 'is', null),
     supabase.from('fliply_listings').select('id', { count: 'exact', head: true }).eq('market_id', DFW_MARKET_ID).gte('deal_score', 8),
@@ -47,7 +47,7 @@ async function getData() {
     lastScrape: s.last_scraped_at,
     count: s.last_result_count ?? 0,
     fails: s.consecutive_failures ?? 0,
-    error: s.scrape_error,
+    error: s.last_error,
   })).sort((a, b) => (b.count) - (a.count))
 
   return {
