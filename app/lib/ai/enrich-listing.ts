@@ -307,6 +307,18 @@ export async function enrichAllPending(options?: {
   const BATCH_SIZE = options?.batchSize ?? 15
   const CONCURRENCY = options?.concurrency ?? 5
 
+  // ── KILL SWITCH: enrichment paused 2026-07-02 ───────────────────
+  // Flip-ly is a personal/family tool now. The pipeline was sized for a
+  // commercial multi-tenant product (96 cron runs/day, up to 750 AI-scored
+  // listings/run, 3000/day cap) and hit its daily AI limit. Enrichment is
+  // PAUSED by default: no AI calls, no fast-classify, no DB writes.
+  // Re-enable by setting ENRICH_ENABLED=true in the Vercel env.
+  // See docs/planning/AI-ENRICHMENT-STRATEGY.md for the right-sizing plan.
+  if (process.env.ENRICH_ENABLED !== 'true') {
+    console.warn('[ENRICH] Paused (ENRICH_ENABLED != true) — no AI or fast-classify. See docs/planning/AI-ENRICHMENT-STRATEGY.md')
+    return { enriched: 0, fastClassified: 0, batches: 0, capReached: false }
+  }
+
   // Phase 0: Fast-classify obvious low-value CL junk without AI.
   // (Eventbrite ingestion was dropped 2026-06-21 — concerts/classes polluted
   //  the score column with flat "2"s and burned AI spend.)
