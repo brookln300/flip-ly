@@ -4,6 +4,7 @@ export const maxDuration = 300
 import { NextRequest, NextResponse } from 'next/server'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { enrichAllPending } from '../../../lib/ai/enrich-listing'
+import { runHotDealAlerts } from '../../../lib/alerts/hot-deal-alert'
 import { supabase } from '../../../lib/supabase'
 
 /**
@@ -43,6 +44,14 @@ export async function GET(req: NextRequest) {
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
     const remainingBacklog = (backlog || 0) - result.enriched - result.fastClassified
 
+    // Fire instant hot-deal Telegram pings for freshly-scored standouts (non-fatal).
+    let alertsSent = 0
+    try {
+      alertsSent = await runHotDealAlerts()
+    } catch (e: any) {
+      console.error('[ALERTS] runHotDealAlerts failed:', e?.message)
+    }
+
     // ── Health alert: AI batches ran but scored nothing → key/credit problem ──
     // This is the signature of an invalid/revoked ANTHROPIC_API_KEY (401) or
     // exhausted credit: real listings get sent to the model but none come back scored.
@@ -67,6 +76,7 @@ export async function GET(req: NextRequest) {
         `<b>Enrich Complete</b> (${elapsed}s)\n` +
         `AI enriched: ${result.enriched} (${result.batches} batches)\n` +
         `Fast-classified: ${result.fastClassified}\n` +
+        `Hot-deal alerts: ${alertsSent}\n` +
         `Backlog remaining: ~${Math.max(0, remainingBacklog)}`
       )
     }
@@ -77,6 +87,7 @@ export async function GET(req: NextRequest) {
       enriched: result.enriched,
       fast_classified: result.fastClassified,
       batches: result.batches,
+      alerts_sent: alertsSent,
       backlog_before: backlog,
       backlog_remaining: Math.max(0, remainingBacklog),
     })

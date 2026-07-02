@@ -27,6 +27,14 @@
     {
       "path": "/api/cron/resale-radar",
       "schedule": "0 2,8,14,20 * * *"
+    },
+    {
+      "path": "/api/cron/comps",
+      "schedule": "0 */3 * * *"
+    },
+    {
+      "path": "/api/cron/dedup",
+      "schedule": "30 4 * * *"
     }
   ]
 }

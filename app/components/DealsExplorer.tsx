@@ -8,6 +8,7 @@ const CATEGORIES = [
 ]
 const SORTS = [
   { v: 'score', label: 'Best score' },
+  { v: 'margin', label: 'Best margin (eBay comps)' },
   { v: 'newest', label: 'Newest' },
   { v: 'price_low', label: 'Price: low to high' },
   { v: 'price_high', label: 'Price: high to low' },
@@ -29,7 +30,7 @@ function scoreBg(s: number | null) {
 interface Deal {
   id: string; title: string; price: string; score: number | null; reason: string | null
   tags: string[]; city: string | null; event_type: string | null; source_url: string | null
-  resale_flag: boolean
+  resale_flag: boolean; margin_pct: number | null; comp_median_cents: number | null
 }
 
 export default function DealsExplorer() {
@@ -168,6 +169,7 @@ export default function DealsExplorer() {
                   <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
                     {d.title}
                     {d.resale_flag && <span style={{ marginLeft: '6px', fontSize: '10px', fontWeight: 700, color: 'var(--accent-green)', background: 'rgba(22,163,74,0.08)', borderRadius: '4px', padding: '1px 5px', verticalAlign: 'middle' }}>flip</span>}
+                    {d.margin_pct != null && <span style={{ marginLeft: '6px', fontSize: '10px', fontWeight: 700, color: d.margin_pct >= 40 ? 'var(--accent-green)' : 'var(--text-muted)', background: d.margin_pct >= 40 ? 'rgba(22,163,74,0.08)' : 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: '4px', padding: '1px 5px', verticalAlign: 'middle' }}>{d.margin_pct}% margin</span>}
                   </div>
                   {d.reason && <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, marginTop: '3px' }}>{d.reason}</div>}
                   {d.city && <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '3px' }}>{d.city}</div>}
@@ -175,6 +177,7 @@ export default function DealsExplorer() {
                 <div style={{ textAlign: 'right', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   <div style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{d.price}</div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{tag}</div>
+                  {d.comp_median_cents != null && <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>≈${Math.round(d.comp_median_cents / 100).toLocaleString()} sold</div>}
                   {d.source_url && <div style={{ fontSize: '11px', color: 'var(--accent-green)', marginTop: '4px' }}>view ↗</div>}
                 </div>
               </div>

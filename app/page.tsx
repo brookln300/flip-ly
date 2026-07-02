@@ -36,6 +36,7 @@ async function getCommandData() {
       .select('id, title, price_text, deal_score, deal_score_reason, ai_tags, city, event_type')
       .eq('market_id', DFW_MARKET_ID)
       .gte('deal_score', 8)
+      .is('duplicate_of', null)
       .or(`event_date.is.null,event_date.gte.${today}`)
       .or(`expires_at.is.null,expires_at.gte.${nowIso}`)
       .gte('scraped_at', maxAge)

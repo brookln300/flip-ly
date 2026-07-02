@@ -47,8 +47,9 @@ export async function GET(req: NextRequest) {
 
   let dbq = supabase
     .from('fliply_listings')
-    .select('id, title, price_text, price_low_cents, deal_score, deal_score_reason, ai_tags, ai_description, city, state, event_type, source_url, image_url, scraped_at, latitude, longitude, resale_flag', { count: 'exact' })
+    .select('id, title, price_text, price_low_cents, deal_score, deal_score_reason, ai_tags, ai_description, city, state, event_type, source_url, image_url, scraped_at, latitude, longitude, resale_flag, comp_median_cents, margin_pct, opportunity_type', { count: 'exact' })
     .eq('market_id', DFW_MARKET_ID)
+    .is('duplicate_of', null)
     .or(`event_date.is.null,event_date.gte.${today}`)
     .or(`expires_at.is.null,expires_at.gte.${nowIso}`)
     .gte('scraped_at', maxAge)
@@ -64,7 +65,9 @@ export async function GET(req: NextRequest) {
     if (safe) dbq = dbq.or(`title.ilike.%${safe}%,ai_description.ilike.%${safe}%`)
   }
 
-  if (sort === 'newest') {
+  if (sort === 'margin') {
+    dbq = dbq.order('margin_pct', { ascending: false, nullsFirst: false }).order('deal_score', { ascending: false, nullsFirst: false })
+  } else if (sort === 'newest') {
     dbq = dbq.order('scraped_at', { ascending: false })
   } else if (sort === 'price_low') {
     dbq = dbq.order('price_low_cents', { ascending: true, nullsFirst: false })
@@ -99,6 +102,9 @@ export async function GET(req: NextRequest) {
     lat: l.latitude,
     lng: l.longitude,
     resale_flag: l.resale_flag || false,
+    comp_median_cents: l.comp_median_cents ?? null,
+    margin_pct: l.margin_pct ?? null,
+    opportunity_type: l.opportunity_type || 'item',
   }))
 
   return NextResponse.json({ results, total: count || 0, offset, limit })
