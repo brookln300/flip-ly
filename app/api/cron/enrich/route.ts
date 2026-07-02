@@ -4,7 +4,6 @@ export const maxDuration = 300
 import { NextRequest, NextResponse } from 'next/server'
 import { sendTelegramAlert } from '../../../lib/telegram'
 import { enrichAllPending } from '../../../lib/ai/enrich-listing'
-import { runDealAlerts } from '../../../lib/alerts/match'
 import { supabase } from '../../../lib/supabase'
 
 /**
@@ -44,14 +43,6 @@ export async function GET(req: NextRequest) {
     const elapsed = ((Date.now() - start) / 1000).toFixed(1)
     const remainingBacklog = (backlog || 0) - result.enriched - result.fastClassified
 
-    // Fire saved-search deal alerts for newly-enriched high-score listings (non-fatal).
-    let alertsSent = 0
-    try {
-      alertsSent = await runDealAlerts()
-    } catch (e: any) {
-      console.error('[ALERTS] runDealAlerts failed:', e?.message)
-    }
-
     // ── Health alert: AI batches ran but scored nothing → key/credit problem ──
     // This is the signature of an invalid/revoked ANTHROPIC_API_KEY (401) or
     // exhausted credit: real listings get sent to the model but none come back scored.
@@ -86,7 +77,6 @@ export async function GET(req: NextRequest) {
       enriched: result.enriched,
       fast_classified: result.fastClassified,
       batches: result.batches,
-      alerts_sent: alertsSent,
       backlog_before: backlog,
       backlog_remaining: Math.max(0, remainingBacklog),
     })
