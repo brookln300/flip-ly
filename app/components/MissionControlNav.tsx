@@ -9,12 +9,12 @@ import { useSignup } from './SignupContext'
  */
 const SECTIONS: { label: string; href: string | null }[] = [
   { label: 'Command', href: '/' },
-  { label: 'Deals', href: null },
+  { label: 'Deals', href: '/deals' },
   { label: 'Map', href: null },
   { label: 'Alerts', href: null },
   { label: 'Watchlist', href: null },
   { label: 'Reports', href: null },
-  { label: 'System', href: null },
+  { label: 'System', href: '/system' },
 ]
 
 export default function MissionControlNav({ active = 'Command' }: { active?: string }) {
