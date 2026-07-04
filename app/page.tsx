@@ -24,7 +24,7 @@ async function getCommandData() {
   const today = new Date().toISOString().split('T')[0]
   const maxAge = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
-  const [totalRes, new24Res, hot24Res, catsRes, usageRes, lastScrapeRes, backlogRes, hotDealsRes] = await Promise.all([
+  const [totalRes, new24Res, hot24Res, catsRes, usageRes, lastScrapeRes, backlogRes, hotDealsRes, invRes] = await Promise.all([
     supabase.from('fliply_listings').select('id', { count: 'exact', head: true }).eq('market_id', DFW_MARKET_ID),
     supabase.from('fliply_listings').select('id', { count: 'exact', head: true }).eq('market_id', DFW_MARKET_ID).gte('scraped_at', dayAgo),
     supabase.from('fliply_listings').select('id', { count: 'exact', head: true }).eq('market_id', DFW_MARKET_ID).gte('deal_score', 8).gte('scraped_at', dayAgo),
@@ -43,9 +43,20 @@ async function getCommandData() {
       .order('deal_score', { ascending: false })
       .order('scraped_at', { ascending: false })
       .limit(60),
+    supabase.from('fliply_inventory').select('status, bought_cents, sold_cents, fees_cents'),
   ])
 
   const hotDeals = diversifyByCategory(hotDealsRes.data || [], 12)
+
+  const inv = invRes.data || []
+  const invActive = inv.filter((r: any) => r.status === 'bought' || r.status === 'listed')
+  const invSold = inv.filter((r: any) => r.status === 'sold')
+  const flips = {
+    active: invActive.length,
+    invested: invActive.reduce((s: number, r: any) => s + (r.bought_cents || 0), 0),
+    sold: invSold.length,
+    profit: invSold.reduce((s: number, r: any) => s + ((r.sold_cents || 0) - (r.bought_cents || 0) - (r.fees_cents || 0)), 0),
+  }
   return {
     total: totalRes.count || 0,
     new24h: new24Res.count || 0,
@@ -56,8 +67,11 @@ async function getCommandData() {
     backlog: backlogRes.count || 0,
     hotDeals,
     topScore: hotDeals[0]?.deal_score || 0,
+    flips,
   }
 }
+
+const money = (c: number) => `$${Math.round(c / 100).toLocaleString()}`
 
 // Spread the hot feed across categories (round-robin) so one high-margin
 // category doesn't monopolize it — a garage-saler wants variety, not 12 TVs.
@@ -174,6 +188,18 @@ export default async function CommandCenter() {
             <span>last scrape {timeAgo(d.lastScrape)}</span>
             <span>{d.total.toLocaleString()} DFW listings · {d.backlog} backlog</span>
             <span>{d.cats} categories expanding</span>
+          </div>
+
+          {/* Flips — inventory + eBay */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'var(--space-8)', marginBottom: '10px' }}>
+            <h2 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>Flips & inventory</h2>
+            <a href="/inventory" style={{ fontSize: '12px', color: 'var(--accent-green)', textDecoration: 'none' }}>Manage inventory →</a>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+            <Metric label="In inventory" value={String(d.flips.active)} />
+            <Metric label="Invested" value={money(d.flips.invested)} />
+            <Metric label="Sold" value={String(d.flips.sold)} />
+            <Metric label="Net profit" value={money(d.flips.profit)} accent={d.flips.profit >= 0} />
           </div>
 
           <footer style={{ marginTop: 'var(--space-12)', paddingTop: 'var(--space-6)', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>

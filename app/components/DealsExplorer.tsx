@@ -53,6 +53,12 @@ export default function DealsExplorer() {
     try { await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listing_id: id }) }) }
     catch { setDrafted(p => { const n = new Set(p); n.delete(id); return n }) }
   }
+  const [bought, setBought] = useState<Set<string>>(new Set())
+  const markBought = async (id: string) => {
+    setBought(p => new Set(p).add(id))
+    try { await fetch('/api/inventory', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listing_id: id }) }) }
+    catch { setBought(p => { const n = new Set(p); n.delete(id); return n }) }
+  }
 
   const buildUrl = useCallback((off: number) => {
     const p = new URLSearchParams()
@@ -191,6 +197,11 @@ export default function DealsExplorer() {
                       title="Draft an inquiry to the seller"
                       style={{ fontSize: '11px', color: drafted.has(d.id) ? 'var(--text-muted)' : 'var(--accent-green)', background: 'transparent', border: 'none', cursor: drafted.has(d.id) ? 'default' : 'pointer', padding: 0 }}
                     >{drafted.has(d.id) ? '✉ drafted' : '✉ draft'}</button>
+                    <button
+                      onClick={e => { e.preventDefault(); e.stopPropagation(); if (!bought.has(d.id)) markBought(d.id) }}
+                      title="Add to inventory as bought"
+                      style={{ fontSize: '11px', color: bought.has(d.id) ? 'var(--text-muted)' : 'var(--accent-green)', background: 'transparent', border: 'none', cursor: bought.has(d.id) ? 'default' : 'pointer', padding: 0 }}
+                    >{bought.has(d.id) ? '✓ bought' : '+ bought'}</button>
                     {d.source_url && <span style={{ fontSize: '11px', color: 'var(--accent-green)' }}>view ↗</span>}
                   </div>
                 </div>
