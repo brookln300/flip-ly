@@ -47,7 +47,7 @@ if (SUPABASE_KEY.includes('PASTE_YOUR')) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } })
 
 const SYSTEM = `You are a resale deal-scoring engine for a Dallas–Fort Worth flipper. Given numbered listings, return JSON only.
-Return: {"results":[{"n":INT the listing number this object is for, "deal_score":INT 1-10, "description":"1-2 sentence useful rewrite of THIS listing's title (brand/model/condition if inferable)", "deal_score_reason":"one sentence with specific resale evidence", "tags":[from ONLY: tools,furniture,electronics,vintage,kids,clothing,sports,books,kitchen,outdoor,automotive,collectibles,free,home-decor,musical], "event_type":"one of garage_sale,estate_sale,moving_sale,flea_market,auction,community_sale,thrift,event,listing", "resale_flag":BOOL true ONLY if this specific item likely resells for 2x+ its price}]}. Return exactly one object per listing. The "n" MUST match the listing number, and every field must describe that same listing — do not shift or reorder.
+Return: {"results":[{"n":INT the listing number this object is for, "deal_score":INT 1-10, "description":"1-2 sentence useful rewrite of THIS listing's title (brand/model/condition if inferable)", "deal_score_reason":"one sentence with specific resale evidence", "tags":[from ONLY: tools,furniture,electronics,vintage,kids,clothing,sports,books,kitchen,outdoor,automotive,collectibles,free,home-decor,musical], "event_type":"one of garage_sale,estate_sale,moving_sale,flea_market,auction,community_sale,thrift,event,listing", "resale_flag":BOOL true ONLY if this specific item likely resells for 2x+ its price, "est_resale_low":INT your best low estimate of this exact item's typical CURRENT resale/used market price in WHOLE US DOLLARS (not cents) or null if you truly cannot estimate, "est_resale_high":INT high estimate in whole dollars or null}]}. Return exactly one object per listing. For est_resale, estimate the typical used-market price of THIS specific model in average condition (what people currently ask/pay); be realistic and conservative, not retail MSRP. The "n" MUST match the listing number, and every field must describe that same listing — do not shift or reorder.
 Score on FLIP PROFIT and BE CONSERVATIVE. Most listings are 3-6. The score reflects margin vs the STATED price, not desirability. Rules:
 - A used/desirable item at or near typical market price = 3-5. Do NOT score high just because the brand is good (a MacBook at a normal price is a 4, not a 9).
 - 6-7: known brand priced clearly 20-40% below typical resale.
@@ -126,6 +126,27 @@ async function run() {
       let resale = !!r.resale_flag
       const isSaleEvent = ['garage_sale', 'estate_sale', 'moving_sale', 'community_sale', 'flea_market', 'auction'].includes(r.event_type)
       if (l.price_low_cents === 100 && !isSaleEvent && score > 5) { score = 5; resale = false }
+
+      // Comp gauge from the model's own resale estimate (his "AI + pricing =
+      // general idea"). A margin vs the estimated resale midpoint is what earns
+      // the 8-10 band the LLM score is otherwise capped out of. Conservative
+      // thresholds — the estimate is soft. eBay-scrape comps override this when
+      // they succeed (higher confidence). Skip for sale events + $1 placeholders.
+      let compCents = null, marginPct = null
+      const rl = parseInt(r.est_resale_low), rh = parseInt(r.est_resale_high)
+      if (!isSaleEvent && l.price_low_cents > 100 && Number.isFinite(rl) && Number.isFinite(rh) && rh > 0) {
+        compCents = Math.round(((rl + rh) / 2) * 100) // dollars → cents
+        if (compCents > l.price_low_cents) {
+          marginPct = Math.round(((compCents - l.price_low_cents) / compCents) * 100)
+          // AI-estimated resale is soft → cap its elevation at 8 ("possible flip,
+          // below estimated market"). Confident 9-10 is reserved for real eBay
+          // comps (the local-comps worker), which override this when they land.
+          if (marginPct >= 45) score = Math.max(score, 8)
+        } else {
+          marginPct = Math.round(((compCents - l.price_low_cents) / compCents) * 100) // may be negative (priced above market)
+        }
+      }
+
       await supabase.from('fliply_listings').update({
         ai_description: r.description || l.title,
         deal_score: score,
@@ -134,6 +155,9 @@ async function run() {
         event_type: r.event_type || 'listing',
         resale_flag: resale,
         is_hot: score >= 8,
+        comp_median_cents: compCents,
+        margin_pct: marginPct,
+        comp_checked_at: compCents != null ? new Date().toISOString() : null,
         enriched_at: new Date().toISOString(),
       }).eq('id', l.id)
     }
