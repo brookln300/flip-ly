@@ -15,8 +15,8 @@ const SECTIONS: { label: string; href: string | null }[] = [
   { label: 'Alerts', href: null },
   { label: 'Inventory', href: '/inventory' },
   { label: 'Messages', href: '/messages' },
-  { label: 'Reports', href: null },
   { label: 'System', href: '/system' },
+  { label: 'Help', href: '/help' },
 ]
 
 export default function MissionControlNav({ active = 'Command' }: { active?: string }) {

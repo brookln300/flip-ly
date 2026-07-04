@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Family allowlist — only invited emails can create an account.
-    if (!isEmailAllowed(email)) {
+    if (!(await isEmailAllowed(email))) {
       return NextResponse.json({ error: 'This email is not on the flip-ly family list. Ask Keith to add it.' }, { status: 403 })
     }
 

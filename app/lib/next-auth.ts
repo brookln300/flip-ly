@@ -56,7 +56,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-        if (!isEmailAllowed(credentials.email)) return null
+        if (!(await isEmailAllowed(credentials.email))) return null
 
         const { data: user } = await supabase
           .from('fliply_users')
@@ -89,7 +89,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       // Family allowlist — block non-allowlisted emails from OAuth login/signup.
-      if (!isEmailAllowed(user.email)) {
+      if (!(await isEmailAllowed(user.email))) {
         console.log(`[AUTH] blocked non-allowlisted login: ${user.email}`)
         return false
       }

@@ -19,7 +19,20 @@ const ROUTER_SYSTEM = `You route a message for a Dallas–Fort Worth deal-finder
  "max_price": number in dollars (optional, for top_deals/category/search),
  "ref": "6-char code" (only for intent=buy or draft),
  "limit": number 1-10 (optional)}
-Examples: "best deals" -> {"intent":"top_deals"}. "electronics under 100" -> {"intent":"category","category":"electronics","max_price":100}. "any dewalt?" -> {"intent":"search","query":"dewalt"}. "what's in inventory" -> {"intent":"inventory"}. "buy a1b2c3" -> {"intent":"buy","ref":"a1b2c3"}. "draft a1b2c3" -> {"intent":"draft","ref":"a1b2c3"}. Unclear -> {"intent":"help"}.`
+Rules: a specific product/keyword (dewalt, iphone, sports cards, pokemon, guitar, lego) -> intent=search with that as query. A broad category word from the list -> intent=category. "best/any/what X" where X is a category word -> category; where X is a specific thing -> search.
+Examples:
+"best deals" / "what's hot" -> {"intent":"top_deals"}
+"best electronics deal in the area" -> {"intent":"category","category":"electronics"}
+"electronics under 100" -> {"intent":"category","category":"electronics","max_price":100}
+"any sports cards in our lists?" -> {"intent":"search","query":"sports cards"}
+"any pokemon or trading cards" -> {"intent":"search","query":"cards"}
+"any dewalt?" -> {"intent":"search","query":"dewalt"}
+"cheap tools" -> {"intent":"category","category":"tools"}
+"what's in inventory" / "our profit" -> {"intent":"inventory"}
+"how many listings" / "stats" -> {"intent":"stats"}
+"buy a1b2c3" -> {"intent":"buy","ref":"a1b2c3"}
+"draft a1b2c3" -> {"intent":"draft","ref":"a1b2c3"}
+anything unclear -> {"intent":"help"}.`
 
 async function topDeals(maxPrice?: number, limit = 5) {
   const now = new Date().toISOString()
