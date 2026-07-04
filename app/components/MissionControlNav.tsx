@@ -13,6 +13,7 @@ const SECTIONS: { label: string; href: string | null }[] = [
   { label: 'Map', href: null },
   { label: 'Alerts', href: null },
   { label: 'Watchlist', href: null },
+  { label: 'Messages', href: '/messages' },
   { label: 'Reports', href: null },
   { label: 'System', href: '/system' },
 ]

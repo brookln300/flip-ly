@@ -42,10 +42,10 @@ async function getCommandData() {
       .gte('scraped_at', maxAge)
       .order('deal_score', { ascending: false })
       .order('scraped_at', { ascending: false })
-      .limit(12),
+      .limit(60),
   ])
 
-  const hotDeals = hotDealsRes.data || []
+  const hotDeals = diversifyByCategory(hotDealsRes.data || [], 12)
   return {
     total: totalRes.count || 0,
     new24h: new24Res.count || 0,
@@ -57,6 +57,28 @@ async function getCommandData() {
     hotDeals,
     topScore: hotDeals[0]?.deal_score || 0,
   }
+}
+
+// Spread the hot feed across categories (round-robin) so one high-margin
+// category doesn't monopolize it — a garage-saler wants variety, not 12 TVs.
+// Input is score-desc; categories are ordered by their best score, then we
+// take the top remaining item from each in rotation.
+function diversifyByCategory(deals: any[], slots: number): any[] {
+  const byCat = new Map<string, any[]>()
+  for (const d of deals) {
+    const cat = (d.ai_tags && d.ai_tags[0]) || d.event_type || 'other'
+    if (!byCat.has(cat)) byCat.set(cat, [])
+    byCat.get(cat)!.push(d)
+  }
+  const lists = Array.from(byCat.values()) // each already score-desc; groups in best-score order (Map preserves insertion = first-seen = highest score)
+  const out: any[] = []
+  let i = 0
+  while (out.length < slots && lists.some(l => l.length)) {
+    const l = lists[i % lists.length]
+    if (l.length) out.push(l.shift())
+    i++
+  }
+  return out
 }
 
 function Metric({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {

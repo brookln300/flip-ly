@@ -45,7 +45,14 @@ export default function DealsExplorer() {
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [drafted, setDrafted] = useState<Set<string>>(new Set())
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const draftInquiry = async (id: string) => {
+    setDrafted(p => new Set(p).add(id))
+    try { await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listing_id: id }) }) }
+    catch { setDrafted(p => { const n = new Set(p); n.delete(id); return n }) }
+  }
 
   const buildUrl = useCallback((off: number) => {
     const p = new URLSearchParams()
@@ -177,8 +184,15 @@ export default function DealsExplorer() {
                 <div style={{ textAlign: 'right', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   <div style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>{d.price}</div>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{tag}</div>
-                  {d.comp_median_cents != null && <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>≈${Math.round(d.comp_median_cents / 100).toLocaleString()} sold</div>}
-                  {d.source_url && <div style={{ fontSize: '11px', color: 'var(--accent-green)', marginTop: '4px' }}>view ↗</div>}
+                  {d.comp_median_cents != null && <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginTop: '2px', fontFamily: 'var(--font-mono)' }}>≈${Math.round(d.comp_median_cents / 100).toLocaleString()} est.</div>}
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                    <button
+                      onClick={e => { e.preventDefault(); e.stopPropagation(); if (!drafted.has(d.id)) draftInquiry(d.id) }}
+                      title="Draft an inquiry to the seller"
+                      style={{ fontSize: '11px', color: drafted.has(d.id) ? 'var(--text-muted)' : 'var(--accent-green)', background: 'transparent', border: 'none', cursor: drafted.has(d.id) ? 'default' : 'pointer', padding: 0 }}
+                    >{drafted.has(d.id) ? '✉ drafted' : '✉ draft'}</button>
+                    {d.source_url && <span style={{ fontSize: '11px', color: 'var(--accent-green)' }}>view ↗</span>}
+                  </div>
                 </div>
               </div>
             )
