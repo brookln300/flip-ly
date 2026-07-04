@@ -57,23 +57,33 @@ Score on FLIP PROFIT and BE CONSERVATIVE. Most listings are 3-6. The score refle
 - Generic garage sale, no details = 4-5. $1 on Craigslist = placeholder (make-offer), not real — cap individual $1 items at 5, resale_flag false unless text says "$1 each".
 tags: pick only the 1-2 MOST relevant from the list; do not guess unrelated tags.`
 
-async function ollamaBatch(listings) {
+async function ollamaBatch(listings, tries = 3) {
   const user = listings.map((l, i) =>
     `Listing ${i + 1}: ${l.title} — ${l.price_text || 'price n/a'} | ${l.city || ''} | src:${l.source_type || '?'}`
   ).join('\n')
-  const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL, stream: false, format: 'json',
-      options: { temperature: 0.2, num_ctx: 8192 },
-      messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: `Analyze these ${listings.length} listings.\n${user}` }],
-    }),
-  })
-  if (!res.ok) throw new Error(`Ollama ${res.status}`)
-  const data = await res.json()
-  const parsed = JSON.parse(data.message.content)
-  return parsed.results || []
+  try {
+    const res = await fetch(`${OLLAMA_HOST}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: OLLAMA_MODEL, stream: false, format: 'json',
+        options: { temperature: 0.2, num_ctx: 8192 },
+        messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: `Analyze these ${listings.length} listings.\n${user}` }],
+      }),
+    })
+    if (!res.ok) throw new Error(`Ollama ${res.status}`)
+    const data = await res.json()
+    return JSON.parse(data.message.content).results || []
+  } catch (e) {
+    if (tries > 1) { await new Promise(r => setTimeout(r, 3000)); return ollamaBatch(listings, tries - 1) }
+    throw e
+  }
+}
+
+// Deterministic fallback so a listing the model skipped still leaves the queue
+// (prevents the same rows being re-fetched forever). Conservative; re-runnable.
+function fallbackScore(l) {
+  return { deal_score: 3, description: l.title, deal_score_reason: null, tags: [], event_type: 'listing', resale_flag: false }
 }
 
 async function run() {
@@ -91,11 +101,11 @@ async function run() {
       .limit(BATCH)
     if (!listings || listings.length === 0) break
 
-    let results
+    let results = []
     try {
       results = await ollamaBatch(listings)
     } catch (e) {
-      console.error('batch failed:', e.message); break
+      console.error('batch failed after retries — deterministic fallback for these:', e.message)
     }
 
     // Map results by their echoed listing number — never by array position
@@ -107,9 +117,12 @@ async function run() {
 
     for (let i = 0; i < listings.length; i++) {
       const l = listings[i]
-      const r = byN.get(i + 1)
-      if (!r) continue // no matched result → leave unenriched, retry next run
-      let score = Math.max(1, Math.min(10, parseInt(r.deal_score) || 3))
+      const r = byN.get(i + 1) || fallbackScore(l) // always write → drains the queue
+      // Cap the LLM at 7. A small local model has no real resale knowledge, so
+      // it must not own the 8-10 "hot" band — that's reserved for the comps cron,
+      // which elevates a listing to 8-10 only on verified eBay sold-margin. Keeps
+      // is_hot + hot-deal alerts trustworthy (no vibe-based 9s).
+      let score = Math.min(7, Math.max(1, parseInt(r.deal_score) || 3))
       let resale = !!r.resale_flag
       const isSaleEvent = ['garage_sale', 'estate_sale', 'moving_sale', 'community_sale', 'flea_market', 'auction'].includes(r.event_type)
       if (l.price_low_cents === 100 && !isSaleEvent && score > 5) { score = 5; resale = false }
