@@ -32,7 +32,15 @@ export async function POST(req: NextRequest) {
     }
 
     const isAdmin = chatId === ALLOWED_CHAT_ID
-    const isFamily = !!FAMILY_CHAT_ID && chatId === FAMILY_CHAT_ID
+    // family group id from DB config (set without a redeploy), env as fallback
+    let familyChatId = FAMILY_CHAT_ID || null
+    if (!isAdmin) {
+      try {
+        const { data } = await supabase.from('fliply_config').select('value').eq('key', 'family_chat_id').maybeSingle()
+        if (data?.value) familyChatId = data.value
+      } catch {}
+    }
+    const isFamily = !!familyChatId && chatId === familyChatId
     if (!isAdmin && !isFamily) return OK // ignore everything else
 
     // Family group → the Haiku-routed deal bot (never admin actions here).
