@@ -13,7 +13,7 @@ const money = (c: number | null) => c == null ? '—' : `$${Math.round(c / 100).
 const ref = (id: string) => id.slice(0, 6)
 
 const ROUTER_SYSTEM = `You route a message for a Dallas–Fort Worth deal-finder family chat bot to ONE intent. Return JSON only, no prose:
-{"intent": one of "top_deals" | "category" | "search" | "inventory" | "stats" | "buy" | "draft" | "help",
+{"intent": one of "top_deals" | "category" | "search" | "inventory" | "stats" | "events" | "family" | "buy" | "draft" | "help",
  "category": one of tools|furniture|electronics|vintage|collectibles|musical|automotive|sports|kitchen|outdoor|home-decor|books|kids|clothing|free (only for intent=category),
  "query": "keywords" (only for intent=search),
  "max_price": number in dollars (optional, for top_deals/category/search),
@@ -30,6 +30,8 @@ Examples:
 "cheap tools" -> {"intent":"category","category":"tools"}
 "what's in inventory" / "our profit" -> {"intent":"inventory"}
 "how many listings" / "stats" -> {"intent":"stats"}
+"what's coming up" / "events" / "any plans this weekend" -> {"intent":"events"}
+"birthdays" / "who's who" / "family" -> {"intent":"family"}
 "buy a1b2c3" -> {"intent":"buy","ref":"a1b2c3"}
 "draft a1b2c3" -> {"intent":"draft","ref":"a1b2c3"}
 anything unclear -> {"intent":"help"}.`
@@ -118,6 +120,40 @@ export async function handleFamilyChat(text: string): Promise<string> {
       return `📊 <b>DFW</b>\n${tot.count?.toLocaleString()} listings · ${hot.count} hot (≥8) · ${nu.count} new/24h`
     }
 
+    if (intent === 'events') {
+      const { data } = await supabase.from('fliply_events').select('title, emoji, starts_at, location, rsvps')
+        .gte('starts_at', new Date(Date.now() - 6 * 3600e3).toISOString()).order('starts_at').limit(5)
+      if (!data?.length) return `📅 Nothing on the family calendar yet. Add something at flip-ly.net/calendar!`
+      const lines = ['📅 <b>Coming up</b>', '']
+      for (const e of data) {
+        const d = new Date(e.starts_at)
+        const yes = Object.values(e.rsvps || {}).filter(v => v === 'yes').length
+        lines.push(`${e.emoji ? e.emoji + ' ' : ''}<b>${e.title}</b> — ${d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}${e.location ? ` · ${e.location}` : ''}${yes ? ` · ${yes} coming` : ''}`)
+      }
+      lines.push('', '<i>RSVP at flip-ly.net/calendar</i>')
+      return lines.join('\n')
+    }
+
+    if (intent === 'family') {
+      const { data } = await supabase.from('fliply_profiles').select('display_name, sigil, birthday, status_text, status_emoji').order('display_name')
+      if (!data?.length) return 'No lanterns lit yet — visit flip-ly.net/family/me to light yours!'
+      const now = new Date()
+      const lines = ['🏮 <b>The family</b>', '']
+      for (const p of data) {
+        let bday = ''
+        if (p.birthday) {
+          const b = new Date(p.birthday)
+          const next = new Date(now.getFullYear(), b.getUTCMonth(), b.getUTCDate())
+          if (next < now) next.setFullYear(next.getFullYear() + 1)
+          const days = Math.round((next.getTime() - now.getTime()) / 86400e3)
+          if (days === 0) bday = ' 🎂 TODAY!'
+          else if (days <= 30) bday = ` 🎂 in ${days}d`
+        }
+        lines.push(`${p.sigil ? p.sigil + ' ' : ''}${p.display_name}${p.status_text ? ` — ${p.status_emoji ? p.status_emoji + ' ' : ''}${p.status_text}` : ''}${bday}`)
+      }
+      return lines.join('\n')
+    }
+
     if (intent === 'buy' && parsed.ref) {
       const d = await resolveRef(parsed.ref)
       if (!d) return `Couldn't find deal <code>${parsed.ref}</code>. Ask for deals first, then use the code shown.`
@@ -141,5 +177,5 @@ export async function handleFamilyChat(text: string): Promise<string> {
 }
 
 function helpText() {
-  return `👋 <b>flip-ly family bot</b> — just ask, e.g.:\n• "top deals" / "best deals under $100"\n• "electronics under 200" / "tools"\n• "any dewalt" (search)\n• "my inventory" · "stats"\n• "buy &lt;code&gt;" / "draft &lt;code&gt;" (codes shown next to each deal)`
+  return `👋 <b>The Hearth family bot</b> — just ask, e.g.:\n• "top deals" / "best deals under $100"\n• "electronics under 200" / "any sports cards"\n• "what's coming up" (calendar) · "birthdays"\n• "my inventory" · "stats"\n• "buy &lt;code&gt;" / "draft &lt;code&gt;" (codes shown next to each deal)\n\n🏮 flip-ly.net — light your lantern at /family/me`
 }

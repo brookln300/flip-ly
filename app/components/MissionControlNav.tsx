@@ -9,7 +9,8 @@ import { useSignup } from './SignupContext'
  * (no 404s). Public read-only; family login via the auth modal.
  */
 const SECTIONS: { label: string; href: string | null }[] = [
-  { label: 'Command', href: '/' },
+  { label: 'Hub', href: '/' },
+  { label: 'Command', href: '/ops' },
   { label: 'Deals', href: '/deals' },
   { label: 'Map', href: null },
   { label: 'Alerts', href: null },
