@@ -53,7 +53,11 @@ export default function MessagesReview() {
             </div>
             {listing && <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>{listing.price_text} · {listing.city}{m.offer_cents ? ` · offering $${Math.round(m.offer_cents / 100).toLocaleString()}` : ''}</div>}
             <input
-              defaultValue={m.subject || ''} onChange={e => patch(m.id, { subject: e.target.value })}
+              defaultValue={m.to_addr || ''} placeholder="Seller email (paste to enable auto-send; blank = send manually from the listing)" onBlur={e => patch(m.id, { to_addr: e.target.value })}
+              style={{ width: '100%', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: '6px', padding: '7px 10px', fontSize: '12px', color: 'var(--text-primary)', marginBottom: '8px' }}
+            />
+            <input
+              defaultValue={m.subject || ''} onBlur={e => patch(m.id, { subject: e.target.value })}
               style={{ width: '100%', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: '6px', padding: '7px 10px', fontSize: '13px', color: 'var(--text-primary)', marginBottom: '8px' }}
             />
             <textarea

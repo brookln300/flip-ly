@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useSignup } from './SignupContext'
 
 /**
@@ -20,6 +21,15 @@ const SECTIONS: { label: string; href: string | null }[] = [
 
 export default function MissionControlNav({ active = 'Command' }: { active?: string }) {
   const { openSignup, loggedInUser } = useSignup()
+  const [notif, setNotif] = useState(0)
+
+  useEffect(() => {
+    let alive = true
+    const poll = () => fetch('/api/messages/count').then(r => r.json()).then(j => { if (alive) setNotif(j.actionable || 0) }).catch(() => {})
+    poll()
+    const t = setInterval(poll, 60000)
+    return () => { alive = false; clearInterval(t) }
+  }, [])
 
   return (
     <header style={{
@@ -41,18 +51,26 @@ export default function MissionControlNav({ active = 'Command' }: { active?: str
           <span className="hidden sm:inline" style={{ fontSize: '12px', color: 'var(--text-dim)', borderLeft: '1px solid var(--border-subtle)', paddingLeft: '8px' }}>DFW dealfinder</span>
         </a>
 
-        {loggedInUser ? (
-          <a href="/dashboard" style={{
-            flexShrink: 0, padding: '6px 12px', fontSize: '12px', fontWeight: 700,
-            background: 'var(--bg-surface)', color: 'var(--text-secondary)',
-            border: '1px solid var(--border-default)', borderRadius: '6px', textDecoration: 'none',
-          }}>{loggedInUser.email.split('@')[0]}</a>
-        ) : (
-          <button onClick={openSignup} style={{
-            flexShrink: 0, padding: '6px 14px', fontSize: '12px', fontWeight: 700,
-            background: 'var(--accent-green)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer',
-          }}>Sign in</button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+          <a href="/messages" aria-label={`Messages${notif ? ` (${notif} need attention)` : ''}`} title="Messages" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '34px', height: '34px', borderRadius: '8px', border: '1px solid var(--border-subtle)', color: 'var(--text-secondary)', textDecoration: 'none' }}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v12H5.17L4 17.17V4z" /></svg>
+            {notif > 0 && (
+              <span style={{ position: 'absolute', top: '-5px', right: '-5px', minWidth: '17px', height: '17px', padding: '0 4px', borderRadius: '9px', background: 'var(--accent-green)', color: '#fff', fontSize: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>{notif > 99 ? '99+' : notif}</span>
+            )}
+          </a>
+          {loggedInUser ? (
+            <a href="/dashboard" style={{
+              padding: '6px 12px', fontSize: '12px', fontWeight: 700,
+              background: 'var(--bg-surface)', color: 'var(--text-secondary)',
+              border: '1px solid var(--border-default)', borderRadius: '6px', textDecoration: 'none',
+            }}>{loggedInUser.email.split('@')[0]}</a>
+          ) : (
+            <button onClick={openSignup} style={{
+              padding: '6px 14px', fontSize: '12px', fontWeight: 700,
+              background: 'var(--accent-green)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer',
+            }}>Sign in</button>
+          )}
+        </div>
       </div>
 
       <nav aria-label="Sections" style={{
