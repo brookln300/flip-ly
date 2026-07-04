@@ -22,11 +22,18 @@ export async function POST(req: NextRequest) {
     if (!message?.text || !message?.chat?.id) return OK
 
     const chatId = String(message.chat.id)
+    const text = message.text.trim()
+
+    // Setup helper: anyone can ask a chat/group for its ID (needed to wire
+    // FAMILY_CHAT_ID). Harmless — reveals only the caller's own chat id.
+    if (text === '/id' || text.toLowerCase() === 'chat id') {
+      await sendTelegramMessage(chatId, `This chat's ID: <code>${chatId}</code>\nAdd it to Vercel as FAMILY_CHAT_ID to turn on the family bot here.`)
+      return OK
+    }
+
     const isAdmin = chatId === ALLOWED_CHAT_ID
     const isFamily = !!FAMILY_CHAT_ID && chatId === FAMILY_CHAT_ID
     if (!isAdmin && !isFamily) return OK // ignore everything else
-
-    const text = message.text.trim()
 
     // Family group → the Haiku-routed deal bot (never admin actions here).
     if (isFamily) {
