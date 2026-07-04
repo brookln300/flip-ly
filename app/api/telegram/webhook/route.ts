@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
-import { sendTelegramAlert } from '../../../lib/telegram'
+import { sendTelegramAlert, sendTelegramMessage } from '../../../lib/telegram'
+import { handleFamilyChat } from '../../../lib/telegram-chat'
 
 export const dynamic = 'force-dynamic'
 
-const ALLOWED_CHAT_ID = process.env.TELEGRAM_CHAT_ID
+const ALLOWED_CHAT_ID = process.env.TELEGRAM_CHAT_ID   // Keith's private chat — full admin
+const FAMILY_CHAT_ID = process.env.FAMILY_CHAT_ID       // family group — read-only chat bot + buy/draft
 const OK = NextResponse.json({ ok: true })
 
 /**
- * Telegram Bot Webhook — Keith's command center for flip-ly.
+ * Telegram Bot Webhook — one bot, two surfaces:
+ *   • Keith's private chat  → full admin command center
+ *   • family group          → natural-language deal bot (Haiku), read + light actions
  */
 export async function POST(req: NextRequest) {
   try {
@@ -17,10 +21,20 @@ export async function POST(req: NextRequest) {
 
     if (!message?.text || !message?.chat?.id) return OK
 
-    // Security: only respond to Keith's chat
-    if (String(message.chat.id) !== ALLOWED_CHAT_ID) return OK
+    const chatId = String(message.chat.id)
+    const isAdmin = chatId === ALLOWED_CHAT_ID
+    const isFamily = !!FAMILY_CHAT_ID && chatId === FAMILY_CHAT_ID
+    if (!isAdmin && !isFamily) return OK // ignore everything else
 
     const text = message.text.trim()
+
+    // Family group → the Haiku-routed deal bot (never admin actions here).
+    if (isFamily) {
+      const reply = await handleFamilyChat(text)
+      await sendTelegramMessage(chatId, reply)
+      return OK
+    }
+
     const lower = text.toLowerCase()
 
     // ── Router ──

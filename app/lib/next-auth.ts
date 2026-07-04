@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs'
 import { supabase } from './supabase'
 import { trackEvent } from './analytics'
 import { sendTelegramAlert } from './telegram'
+import { isEmailAllowed } from './allowlist'
 
 /**
  * Enroll a new OAuth user in the welcome-to-convert drip sequence.
@@ -55,6 +56,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
+        if (!isEmailAllowed(credentials.email)) return null
 
         const { data: user } = await supabase
           .from('fliply_users')
@@ -86,6 +88,12 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account }) {
+      // Family allowlist — block non-allowlisted emails from OAuth login/signup.
+      if (!isEmailAllowed(user.email)) {
+        console.log(`[AUTH] blocked non-allowlisted login: ${user.email}`)
+        return false
+      }
+
       // For OAuth providers (Twitter), upsert user into fliply_users
       if (account?.provider === 'twitter' && user.email) {
         const { data: existing } = await supabase

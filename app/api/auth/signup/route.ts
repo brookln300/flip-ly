@@ -9,6 +9,7 @@ import { discoverSourcesForMarket } from '../../../lib/discovery/source-discover
 import { sendEmail } from '../../../lib/email/send'
 import { getDripEmailHtml } from '../../../lib/email/drip-templates'
 import { sendTelegramAlert } from '../../../lib/telegram'
+import { isEmailAllowed } from '../../../lib/allowlist'
 
 // Welcome email uses the shared drip template — single source of truth
 const WELCOME_SUBJECT = "Welcome to flip-ly — here's how it works"
@@ -19,6 +20,11 @@ export async function POST(req: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password required' }, { status: 400 })
+    }
+
+    // Family allowlist — only invited emails can create an account.
+    if (!isEmailAllowed(email)) {
+      return NextResponse.json({ error: 'This email is not on the flip-ly family list. Ask Keith to add it.' }, { status: 403 })
     }
 
     // Validate email format

@@ -17,34 +17,29 @@ export async function sendTelegramAlert(message: string): Promise<void> {
     parse_mode: 'HTML',
   })
 
+  await sendTelegramMessage(TELEGRAM_CHAT_ID, message)
+}
+
+/**
+ * Send a message to a specific chat (e.g. the family group). Retries once.
+ */
+export async function sendTelegramMessage(chatId: string | number, message: string): Promise<void> {
+  if (!TELEGRAM_BOT_TOKEN) return
+  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
+  const payload = JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'HTML', disable_web_page_preview: true })
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 8000)
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        signal: controller.signal,
-      })
-
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, signal: controller.signal })
       clearTimeout(timeout)
-
-      if (!res.ok) {
-        const body = await res.text().catch(() => '')
-        console.error(`[TELEGRAM] Alert failed (${res.status}): ${body}`)
-        if (attempt < 2) continue
-      } else {
-        console.log(`[TELEGRAM] Alert sent`)
-        return
-      }
+      if (res.ok) return
+      const body = await res.text().catch(() => '')
+      console.error(`[TELEGRAM] send failed (${res.status}): ${body}`)
+      if (attempt < 2) continue
     } catch (err: any) {
-      console.error(`[TELEGRAM] Error (attempt ${attempt}):`, err.message)
-      if (attempt < 2) {
-        // Brief pause before retry
-        await new Promise(r => setTimeout(r, 500))
-      }
+      console.error(`[TELEGRAM] send error (attempt ${attempt}):`, err.message)
+      if (attempt < 2) await new Promise(r => setTimeout(r, 500))
     }
   }
 }
