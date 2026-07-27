@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
 import { sendTelegramMessage } from '../../../lib/telegram'
 import { classifyBatch } from '../../../lib/fb-free/classify'
+import { zipDistanceMiles } from '../../../lib/fb-free/geo'
 import type { FbFreePost } from '../../../lib/fb-free/types'
 
 /**
@@ -32,8 +33,9 @@ function esc(str: string): string {
 function buildMessage(row: FbFreePost): string {
   const lines: string[] = [`🆓 <b>${esc(row.item_summary || 'Free item')}</b>`]
 
-  const meta = [row.location_hint, row.pickup_note].filter(Boolean).map((s) => esc(s as string))
-  if (meta.length) lines.push(meta.join(' · '))
+  const metaParts = [row.location_hint, row.pickup_note].filter(Boolean).map((s) => esc(s as string))
+  if (row.distance_mi != null) metaParts.push(`~${Math.round(row.distance_mi)} mi away`)
+  if (metaParts.length) lines.push(metaParts.join(' · '))
 
   if (row.group_name) lines.push(`<i>${esc(row.group_name)}</i>`)
   if (row.post_url) lines.push(`<a href="${esc(row.post_url)}">Open post →</a>`)
@@ -71,6 +73,22 @@ export async function GET(req: NextRequest) {
       if (!v) continue
 
       const isFree = v.is_free === true
+      const locationZip = isFree ? (v.location_zip || null) : null
+
+      // Soft distance filter: only rejects when we can actually resolve a
+      // distance AND it exceeds the user's radius. A post with no parseable ZIP
+      // is never dropped on distance — the group itself is the geo scope.
+      let distanceMi: number | null = null
+      let status: FbFreePost['status'] = isFree ? 'ready' : 'rejected'
+      let reason = v.reason ?? null
+      if (isFree && row.home_zip && row.radius_mi && locationZip) {
+        distanceMi = await zipDistanceMiles(row.home_zip, locationZip)
+        if (distanceMi !== null && distanceMi > row.radius_mi) {
+          status = 'rejected'
+          reason = `out of radius (${Math.round(distanceMi)}mi > ${row.radius_mi}mi)`
+        }
+      }
+
       await supabase
         .from('fb_free_posts')
         .update({
@@ -78,14 +96,16 @@ export async function GET(req: NextRequest) {
           item_summary: isFree ? v.item_summary : null,
           location_hint: isFree ? v.location_hint : null,
           pickup_note: isFree ? v.pickup_note : null,
-          ai_reason: v.reason ?? null,
-          status: isFree ? 'ready' : 'rejected',
+          location_zip: locationZip,
+          distance_mi: distanceMi,
+          ai_reason: reason,
+          status,
           processed_at: new Date().toISOString(),
         })
         .eq('id', row.id)
 
       stats.classified++
-      isFree ? stats.free++ : stats.rejected++
+      status === 'ready' ? stats.free++ : stats.rejected++
     }
   }
 

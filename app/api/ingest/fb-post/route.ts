@@ -43,6 +43,8 @@ export async function POST(req: NextRequest) {
       raw_text: p.raw_text.trim(),
       image_urls: Array.isArray(p.image_urls) ? p.image_urls.slice(0, 10) : null,
       captured_at: p.captured_at || new Date().toISOString(),
+      home_zip: typeof p.home_zip === 'string' && /^\d{5}$/.test(p.home_zip) ? p.home_zip : null,
+      radius_mi: Number.isFinite(p.radius_mi) ? Math.round(p.radius_mi as number) : null,
       status: 'pending' as const,
     }))
 

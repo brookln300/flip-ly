@@ -1,21 +1,17 @@
-const endpointEl = document.getElementById('endpoint')
-const tokenEl = document.getElementById('token')
-const statusEl = document.getElementById('status')
+const dot = document.getElementById('dot')
+const statusText = document.getElementById('statusText')
 
-chrome.storage.local.get(['endpoint', 'token']).then(({ endpoint, token }) => {
-  if (endpoint) endpointEl.value = endpoint
-  if (token) tokenEl.value = token
+chrome.storage.local.get(['settings', 'groups']).then(({ settings, groups }) => {
+  const s = settings || {}
+  const configured = !!(s.endpoint && s.token)
+  const groupCount = Object.values(groups || {}).filter((g) => g.enabled !== false).length
+
+  dot.className = 'dot ' + (configured ? 'ok' : 'bad')
+  statusText.textContent = configured
+    ? `Connected · ${groupCount} group${groupCount === 1 ? '' : 's'} enabled`
+    : 'Not configured — set endpoint + token'
 })
 
-document.getElementById('save').addEventListener('click', async () => {
-  const endpoint = endpointEl.value.trim()
-  const token = tokenEl.value.trim()
-  if (!endpoint || !token) {
-    statusEl.style.color = '#b00020'
-    statusEl.textContent = 'Both fields are required.'
-    return
-  }
-  await chrome.storage.local.set({ endpoint, token })
-  statusEl.style.color = '#128a3a'
-  statusEl.textContent = 'Saved.'
+document.getElementById('openSettings').addEventListener('click', () => {
+  chrome.runtime.openOptionsPage()
 })

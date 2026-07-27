@@ -13,6 +13,10 @@ export interface RawFbPost {
   image_urls?: string[]
   /** ISO timestamp; defaults to server time if omitted. */
   captured_at?: string
+  /** User's home ZIP (from extension settings) for distance filtering. */
+  home_zip?: string
+  /** Max distance in miles the user wants (from extension settings). */
+  radius_mi?: number
 }
 
 /** One row as stored in fb_free_posts. */
@@ -25,6 +29,10 @@ export interface FbFreePost extends RawFbPost {
   location_hint: string | null
   pickup_note: string | null
   ai_reason: string | null
+  home_zip: string | null
+  radius_mi: number | null
+  location_zip: string | null
+  distance_mi: number | null
   status: 'pending' | 'ready' | 'sent' | 'rejected'
   tg_message_id: number | null
   processed_at: string | null
@@ -38,5 +46,7 @@ export interface FbClassification {
   item_summary: string | null
   location_hint: string | null
   pickup_note: string | null
+  /** 5-digit US ZIP parsed from the post text, or null if none present. */
+  location_zip: string | null
   reason: string
 }

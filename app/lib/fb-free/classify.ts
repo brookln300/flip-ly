@@ -22,13 +22,14 @@ When is_free is true, extract:
   Example: "Gray 3-seat sofa, good condition, pet-free home".
 - location_hint: neighborhood / cross-street / city if stated, else null.
 - pickup_note: pickup method or deadline if stated (e.g. "porch pickup, gone by Sunday"), else null.
+- location_zip: a 5-digit US ZIP code ONLY if one literally appears in the post text, else null. Never guess a ZIP from a city or neighborhood name.
 - reason: a short phrase explaining the verdict.
 
-When is_free is false, set item_summary / location_hint / pickup_note to null and
-give the reason (e.g. "for sale $20", "ISO request", "already claimed").
+When is_free is false, set item_summary / location_hint / pickup_note / location_zip
+to null and give the reason (e.g. "for sale $20", "ISO request", "already claimed").
 
 Return ONLY valid JSON, no prose:
-{"posts":[{"index":0,"is_free":true,"item_summary":"...","location_hint":"...","pickup_note":"...","reason":"..."}]}
+{"posts":[{"index":0,"is_free":true,"item_summary":"...","location_hint":"...","pickup_note":"...","location_zip":null,"reason":"..."}]}
 Use the exact index number given for each post. Include every post exactly once.`
 
 export async function classifyBatch(posts: { raw_text: string }[]): Promise<FbClassification[]> {

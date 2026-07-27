@@ -226,7 +226,9 @@ Reuses the existing cron auth + `force-dynamic` conventions. No new infra.
 - `vercel.json` — cron every 10 min
 - `scripts/seed-fb-post.ts` — POST sample payloads to test ingest → classify →
   Telegram end-to-end **without touching Facebook at all**
-- `extension/` — Manifest V3 capture extension scaffold (see below)
+- `migrations/012_fb_free_geo.sql` — home_zip / radius_mi / location_zip / distance_mi
+- `app/lib/fb-free/geo.ts` — haversine + ZIP-to-ZIP distance via `lookupZip`
+- `extension/` — Manifest V3 capture extension with a full settings page (see below)
 
 **Your side (the capture step):**
 - The browser extension in `extension/` runs in your session — the one piece that
@@ -235,6 +237,26 @@ Reuses the existing cron auth + `force-dynamic` conventions. No new infra.
   posts already on screen to the ingest endpoint. Human-paced, explicit trigger, no
   background harvesting, no detection-evasion tooling. FB's DOM is obfuscated, so
   the selectors in `extension/content.js` are the part you tune over time.
+
+## Extension settings (`extension/options.html`)
+
+A full settings page (chrome.storage.local), reflected in the popup's status dot:
+
+| Setting | Where applied | Notes |
+|---------|---------------|-------|
+| Endpoint + token | client | token must equal server `FB_INGEST_TOKEN` |
+| **Groups** allow-list | client | every visited group auto-registers; toggle off to mute; add/remove by ID or URL. This is the **primary geo control** — a group is already local. |
+| **Home ZIP + radius (mi)** | server (soft) | sent with each post; the cron drops a post only when it has a real ZIP resolving beyond radius (via `lookupZip` + haversine). No ZIP → always passes. |
+| Include / exclude keywords | client | pre-filter before send; cuts noise and Haiku cost |
+| "Looks like a giveaway" toggle | client | cheap regex pre-filter (`free`, `curb alert`, …) |
+
+### Why distance is a *soft* server filter, not a hard client one
+
+The extension reads post **text**, not coordinates. Free-stuff posts rarely embed
+a ZIP, and we won't fabricate a location we can't verify (repo rule: real data or
+nothing). So distance is enforced server-side, only when Haiku extracts a literal
+ZIP, using the existing `fliply_zip_data` table + Census fallback. For this data
+the group is the real geographic unit; ZIP radius is a bonus trim on top.
 
 ## Environment variables
 
