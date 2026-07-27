@@ -14,9 +14,9 @@ export interface RawFbPost {
   /** ISO timestamp; defaults to server time if omitted. */
   captured_at?: string
   /** User's home ZIP (from extension settings) for distance filtering. */
-  home_zip?: string
+  home_zip?: string | null
   /** Max distance in miles the user wants (from extension settings). */
-  radius_mi?: number
+  radius_mi?: number | null
 }
 
 /** One row as stored in fb_free_posts. */
