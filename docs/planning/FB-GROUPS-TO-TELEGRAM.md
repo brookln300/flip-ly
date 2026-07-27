@@ -1,7 +1,7 @@
 # Architecture — Facebook "Free Stuff" Groups → Telegram Digest
 
 **Created:** 2026-07-27
-**Status:** PROPOSED
+**Status:** PROPOSED — clean half BUILT (ingest + classify + Telegram + extension scaffold)
 **Owner:** Keith
 **Relates to:** `SOURCE-STRATEGY.md` (Decision #3 — Facebook is pointer model, not pipeline)
 
@@ -214,24 +214,47 @@ Reuses the existing cron auth + `force-dynamic` conventions. No new infra.
 
 ---
 
-## What is cleanly buildable right now vs. what needs you
+## What is built vs. what needs you
 
-**Buildable today with zero FB risk (I can implement these now):**
-- `fb_free_posts` table + migration
-- `POST /api/ingest/fb-post` ingest endpoint with token auth + dedupe
-- `/api/cron/fb-free-digest` classify + summarize (Haiku) + Telegram delivery
-- Telegram bot wiring + env config
-- A local `scripts/seed-fb-post.ts` to POST sample payloads so the whole
-  pipeline (ingest → classify → Telegram) can be tested end-to-end **without
-  touching Facebook at all**
+**Built (zero FB risk — all merged on this branch):**
+- `migrations/011_fb_free_posts.sql` — the table + status index
+- `app/api/ingest/fb-post/route.ts` — token-authed ingest with in-batch + DB dedupe
+- `app/api/cron/fb-free-digest/route.ts` — classify (Haiku, batches of 5) →
+  summarize → drain `ready` to Telegram at ≤1 msg/sec
+- `app/lib/fb-free/{types,hash,classify}.ts` — shared types, content-hash dedupe,
+  Haiku batch classifier
+- `vercel.json` — cron every 10 min
+- `scripts/seed-fb-post.ts` — POST sample payloads to test ingest → classify →
+  Telegram end-to-end **without touching Facebook at all**
+- `extension/` — Manifest V3 capture extension scaffold (see below)
 
 **Your side (the capture step):**
-- The browser extension / userscript that runs in your session. This is the one
-  piece that reads Facebook, and by design it's driven by you. I can scaffold a
-  minimal Manifest V3 extension whose content script activates on
-  `facebook.com/groups/*`, reads visible posts, and POSTs them to the ingest
-  endpoint — operated by you, human-paced, no background harvesting and no
-  detection-evasion tooling.
+- The browser extension in `extension/` runs in your session — the one piece that
+  reads Facebook, and by design it's driven by you: it activates on
+  `facebook.com/groups/*` and, when you click **Send free finds**, forwards the
+  posts already on screen to the ingest endpoint. Human-paced, explicit trigger, no
+  background harvesting, no detection-evasion tooling. FB's DOM is obfuscated, so
+  the selectors in `extension/content.js` are the part you tune over time.
+
+## Environment variables
+
+| Var | Where | Purpose |
+|-----|-------|---------|
+| `FB_INGEST_TOKEN` | Vercel + extension popup | shared secret for `POST /api/ingest/fb-post` |
+| `TELEGRAM_BOT_TOKEN` | Vercel (already used) | bot created via @BotFather |
+| `TELEGRAM_FREE_CHAT_ID` | Vercel (optional) | target chat; falls back to `TELEGRAM_CHAT_ID` |
+| `CRON_SECRET` | Vercel (already used) | Bearer auth for the digest cron |
+
+## Local end-to-end test (no Facebook)
+
+```bash
+BASE_URL=http://localhost:3000 FB_INGEST_TOKEN=dev-token npx tsx scripts/seed-fb-post.ts
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/fb-free-digest
+```
+
+The seed posts include one genuine giveaway, one ISO request, one for-sale item,
+and one curb-alert — so you can watch the classifier keep the two free items and
+reject the other two.
 
 ## Explicitly out of scope (and why)
 
