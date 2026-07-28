@@ -32,3 +32,7 @@ CREATE TABLE IF NOT EXISTS fb_free_posts (
 
 -- Drives both cron passes: pull pending oldest-first, then ready oldest-first.
 CREATE INDEX IF NOT EXISTS idx_fb_free_status ON fb_free_posts (status, captured_at);
+
+-- Lock the table down: only the server's service-role key touches it (which
+-- bypasses RLS). No policies = anon/authenticated get no access.
+ALTER TABLE fb_free_posts ENABLE ROW LEVEL SECURITY;
