@@ -279,3 +279,38 @@ body {
     transition-duration: 0s !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   THE HEARTH — dark "family operations deck" theme (additive; the
+   Mission Control pages above still use the light CSS-var system)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Deep charcoal-navy page bg with a faint ember glow + noise texture */
+.hearth-bg {
+  background-color: #0B0F1A;
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -12%, rgba(249, 115, 22, 0.09), transparent 62%),
+    radial-gradient(ellipse 55% 40% at 88% 108%, rgba(239, 68, 68, 0.05), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
+}
+
+/* Ember gradient text — use sparingly (hero, key numerals) */
+.text-ember {
+  background: linear-gradient(120deg, #f59e0b 0%, #f97316 50%, #ef4444 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Soft ember halo behind hero marks */
+.ember-halo {
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.35) 0%, rgba(239, 68, 68, 0.12) 45%, transparent 70%);
+}
+
+/* Hide scrollbars on horizontal chip rows (still scrollable) */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

@@ -17,6 +17,9 @@ const config: Config = {
         'comic': ['"Comic Sans MS"', '"Comic Sans"', 'cursive'],
         'papyrus': ['Papyrus', 'fantasy'],
         'mono': ['"Courier New"', 'Courier', 'monospace'],
+        // Hearth redesign — next/font variables set in app/layout.tsx
+        'display': ['var(--font-display)', 'Georgia', 'serif'],
+        'data': ['var(--font-mono)', '"JetBrains Mono"', 'monospace'],
       },
       rotate: {
         '2': '2deg',
@@ -34,9 +37,14 @@ const config: Config = {
         'fall': 'fall 0.8s ease-in forwards',
         'pulse-wrong': 'pulseWrong 2s ease-in-out infinite',
         'grow-shrink': 'growShrink 1s ease-in-out infinite',
+        'ember-pulse': 'emberPulse 2.6s ease-in-out infinite',
       },
       keyframes: {
         blink: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0' } },
+        emberPulse: {
+          '0%, 100%': { boxShadow: '0 0 10px rgba(249,115,22,0.45)' },
+          '50%': { boxShadow: '0 0 22px rgba(249,115,22,0.8)' },
+        },
         jitter: { '0%, 100%': { transform: 'translateX(0)' }, '25%': { transform: 'translateX(-3px)' }, '75%': { transform: 'translateX(3px)' } },
         fall: { '0%': { transform: 'translateY(-100px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
         pulseWrong: { '0%, 100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.15)' } },
