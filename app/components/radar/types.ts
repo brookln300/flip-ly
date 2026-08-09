@@ -21,11 +21,13 @@ export type DealListing = {
   flip_type: string | null
   reasoning: string | null
   suggested_reply: string | null
+  /** Family verdict: 1 = good find, -1 = bad call, null/0 = no verdict yet. */
+  outcome_feedback: number | null
 }
 
 /** Columns fetched for radar surfaces — one place to keep them in sync. */
 export const DEAL_LISTING_COLUMNS =
-  'id, source, external_url, title, price_listed, is_free, location_text, posted_at, ingested_at, status, score, category, est_value_low, est_value_high, flip_type, reasoning, suggested_reply'
+  'id, source, external_url, title, price_listed, is_free, location_text, posted_at, ingested_at, status, score, category, est_value_low, est_value_high, flip_type, reasoning, suggested_reply, outcome_feedback'
 
 export function fmtPrice(l: Pick<DealListing, 'price_listed' | 'is_free'>): string {
   if (l.is_free) return 'FREE'

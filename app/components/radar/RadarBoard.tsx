@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Check, Copy, ExternalLink, MapPin, Radar } from 'lucide-react'
+import { Check, Copy, ExternalLink, MapPin, Radar, ThumbsDown, ThumbsUp } from 'lucide-react'
 import ScoreChip from '../ui/ScoreChip'
 import { DealListing, fmtEstRange, fmtPrice, sourceLabel, timeAgo } from './types'
 
@@ -25,6 +25,26 @@ function filterKey(f: Filter): string {
 export default function RadarBoard({ listings }: { listings: DealListing[] }) {
   const [filter, setFilter] = useState<Filter>({ kind: 'all' })
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  // Optimistic per-card overrides of outcome_feedback (server value is the fallback).
+  const [feedback, setFeedback] = useState<Record<string, number>>({})
+
+  const verdictOf = (l: DealListing): number => feedback[l.id] ?? l.outcome_feedback ?? 0
+
+  const sendVerdict = async (l: DealListing, value: 1 | -1) => {
+    const current = verdictOf(l)
+    const next = current === value ? 0 : value // tap active again to clear
+    setFeedback(prev => ({ ...prev, [l.id]: next }))
+    try {
+      const res = await fetch('/api/hub/radar-feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: l.id, value: next }),
+      })
+      if (!res.ok) throw new Error('feedback failed')
+    } catch {
+      setFeedback(prev => ({ ...prev, [l.id]: current })) // revert on error
+    }
+  }
 
   const sources = useMemo(
     () => Array.from(new Set(listings.map(l => l.source))).sort(),
@@ -197,6 +217,37 @@ export default function RadarBoard({ listings }: { listings: DealListing[] }) {
                 </span>
               </button>
             )}
+
+            {/* Family verdict — feeds the scorer's calibration */}
+            <div className="mt-3 flex items-center gap-2 border-t border-white/[0.06] pt-3">
+              <span className="mr-auto text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                Good call?
+              </span>
+              <button
+                onClick={() => sendVerdict(l, 1)}
+                aria-pressed={verdictOf(l) === 1}
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  verdictOf(l) === 1
+                    ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-300'
+                    : 'border-white/[0.08] bg-transparent text-slate-400 hover:border-emerald-400/30 hover:text-emerald-300'
+                }`}
+              >
+                <ThumbsUp className="h-3.5 w-3.5" aria-hidden="true" />
+                Good find
+              </button>
+              <button
+                onClick={() => sendVerdict(l, -1)}
+                aria-pressed={verdictOf(l) === -1}
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                  verdictOf(l) === -1
+                    ? 'border-rose-400/40 bg-rose-500/15 text-rose-300'
+                    : 'border-white/[0.08] bg-transparent text-slate-400 hover:border-rose-400/30 hover:text-rose-300'
+                }`}
+              >
+                <ThumbsDown className="h-3.5 w-3.5" aria-hidden="true" />
+                Not worth it
+              </button>
+            </div>
           </motion.article>
         ))}
       </div>

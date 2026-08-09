@@ -41,6 +41,9 @@ export default async function RadarPage() {
               Every find from the groups and Craigslist, scored the moment it lands. Copy the
               suggested reply, tap out to the listing, go get it first.
             </p>
+            <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
+              Tap 👍/👎 on finds — the scorer reads your verdicts and calibrates itself.
+            </p>
           </header>
           <RadarBoard listings={listings} />
         </div>
