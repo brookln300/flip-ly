@@ -1,14 +1,20 @@
+import { CalendarDays, Flame, Gem, MessagesSquare, Package, Activity } from 'lucide-react'
 import { supabase } from './lib/supabase'
+import { getSession } from './lib/auth'
 import { SignupProvider } from './components/SignupContext'
 import HubNav from './components/HubNav'
 import HearthScene from './components/HearthScene'
 import AuthModals from './components/AuthModals'
+import LandingHero from './components/LandingHero'
+import RadarHomeCard from './components/radar/RadarHomeCard'
+import GlassCard from './components/ui/GlassCard'
+import SectionHeader from './components/ui/SectionHeader'
+import StatNumber from './components/ui/StatNumber'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'The Hearth — our family hub' }
 
 const DFW_MARKET_ID = '08170240-45d0-47cf-8b6d-7fdbc3443dbe'
-const NIGHT = { color: '#FFF6EC', bg: 'linear-gradient(180deg, #12172B 0%, #16213E 60%, #1B2138 100%)' }
 
 async function getHubData() {
   const now = new Date()
@@ -49,50 +55,173 @@ function fmtWhen(iso: string) {
     ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
 
-function Door({ href, emoji, title, sub }: { href: string; emoji: string; title: string; sub: string }) {
+/** Compact link-out tile for sections whose data isn't fetched on this page. */
+function LinkTile({ href, icon, title, sub, delay }: {
+  href: string; icon: React.ReactNode; title: string; sub: string; delay: number
+}) {
   return (
-    <a href={href} style={{
-      display: 'block', textDecoration: 'none', padding: '16px 18px', borderRadius: '16px',
-      background: 'rgba(255,246,236,0.055)', border: '1px solid rgba(255,246,236,0.1)',
-    }}>
-      <div style={{ fontSize: '22px', marginBottom: '6px' }} aria-hidden="true">{emoji}</div>
-      <div style={{ fontFamily: 'var(--font-display), serif', fontSize: '17px', fontWeight: 600, color: '#FFF6EC' }}>{title}</div>
-      <div style={{ fontSize: '12.5px', color: '#C9BFB2', marginTop: '3px', lineHeight: 1.5 }}>{sub}</div>
-    </a>
+    <GlassCard href={href} delay={delay} className="p-5 sm:col-span-1 lg:col-span-2">
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-slate-950/50 text-amber-400/90" aria-hidden="true">
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <div className="font-display text-[15px] font-semibold text-slate-50">{title}</div>
+          <div className="mt-0.5 truncate text-xs text-slate-400">{sub}</div>
+        </div>
+      </div>
+    </GlassCard>
   )
 }
 
 export default async function HearthHome() {
+  const session = await getSession()
+
+  // ── Logged out: one elegant front door, nothing else ──
+  if (!session) {
+    return (
+      <SignupProvider>
+        <main id="main" className="hearth-bg min-h-screen text-slate-50">
+          <LandingHero />
+          <AuthModals />
+        </main>
+      </SignupProvider>
+    )
+  }
+
+  // ── Logged in: the family operations deck ──
   const d = await getHubData()
-  const next = d.events[0]
+  const me = d.members.find(m => m.email === session.email)
+  const firstName = (me?.display_name || session.email.split('@')[0]).split(' ')[0]
+  const hourCT = parseInt(new Date().toLocaleString('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/Chicago' }), 10)
+  const greeting = hourCT < 5 ? 'Up late' : hourCT < 12 ? 'Good morning' : hourCT < 17 ? 'Good afternoon' : 'Good evening'
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'America/Chicago' })
 
   return (
     <SignupProvider>
-      <main id="main" style={{ minHeight: '100vh', background: NIGHT.bg, color: NIGHT.color }}>
+      <main id="main" className="hearth-bg min-h-screen text-slate-50">
         <HubNav active="Home" />
-        <div style={{ maxWidth: '72rem', margin: '0 auto', padding: '20px 16px 56px' }}>
+        <div className="mx-auto max-w-6xl px-4 pb-16 pt-6">
 
-          <div style={{ textAlign: 'center', margin: '10px 0 18px' }}>
-            <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: 'clamp(24px, 4vw, 34px)', fontWeight: 600, letterSpacing: '0.01em' }}>Where we gather</h1>
-            <p style={{ fontSize: '13px', color: '#C9BFB2', marginTop: '4px' }}>every lantern is one of us · tap one to say hi</p>
+          {/* Greeting header */}
+          <header className="mb-6">
+            <p className="text-[13px] text-slate-400">{today}</p>
+            <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+              {greeting}, <span className="text-ember">{firstName}</span>
+              {me?.isBirthday ? ' — happy birthday! 🎂' : ''}
+            </h1>
+          </header>
+
+          {/* Bento deck */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
+
+            {/* The Hearth scene — the soul of the hub */}
+            <GlassCard delay={0.05} className="overflow-hidden p-2 sm:col-span-2 lg:col-span-4">
+              <HearthScene members={d.members as any} />
+              <p className="px-3 py-2.5 text-center text-xs text-slate-500">
+                every lantern is one of us · tap one to say hi
+              </p>
+            </GlassCard>
+
+            {/* Deal Radar — new pipeline, own server fetch */}
+            <RadarHomeCard delay={0.1} className="sm:col-span-2 lg:col-span-2" />
+
+            {/* Calendar preview — existing events fetch */}
+            <GlassCard delay={0.15} className="p-5 sm:col-span-1 lg:col-span-3">
+              <SectionHeader
+                icon={<CalendarDays className="h-4 w-4" />}
+                title="Coming up"
+                action="Calendar"
+                actionHref="/calendar"
+              />
+              {d.events.length === 0 ? (
+                <p className="mt-4 text-sm text-slate-400">
+                  Nothing planned yet — <a href="/calendar" className="text-amber-300 no-underline hover:underline">add the first gathering</a>.
+                </p>
+              ) : (
+                <ul className="mt-4 flex flex-col gap-2.5">
+                  {d.events.map((ev: any) => (
+                    <li key={ev.id} className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-slate-950/40 px-3 py-2.5">
+                      <span className="text-lg" aria-hidden="true">{ev.emoji || '🗓'}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[13.5px] font-medium text-slate-50">{ev.title}</div>
+                        <div className="mt-0.5 truncate text-xs text-slate-500">
+                          {fmtWhen(ev.starts_at)}{ev.location ? ` · ${ev.location}` : ''}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </GlassCard>
+
+            {/* Family — existing profiles fetch */}
+            <GlassCard delay={0.2} className="p-5 sm:col-span-1 lg:col-span-3">
+              <SectionHeader
+                icon={<Flame className="h-4 w-4" />}
+                title="Family"
+                action="Who's who"
+                actionHref="/family"
+              />
+              <div className="mt-4 flex items-end justify-between gap-4">
+                <StatNumber value={d.members.length} label="lanterns lit" />
+                <div className="flex flex-col items-end gap-1.5">
+                  {d.birthdaysSoon.length > 0 ? (
+                    d.birthdaysSoon.map(b => (
+                      <span key={b.name} className="rounded-full border border-amber-400/25 bg-amber-500/10 px-3 py-1 text-xs text-amber-200">
+                        🎂 {b.name} {b.days === 0 ? 'today' : `in ${b.days}d`}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-slate-500">no birthdays in the next 45 days</span>
+                  )}
+                </div>
+              </div>
+            </GlassCard>
+
+            {/* Deal finder — existing hot-deals count */}
+            <GlassCard href="/deals" delay={0.25} className="p-5 sm:col-span-1 lg:col-span-2">
+              <SectionHeader icon={<Gem className="h-4 w-4" />} title="Deal finder" />
+              <StatNumber
+                className="mt-4"
+                value={d.hotDeals}
+                label="hot DFW deals in the last 24h"
+                ember={d.hotDeals > 0}
+              />
+            </GlassCard>
+
+            {/* Link-out tiles — data lives on their own pages */}
+            <LinkTile
+              href="/messages"
+              icon={<MessagesSquare className="h-5 w-5" />}
+              title="Messages"
+              sub="seller drafts · review & send"
+              delay={0.3}
+            />
+            <LinkTile
+              href="/inventory"
+              icon={<Package className="h-5 w-5" />}
+              title="Inventory"
+              sub="bought · listed · sold · profit"
+              delay={0.35}
+            />
+
+            {/* System health strip */}
+            <GlassCard href="/system" delay={0.4} className="px-5 py-3.5 sm:col-span-2 lg:col-span-6">
+              <div className="flex items-center justify-between gap-3">
+                <span className="flex items-center gap-2.5 text-[13px] text-slate-400">
+                  <Activity className="h-4 w-4 text-amber-400/90" aria-hidden="true" />
+                  <span className="font-medium text-slate-300">System</span>
+                  <span className="hidden sm:inline">scrapers · AI budget · pipeline health</span>
+                </span>
+                <span className="text-xs font-medium text-slate-500">view status →</span>
+              </div>
+            </GlassCard>
           </div>
 
-          <HearthScene members={d.members as any} />
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '12px', marginTop: '18px' }}>
-            <Door href="/calendar" emoji="📅" title="Calendar"
-              sub={next ? `Next: ${next.emoji ? next.emoji + ' ' : ''}${next.title} — ${fmtWhen(next.starts_at)}` : 'Nothing planned yet — add the first gathering'} />
-            <Door href="/family" emoji="🏮" title="Family"
-              sub={d.birthdaysSoon.length ? `🎂 ${d.birthdaysSoon.map(b => `${b.name} in ${b.days}d`).join(' · ')}` : `${d.members.length} lanterns lit · who's who, birthdays, stories`} />
-            <Door href="/deals" emoji="💎" title="Deal finder"
-              sub={`${d.hotDeals} hot DFW deals found in the last day — the treasure map`} />
-            <Door href="/help" emoji="💬" title="How this works"
-              sub="New here? Two minutes and you'll have your own lantern glowing." />
-          </div>
-
-          <footer style={{ marginTop: '44px', paddingTop: '18px', borderTop: '1px solid rgba(255,246,236,0.08)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-            <span style={{ fontSize: '12px', color: 'rgba(201,191,178,0.6)' }}>The Hearth · our family, one warm sky</span>
-            <a href="/ops" style={{ fontSize: '12px', color: 'rgba(201,191,178,0.6)', textDecoration: 'none' }}>Mission Control →</a>
+          <footer className="mt-10 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-5">
+            <span className="text-xs text-slate-600">The Hearth · our family, one warm sky</span>
+            <a href="/ops" className="text-xs text-slate-600 no-underline transition-colors hover:text-slate-400">Mission Control →</a>
           </footer>
         </div>
         <AuthModals />

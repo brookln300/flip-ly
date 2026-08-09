@@ -6,8 +6,6 @@ import AuthModals from '../components/AuthModals'
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Family — The Hearth', robots: { index: false, follow: false } }
 
-const NIGHT_BG = 'linear-gradient(180deg, #12172B 0%, #16213E 60%, #1B2138 100%)'
-
 export default async function FamilyPage() {
   const { data } = await supabase
     .from('fliply_profiles')
@@ -19,11 +17,11 @@ export default async function FamilyPage() {
 
   return (
     <SignupProvider>
-      <main id="main" style={{ minHeight: '100vh', background: NIGHT_BG, color: '#FFF6EC' }}>
+      <main id="main" className="hearth-bg min-h-screen text-slate-50">
         <HubNav active="Family" />
-        <div style={{ maxWidth: '72rem', margin: '0 auto', padding: '22px 16px 56px' }}>
-          <h1 style={{ fontFamily: 'var(--font-display), serif', fontSize: '26px', fontWeight: 600, marginBottom: '4px' }}>Who&apos;s who</h1>
-          <p style={{ fontSize: '13px', color: '#C9BFB2', marginBottom: '20px' }}>Every lantern, every story. Birthdays, favorites, sizes — the things that make gift time easy and gatherings safe.</p>
+        <div className="mx-auto max-w-6xl px-4 pb-16 pt-6">
+          <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Who&apos;s who</h1>
+          <p className="mb-5 mt-1.5 text-[13px] leading-relaxed text-slate-400">Every lantern, every story. Birthdays, favorites, sizes — the things that make gift time easy and gatherings safe.</p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '14px' }}>
             {members.map((m: any) => {
@@ -58,7 +56,7 @@ export default async function FamilyPage() {
           </div>
 
           <div style={{ marginTop: '22px', textAlign: 'center' }}>
-            <a href="/family/me" style={{ display: 'inline-block', padding: '11px 22px', fontSize: '14px', fontWeight: 600, borderRadius: '11px', textDecoration: 'none', color: '#16213E', background: 'linear-gradient(120deg, #FFD166, #F4A259)' }}>🏮 Tend your lantern</a>
+            <a href="/family/me" className="inline-block rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 px-6 py-3 text-sm font-semibold text-white no-underline shadow-[0_4px_24px_rgba(249,115,22,0.35)] transition-all hover:brightness-110">🏮 Tend your lantern</a>
           </div>
         </div>
         <AuthModals />
