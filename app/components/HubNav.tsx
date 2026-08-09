@@ -20,6 +20,7 @@ const LINKS = [
   { label: 'Calendar', href: '/calendar' },
   { label: 'Family', href: '/family' },
   { label: 'Deals', href: '/deals' },
+  { label: 'Settings', href: '/settings' },
   { label: 'Help', href: '/help' },
 ]
 
