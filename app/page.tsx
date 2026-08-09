@@ -7,6 +7,8 @@ import HearthScene from './components/HearthScene'
 import AuthModals from './components/AuthModals'
 import LandingHero from './components/LandingHero'
 import RadarHomeCard from './components/radar/RadarHomeCard'
+import BoardHomeCard from './components/board/BoardHomeCard'
+import ListsHomeCard from './components/lists/ListsHomeCard'
 import GlassCard from './components/ui/GlassCard'
 import SectionHeader from './components/ui/SectionHeader'
 import StatNumber from './components/ui/StatNumber'
@@ -179,8 +181,14 @@ export default async function HearthHome() {
               </div>
             </GlassCard>
 
+            {/* The Board — family bulletin, own server fetch */}
+            <BoardHomeCard delay={0.25} className="sm:col-span-1 lg:col-span-3" />
+
+            {/* Lists — open-item counts, own server fetch */}
+            <ListsHomeCard delay={0.3} className="sm:col-span-1 lg:col-span-3" />
+
             {/* Deal finder — existing hot-deals count */}
-            <GlassCard href="/deals" delay={0.25} className="p-5 sm:col-span-1 lg:col-span-2">
+            <GlassCard href="/deals" delay={0.35} className="p-5 sm:col-span-1 lg:col-span-2">
               <SectionHeader icon={<Gem className="h-4 w-4" />} title="Deal finder" />
               <StatNumber
                 className="mt-4"
@@ -196,18 +204,18 @@ export default async function HearthHome() {
               icon={<MessagesSquare className="h-5 w-5" />}
               title="Messages"
               sub="seller drafts · review & send"
-              delay={0.3}
+              delay={0.4}
             />
             <LinkTile
               href="/inventory"
               icon={<Package className="h-5 w-5" />}
               title="Inventory"
               sub="bought · listed · sold · profit"
-              delay={0.35}
+              delay={0.45}
             />
 
             {/* System health strip */}
-            <GlassCard href="/system" delay={0.4} className="px-5 py-3.5 sm:col-span-2 lg:col-span-6">
+            <GlassCard href="/system" delay={0.5} className="px-5 py-3.5 sm:col-span-2 lg:col-span-6">
               <div className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2.5 text-[13px] text-slate-400">
                   <Activity className="h-4 w-4 text-amber-400/90" aria-hidden="true" />
