@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Flip-ly Free Finds Capture",
+  "version": "0.1.0",
+  "description": "Human-paced capture of free-item posts from Facebook groups YOU are viewing, forwarded to your Flip-ly ingest endpoint. No background scraping.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://www.facebook.com/*",
+    "http://localhost:3000/*",
+    "https://*.vercel.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Flip-ly Free Finds"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.facebook.com/groups/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
