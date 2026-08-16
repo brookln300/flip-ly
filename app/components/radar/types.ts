@@ -57,3 +57,37 @@ export function timeAgo(iso: string | null): string {
   if (h < 24) return `${h}h ago`
   return `${Math.floor(h / 24)}d ago`
 }
+
+/** Terse forms for the dense feed rows: "fb"/"cl", "14m"/"3h"/"2d". */
+export function sourceShort(source: string): string {
+  if (source === 'fb_group') return 'fb'
+  if (source === 'craigslist') return 'cl'
+  return source.slice(0, 2)
+}
+
+export function timeAgoShort(iso: string | null): string {
+  if (!iso) return ''
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
+  if (mins < 1) return 'now'
+  if (mins < 60) return `${mins}m`
+  const h = Math.floor(mins / 60)
+  if (h < 24) return `${h}h`
+  return `${Math.floor(h / 24)}d`
+}
+
+/**
+ * Claims live as a stamp appended to `reasoning` (no schema change):
+ * "[claimed by Keith @ 2026-08-15T14:03:00.000Z]". Parse it back out
+ * for display; strip it when showing the scorer's reasoning itself.
+ */
+const CLAIM_RE = /\[claimed by ([^\]]+?) @ ([^\]]+)\]/
+
+export function parseClaim(reasoning: string | null): { name: string; at: string } | null {
+  if (!reasoning) return null
+  const m = reasoning.match(CLAIM_RE)
+  return m ? { name: m[1], at: m[2] } : null
+}
+
+export function stripClaim(reasoning: string | null): string {
+  return (reasoning || '').replace(CLAIM_RE, '').trim()
+}
