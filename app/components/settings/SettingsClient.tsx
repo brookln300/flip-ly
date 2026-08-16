@@ -228,6 +228,10 @@ export default function SettingsClient({
   const [newUrl, setNewUrl] = useState('')
   const [addErr, setAddErr] = useState('')
   const [adding, setAdding] = useState(false)
+  const [newGroupName, setNewGroupName] = useState('')
+  const [newGroupId, setNewGroupId] = useState('')
+  const [addGroupErr, setAddGroupErr] = useState('')
+  const [addingGroup, setAddingGroup] = useState(false)
   const scoreTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const savedScore = useRef(initialSettings.global_min_alert_score)
 
@@ -381,6 +385,41 @@ export default function SettingsClient({
       setSearches(prev => [...prev, j.search].sort((a, b) => a.label.localeCompare(b.label)))
       setNewLabel(''); setNewUrl('')
     } finally { setAdding(false) }
+  }
+
+  const SLUG_ERR =
+    'Open any post in the group and copy the NUMERIC id from its permalink (facebook.com/groups/<numbers>/posts/…)'
+
+  /** Bare digits pass through; facebook.com/groups/<digits> URLs get the id pulled out. */
+  const extractGroupId = (raw: string): { id?: string; err: string } => {
+    const t = raw.trim()
+    if (/^\d+$/.test(t)) {
+      return t.length >= 6 ? { id: t, err: '' } : { err: 'Group ids are at least 6 digits.' }
+    }
+    const m = t.match(/facebook\.com\/groups\/([^/?#]+)/i)
+    if (!m) return { err: 'Paste the group URL (facebook.com/groups/…) or its numeric id.' }
+    if (!/^\d{6,}$/.test(m[1])) return { err: SLUG_ERR }
+    return { id: m[1], err: '' }
+  }
+
+  const addGroup = async () => {
+    setAddGroupErr('')
+    const name = newGroupName.trim()
+    if (!name) { setAddGroupErr('Give the group a name.'); return }
+    const { id, err } = extractGroupId(newGroupId)
+    if (!id) { setAddGroupErr(err); return }
+    setAddingGroup(true)
+    try {
+      const r = await fetch('/api/hub/pipeline-settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ add_group: { name, fb_group_id: id } }),
+      })
+      const j = await r.json().catch(() => null)
+      if (!r.ok || !j?.group) { setAddGroupErr(j?.error || 'Could not add — try again.'); return }
+      setGroups(prev => [...prev, j.group].sort((a, b) => a.name.localeCompare(b.name)))
+      setNewGroupName(''); setNewGroupId('')
+    } finally { setAddingGroup(false) }
   }
 
   const f = s.pipeline_filters
@@ -570,6 +609,40 @@ export default function SettingsClient({
             </div>
             {addErr && <p className="mt-2 text-xs text-rose-300">{addErr}</p>}
             <p className="mt-2 text-[11px] text-slate-500">Polling begins within 7 minutes.</p>
+          </div>
+        )}
+
+        {!ro && (
+          <div className="mt-5 border-t border-white/[0.06] pt-4">
+            <p className="mb-2 text-[13px] font-medium text-slate-300">Add a Facebook group</p>
+            <div className="flex flex-col gap-2">
+              <input
+                className={`${INPUT} w-full`}
+                placeholder="Name (e.g. Buy Nothing — west side)"
+                value={newGroupName}
+                maxLength={80}
+                onChange={e => setNewGroupName(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <input
+                  className={`${INPUT} min-w-0 flex-1`}
+                  placeholder="https://facebook.com/groups/… or numeric id"
+                  value={newGroupId}
+                  inputMode="url"
+                  onChange={e => setNewGroupId(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') addGroup() }}
+                />
+                <EmberButton onClick={addGroup} className="!px-4 !py-2 !text-sm">
+                  {addingGroup ? 'Adding…' : 'Watch it'}
+                </EmberButton>
+              </div>
+            </div>
+            {addGroupErr && <p className="mt-2 text-xs text-rose-300">{addGroupErr}</p>}
+            <p className="mt-2 text-[11px] text-slate-500">
+              ⚠️ Keith&apos;s Facebook account must be a MEMBER of the group before the radar can read it.
+              New groups quietly index their backlog on the first pass — alerts start with the next new post.
+              Polling begins within ~15 minutes.
+            </p>
           </div>
         )}
       </GlassCard>

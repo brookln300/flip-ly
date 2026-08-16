@@ -177,5 +177,23 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ search: data })
   }
 
+  // ── New Facebook group ──────────────────────────────────────────────────
+  if (b.add_group && typeof b.add_group === 'object') {
+    const name = typeof b.add_group.name === 'string' ? b.add_group.name.trim().slice(0, 80) : ''
+    if (!name) return bad('give the group a name')
+    const fbId = typeof b.add_group.fb_group_id === 'string' ? b.add_group.fb_group_id.trim() : ''
+    if (!/^\d{6,}$/.test(fbId)) return bad('fb_group_id must be the numeric group id (6+ digits)')
+    const { data, error } = await supabase
+      .from('monitored_groups')
+      .upsert(
+        { fb_group_id: fbId, name, active: true, notes: 'added via settings' },
+        { onConflict: 'fb_group_id', ignoreDuplicates: true }
+      )
+      .select('id, fb_group_id, name, active, min_alert_score')
+    if (error) return dbErr(error.message)
+    if (!data?.length) return bad('that group is already on the radar')
+    return NextResponse.json({ group: data[0] })
+  }
+
   return bad('unrecognized request')
 }
