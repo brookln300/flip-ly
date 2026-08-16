@@ -2,8 +2,8 @@ import { supabase } from '../lib/supabase'
 import { getSession } from '../lib/auth'
 import { isAdmin } from '../lib/allowlist'
 import { SignupProvider } from '../components/SignupContext'
-import HubNav from '../components/HubNav'
 import AuthModals from '../components/AuthModals'
+import ZenShell from '../components/zen/ZenShell'
 import SettingsClient from '../components/settings/SettingsClient'
 import {
   DEFAULT_FILTERS,
@@ -14,7 +14,7 @@ import {
 } from '../components/settings/types'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Settings — The Hearth', robots: { index: false, follow: false } }
+export const metadata = { title: 'settings — flip-ly', robots: { index: false, follow: false } }
 
 /**
  * Pipeline settings — the control room for the Deal Radar. These knobs live
@@ -68,34 +68,29 @@ export default async function SettingsPage() {
 
   return (
     <SignupProvider>
-      <main id="main" className="hearth-bg min-h-screen text-slate-50">
-        <HubNav active="Settings" />
-        <div className="mx-auto max-w-2xl px-4 pb-16 pt-6">
-          <header className="mb-6">
-            <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              Pipeline <span className="text-ember">Settings</span>
-            </h1>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-400">
-              Changes steer the live pipeline — they take effect within a couple of minutes.
-            </p>
-          </header>
-          <SettingsClient
-            signedIn={signedIn}
-            admin={admin}
-            initialSettings={
-              data.settings || {
-                alerts_enabled: true,
-                global_min_alert_score: 75,
-                quiet_hours: DEFAULT_QUIET_HOURS,
-                pipeline_filters: DEFAULT_FILTERS,
-              }
+      <ZenShell active="Settings">
+        <header className="mb-4 border-b border-zen-line pb-2">
+          <h1 className="text-[15px] font-semibold lowercase">settings</h1>
+          <p className="mt-0.5 text-[12.5px] text-zen-muted">
+            changes steer the live pipeline — they take effect within a couple of minutes.
+          </p>
+        </header>
+        <SettingsClient
+          signedIn={signedIn}
+          admin={admin}
+          initialSettings={
+            data.settings || {
+              alerts_enabled: true,
+              global_min_alert_score: 75,
+              quiet_hours: DEFAULT_QUIET_HOURS,
+              pipeline_filters: DEFAULT_FILTERS,
             }
-            initialSearches={data.searches}
-            initialGroups={data.groups}
-          />
-        </div>
+          }
+          initialSearches={data.searches}
+          initialGroups={data.groups}
+        />
         <AuthModals />
-      </main>
+      </ZenShell>
     </SignupProvider>
   )
 }

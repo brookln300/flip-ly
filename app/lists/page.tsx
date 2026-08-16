@@ -1,12 +1,12 @@
 import { supabase } from '../lib/supabase'
 import { displayNames } from '../lib/names'
 import { SignupProvider } from '../components/SignupContext'
-import HubNav from '../components/HubNav'
 import AuthModals from '../components/AuthModals'
+import ZenShell from '../components/zen/ZenShell'
 import ListsClient, { HubList, ListItem } from '../components/lists/ListsClient'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Lists — The Hearth', robots: { index: false, follow: false } }
+export const metadata = { title: 'lists — flip-ly', robots: { index: false, follow: false } }
 
 /**
  * Shared checklists — groceries, Costco, whatever run is next. Server
@@ -29,21 +29,16 @@ export default async function ListsPage() {
 
   return (
     <SignupProvider>
-      <main id="main" className="hearth-bg min-h-screen text-slate-50">
-        <HubNav active="Lists" />
-        <div className="mx-auto max-w-2xl px-4 pb-16 pt-6">
-          <header className="mb-6">
-            <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              Shared <span className="text-ember">lists</span>
-            </h1>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-400">
-              One list per errand, everyone adds, whoever&apos;s at the store checks things off.
-            </p>
-          </header>
-          <ListsClient initialLists={lists} initialItems={items} initialNames={names} />
-        </div>
+      <ZenShell active="Lists">
+        <header className="mb-4 border-b border-zen-line pb-2">
+          <h1 className="text-[15px] font-semibold lowercase">lists</h1>
+          <p className="mt-0.5 text-[12.5px] text-zen-muted">
+            one list per errand — everyone adds, whoever&apos;s at the store checks things off.
+          </p>
+        </header>
+        <ListsClient initialLists={lists} initialItems={items} initialNames={names} />
         <AuthModals />
-      </main>
+      </ZenShell>
     </SignupProvider>
   )
 }

@@ -1,12 +1,12 @@
 import { supabase } from '../lib/supabase'
 import { SignupProvider } from '../components/SignupContext'
-import HubNav from '../components/HubNav'
 import AuthModals from '../components/AuthModals'
+import ZenShell from '../components/zen/ZenShell'
 import BoardClient from '../components/board/BoardClient'
 import { BoardPost } from '../components/board/types'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'The Board — The Hearth', robots: { index: false, follow: false } }
+export const metadata = { title: 'board — flip-ly', robots: { index: false, follow: false } }
 
 /**
  * The Board — the family bulletin. Server component fetches the wall
@@ -38,22 +38,16 @@ export default async function BoardPage() {
 
   return (
     <SignupProvider>
-      <main id="main" className="hearth-bg min-h-screen text-slate-50">
-        <HubNav active="Board" />
-        <div className="mx-auto max-w-3xl px-4 pb-16 pt-6">
-          <header className="mb-6">
-            <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              The <span className="text-ember">Board</span>
-            </h1>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-400">
-              The family bulletin — deal finds, plans, wins, whatever needs saying.
-              Pin the important stuff so it stays on top.
-            </p>
-          </header>
-          <BoardClient initialPosts={posts} />
-        </div>
+      <ZenShell active="Board">
+        <header className="mb-4 border-b border-zen-line pb-2">
+          <h1 className="text-[15px] font-semibold lowercase">board</h1>
+          <p className="mt-0.5 text-[12.5px] text-zen-muted">
+            the family bulletin — deal finds, plans, wins. pin the important stuff so it stays on top.
+          </p>
+        </header>
+        <BoardClient initialPosts={posts} />
         <AuthModals />
-      </main>
+      </ZenShell>
     </SignupProvider>
   )
 }

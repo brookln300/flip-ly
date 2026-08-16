@@ -1,12 +1,12 @@
 import { supabase } from '../lib/supabase'
 import { displayNames } from '../lib/names'
 import { SignupProvider } from '../components/SignupContext'
-import HubNav from '../components/HubNav'
 import AuthModals from '../components/AuthModals'
+import ZenShell from '../components/zen/ZenShell'
 import WishlistClient, { Wish } from '../components/wishlist/WishlistClient'
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'Wishlist — The Hearth', robots: { index: false, follow: false } }
+export const metadata = { title: 'wishlist — flip-ly', robots: { index: false, follow: false } }
 
 /**
  * Family wishlist — the human face of the deal pipeline's grail_list.
@@ -27,22 +27,16 @@ export default async function WishlistPage() {
 
   return (
     <SignupProvider>
-      <main id="main" className="hearth-bg min-h-screen text-slate-50">
-        <HubNav active="Wishlist" />
-        <div className="mx-auto max-w-2xl px-4 pb-16 pt-6">
-          <header className="mb-6">
-            <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              The <span className="text-ember">Wishlist</span>
-            </h1>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-400">
-              Tell the radar what you&apos;re hunting. When a matching deal appears,
-              the family gets pinged.
-            </p>
-          </header>
-          <WishlistClient initialWishes={wishes} initialNames={names} />
-        </div>
+      <ZenShell active="Wishlist">
+        <header className="mb-4 border-b border-zen-line pb-2">
+          <h1 className="text-[15px] font-semibold lowercase">wishlist</h1>
+          <p className="mt-0.5 text-[12.5px] text-zen-muted">
+            tell the radar what you&apos;re hunting — when a matching deal appears, the family gets pinged.
+          </p>
+        </header>
+        <WishlistClient initialWishes={wishes} initialNames={names} />
         <AuthModals />
-      </main>
+      </ZenShell>
     </SignupProvider>
   )
 }
