@@ -314,3 +314,20 @@ body {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ZEN — the craigslist-zen redesign. Near-monochrome, text-first, dense.
+   Tokens live in tailwind.config.ts under `zen`; this block sets the base
+   type system and neutralizes global rules that fight density.
+   ═══════════════════════════════════════════════════════════════════════ */
+.zen {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color-scheme: dark;
+}
+.zen ::selection { background: #4ADE80; color: #111315; }
+.zen input, .zen button, .zen select, .zen textarea { font-family: inherit; }
+/* dense bracket-buttons everywhere — beat the mobile 44px min-height rule */
+.zen button { min-height: 0; }
+.zen :focus-visible { outline: 1px solid #4ADE80; outline-offset: 1px; }

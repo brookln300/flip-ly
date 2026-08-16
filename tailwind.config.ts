@@ -5,6 +5,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Zen redesign — near-monochrome, one green accent (see .zen in globals.css)
+        'zen': {
+          bg: '#111315',
+          panel: '#16181B',
+          text: '#E6E6E6',
+          muted: '#8A8F98',
+          line: '#2A2E33',
+          accent: '#4ADE80',
+        },
         'lime': '#0FFF50',
         'hotpink': '#FF10F0',
         'mustard': '#FFB81C',
