@@ -11,3 +11,9 @@ node_modules/
 generated/
 
 .vercel
+
+# local tooling output — never commit
+graphify-out/
+.Codex/
+.agents/
+.claude/
