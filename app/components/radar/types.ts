@@ -14,6 +14,7 @@ export type DealListing = {
   is_free: boolean | null
   location_text: string | null
   body: string | null
+  image_url: string | null
   lat: number | null
   lng: number | null
   gone_at: string | null
@@ -33,7 +34,7 @@ export type DealListing = {
 
 /** Columns fetched for radar surfaces — one place to keep them in sync. */
 export const DEAL_LISTING_COLUMNS =
-  'id, source, source_ref, external_url, title, price_listed, is_free, location_text, body, lat, lng, gone_at, posted_at, ingested_at, status, score, category, est_value_low, est_value_high, flip_type, reasoning, suggested_reply, outcome_feedback'
+  'id, source, source_ref, external_url, title, price_listed, is_free, location_text, body, image_url, lat, lng, gone_at, posted_at, ingested_at, status, score, category, est_value_low, est_value_high, flip_type, reasoning, suggested_reply, outcome_feedback'
 
 export function fmtPrice(l: Pick<DealListing, 'price_listed' | 'is_free'>): string {
   if (l.is_free) return 'FREE'

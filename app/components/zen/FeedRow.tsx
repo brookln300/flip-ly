@@ -54,6 +54,7 @@ export default function FeedRow({
   const [note, setNote] = useState('')
   const [noteState, setNoteState] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [showDetails, setShowDetails] = useState(false)
+  const [imgDead, setImgDead] = useState(false)
 
   const verdict = onVerdict ? verdictProp : localVerdict
   const reasoning = stripClaim(l.reasoning)
@@ -227,6 +228,17 @@ export default function FeedRow({
           {/* detail panel — everything the pipeline grabbed */}
           {showDetails && (
             <div className="mt-1.5 space-y-1.5 border-l-2 border-zen-line pl-2.5 text-[12.5px] leading-snug">
+              {l.image_url && !imgDead && (
+                <a href={l.external_url || l.image_url} target="_blank" rel="noopener noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={l.image_url}
+                    alt=""
+                    onError={() => setImgDead(true)}
+                    className="max-h-64 rounded border border-zen-line object-contain"
+                  />
+                </a>
+              )}
               {l.body && (
                 <p className="max-h-40 overflow-y-auto whitespace-pre-wrap text-zen-text/90">{l.body}</p>
               )}
@@ -343,6 +355,18 @@ export default function FeedRow({
             </div>
           )}
         </div>
+
+        {/* X-style thumbnail — collapses when expanded (big copy shows in details) */}
+        {l.image_url && !imgDead && !showDetails && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={l.image_url}
+            alt=""
+            loading="lazy"
+            onError={() => setImgDead(true)}
+            className={`mt-0.5 h-16 w-16 shrink-0 rounded border border-zen-line object-cover ${gone ? 'grayscale' : ''}`}
+          />
+        )}
       </div>
     </div>
   )
