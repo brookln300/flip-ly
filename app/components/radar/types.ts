@@ -13,6 +13,10 @@ export type DealListing = {
   price_listed: number | null
   is_free: boolean | null
   location_text: string | null
+  body: string | null
+  lat: number | null
+  lng: number | null
+  gone_at: string | null
   posted_at: string | null
   ingested_at: string | null
   status: string
@@ -29,7 +33,7 @@ export type DealListing = {
 
 /** Columns fetched for radar surfaces — one place to keep them in sync. */
 export const DEAL_LISTING_COLUMNS =
-  'id, source, source_ref, external_url, title, price_listed, is_free, location_text, posted_at, ingested_at, status, score, category, est_value_low, est_value_high, flip_type, reasoning, suggested_reply, outcome_feedback'
+  'id, source, source_ref, external_url, title, price_listed, is_free, location_text, body, lat, lng, gone_at, posted_at, ingested_at, status, score, category, est_value_low, est_value_high, flip_type, reasoning, suggested_reply, outcome_feedback'
 
 export function fmtPrice(l: Pick<DealListing, 'price_listed' | 'is_free'>): string {
   if (l.is_free) return 'FREE'
@@ -98,6 +102,52 @@ export function timeAgoShort(iso: string | null): string {
   const h = Math.floor(mins / 60)
   if (h < 24) return `${h}h`
   return `${Math.floor(h / 24)}d`
+}
+
+/**
+ * Geo helpers — HOME is the family base (9309 Sterling Gate Dr, McKinney
+ * 75072). Distance renders when the pipeline geocoded the listing; the map
+ * link falls back to a street-address match in the title/body/location when
+ * there are no coordinates.
+ */
+export const HOME = { lat: 33.1977446, lng: -96.7375739 }
+export const HOME_ADDR = '9309 Sterling Gate Dr, McKinney, TX 75072'
+
+export function milesFromHome(l: Pick<DealListing, 'lat' | 'lng'>): number | null {
+  if (l.lat == null || l.lng == null) return null
+  const R = 3958.8
+  const t = (x: number) => (x * Math.PI) / 180
+  const dLat = t(l.lat - HOME.lat)
+  const dLng = t(l.lng - HOME.lng)
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(t(HOME.lat)) * Math.cos(t(l.lat)) * Math.sin(dLng / 2) ** 2
+  return Math.round(2 * R * Math.asin(Math.sqrt(h)) * 10) / 10
+}
+
+/** Street-address-looking fragment in free text ("123 Maple St", "4508 Ridge Rd"). */
+const ADDR_RE =
+  /\b\d{3,5}\s+[A-Za-z][A-Za-z.]*(?:\s+[A-Za-z][A-Za-z.]*){0,3}\s+(?:st|street|ave|avenue|rd|road|dr|drive|ln|lane|ct|court|blvd|pkwy|parkway|cir|circle|way|trl|trail|pl|place|loop)\b\.?/i
+
+export function extractAddress(l: Pick<DealListing, 'title' | 'body' | 'location_text'>): string | null {
+  for (const s of [l.location_text, l.title, l.body]) {
+    const m = s?.match(ADDR_RE)
+    if (m) return m[0]
+  }
+  return null
+}
+
+/** Directions from home to the listing — coordinates first, address fallback. */
+export function mapsUrl(l: Pick<DealListing, 'lat' | 'lng' | 'title' | 'body' | 'location_text'>): string | null {
+  const dest =
+    l.lat != null && l.lng != null
+      ? `${l.lat},${l.lng}`
+      : (() => {
+          const a = extractAddress(l)
+          return a ? `${a}, TX` : null
+        })()
+  if (!dest) return null
+  return `https://www.google.com/maps/dir/${encodeURIComponent(HOME_ADDR)}/${encodeURIComponent(dest)}`
 }
 
 /**

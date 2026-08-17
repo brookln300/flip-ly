@@ -4,8 +4,11 @@ import { useState } from 'react'
 import { useSignup } from '../SignupContext'
 import {
   DealListing,
+  extractAddress,
   fmtEstRange,
   fmtPostTime,
+  mapsUrl,
+  milesFromHome,
   parseClaim,
   sourceLabel,
   stripClaim,
@@ -16,14 +19,17 @@ import {
  * One deal, one post — X.com-style card in zen monochrome, used by the
  * home feed and the /radar deep view:
  *
- *   [72]  FB group · McKinney · kids' items          10:42 pm · Aug 16
+ *   [72]  FB group · McKinney · 🚗 4.2 mi           10:42 pm · Aug 16
  *         FREE Radio flyer wagon — est $40–80
- *         [reply] [claim] [open] [why]            [👍 good] [👎 pass]
+ *         [reply] [claim] [map] [open]           [👍 good] [👎 pass]
  *
- * Every row takes feedback: 👍/👎 sets outcome_feedback, then an optional
- * one-line "teach the scorer" note lands in feedback_note — both are
- * injected into the scorer's calibration prompt, so each verdict makes
- * the pipeline smarter. [why] expands the scorer's own reasoning.
+ * Soft-clicking anywhere on the card (not a link/button) expands the
+ * detail panel: everything the pipeline grabbed — full post text, the
+ * scorer's reasoning, detected address, exact timestamps, the drafted
+ * reply. [map] opens Google-Maps directions from home; the byline shows
+ * straight-line distance when the pipeline geocoded the post. A 🚫 gone
+ * badge appears once the bot's watch loop spots a gone/pending marker.
+ * Every row takes 👍/👎 feedback plus an optional "teach the scorer" note.
  */
 type ClaimState = { name: string; beaten?: boolean } | null
 
@@ -47,10 +53,14 @@ export default function FeedRow({
   const [askNote, setAskNote] = useState(false)
   const [note, setNote] = useState('')
   const [noteState, setNoteState] = useState<'idle' | 'saving' | 'saved'>('idle')
-  const [showWhy, setShowWhy] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
 
   const verdict = onVerdict ? verdictProp : localVerdict
   const reasoning = stripClaim(l.reasoning)
+  const miles = milesFromHome(l)
+  const map = mapsUrl(l)
+  const address = extractAddress(l)
+  const gone = !!l.gone_at
 
   const copyReply = () => {
     if (!l.suggested_reply) return
@@ -135,6 +145,12 @@ export default function FeedRow({
     }
   }
 
+  const softClick = (e: React.MouseEvent) => {
+    const el = e.target as HTMLElement
+    if (el.closest('a,button,input')) return
+    setShowDetails(d => !d)
+  }
+
   const score = l.score
   const scoreCls =
     score != null && score >= 65
@@ -147,7 +163,11 @@ export default function FeedRow({
   const bracket = 'shrink-0 text-[12px] text-zen-muted transition-colors hover:text-zen-accent'
 
   return (
-    <div className="border-b border-zen-line px-3 py-2 last:border-b-0">
+    <div
+      onClick={softClick}
+      className={`cursor-pointer border-b border-zen-line px-3 py-2 last:border-b-0 ${gone ? 'opacity-60' : ''}`}
+      title={showDetails ? undefined : 'click for details'}
+    >
       <div className="flex gap-2.5">
         <span
           className={`mt-0.5 inline-block h-[20px] w-8 shrink-0 border text-center font-data text-[11.5px] leading-[18px] ${scoreCls}`}
@@ -157,11 +177,20 @@ export default function FeedRow({
         </span>
 
         <div className="min-w-0 flex-1">
-          {/* byline: source · location · category      exact time */}
+          {/* byline: source · location · distance · gone?      exact time */}
           <div className="flex items-baseline gap-x-1.5 text-[12px] text-zen-muted">
             <span className="shrink-0 font-semibold text-zen-text/80">{sourceLabel(l.source)}</span>
             {l.location_text && <span className="truncate">· {l.location_text}</span>}
-            {l.category && <span className="hidden truncate sm:inline">· {l.category}</span>}
+            {miles != null && (
+              <span className="shrink-0" title="straight-line distance from home">
+                · 🚗 <span className="font-data">{miles} mi</span>
+              </span>
+            )}
+            {gone && (
+              <span className="shrink-0 font-semibold text-red-400" title={`marked gone ${timeAgoShort(l.gone_at)} ago`}>
+                · 🚫 gone
+              </span>
+            )}
             <span
               className="ml-auto shrink-0 pl-2 font-data text-[11.5px]"
               title={when ? `${timeAgoShort(when)} ago` : undefined}
@@ -179,12 +208,14 @@ export default function FeedRow({
                 href={l.external_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-w-0 text-[13.5px] text-zen-text underline decoration-zen-line underline-offset-2 hover:text-zen-accent hover:decoration-zen-accent"
+                className={`min-w-0 text-[13.5px] text-zen-text underline decoration-zen-line underline-offset-2 hover:text-zen-accent hover:decoration-zen-accent ${gone ? 'line-through' : ''}`}
               >
                 {l.title || 'untitled listing'}
               </a>
             ) : (
-              <span className="min-w-0 text-[13.5px] text-zen-text">{l.title || 'untitled listing'}</span>
+              <span className={`min-w-0 text-[13.5px] text-zen-text ${gone ? 'line-through' : ''}`}>
+                {l.title || 'untitled listing'}
+              </span>
             )}
             {est && (
               <span className="text-[12px] text-zen-muted">
@@ -193,11 +224,33 @@ export default function FeedRow({
             )}
           </div>
 
-          {/* scorer's reasoning, on demand */}
-          {showWhy && reasoning && (
-            <p className="mt-1 border-l-2 border-zen-line pl-2 text-[12.5px] italic leading-snug text-zen-muted">
-              {reasoning}
-            </p>
+          {/* detail panel — everything the pipeline grabbed */}
+          {showDetails && (
+            <div className="mt-1.5 space-y-1.5 border-l-2 border-zen-line pl-2.5 text-[12.5px] leading-snug">
+              {l.body && (
+                <p className="max-h-40 overflow-y-auto whitespace-pre-wrap text-zen-text/90">{l.body}</p>
+              )}
+              {reasoning && (
+                <p className="italic text-zen-muted">
+                  <span className="not-italic text-zen-text/70">scorer:</span> {reasoning}
+                </p>
+              )}
+              <p className="text-zen-muted">
+                {address && <>📍 {address} · </>}
+                {l.category && <>{l.category} · </>}
+                {l.flip_type && <>{l.flip_type} · </>}
+                posted {fmtPostTime(l.posted_at)}{l.ingested_at && <> · seen by radar {fmtPostTime(l.ingested_at)}</>}
+                {gone && <> · 🚫 marked gone {fmtPostTime(l.gone_at)}</>}
+              </p>
+              {l.suggested_reply && (
+                <p className="text-zen-muted">
+                  ✉️ drafted reply: <span className="text-zen-text/80">“{l.suggested_reply}”</span>
+                </p>
+              )}
+              {!l.body && !reasoning && !address && !l.suggested_reply && (
+                <p className="text-zen-muted">no extra details captured for this one — the link’s the best bet.</p>
+              )}
+            </div>
           )}
 
           {/* action bar */}
@@ -214,21 +267,33 @@ export default function FeedRow({
                     {copied ? '[copied]' : '[reply]'}
                   </button>
                 )}
-                {canClaim && (
+                {canClaim && !gone && (
                   <button onClick={doClaim} disabled={claiming} className={bracket}>
                     {claiming ? '[…]' : '[claim]'}
                   </button>
+                )}
+                {map && (
+                  <a
+                    href={map}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`directions from home${miles != null ? ` · ~${miles} mi straight-line` : ''}`}
+                    className={`${bracket} no-underline`}
+                  >
+                    [map{miles != null ? ` ${miles}mi` : ''}]
+                  </a>
                 )}
                 {l.external_url && (
                   <a href={l.external_url} target="_blank" rel="noopener noreferrer" className={`${bracket} no-underline`}>
                     [open]
                   </a>
                 )}
-                {reasoning && (
-                  <button onClick={() => setShowWhy(w => !w)} className={showWhy ? 'shrink-0 text-[12px] text-zen-accent' : bracket}>
-                    [why]
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowDetails(d => !d)}
+                  className={showDetails ? 'shrink-0 text-[12px] text-zen-accent' : bracket}
+                >
+                  [details]
+                </button>
               </>
             )}
 
