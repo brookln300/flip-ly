@@ -65,6 +65,29 @@ export function sourceShort(source: string): string {
   return source.slice(0, 2)
 }
 
+/**
+ * Exact post time, X-style: "10:42 pm · Aug 16" (year appended when not
+ * current). Pinned to America/Chicago on both server and client so SSR
+ * hydration matches and times read correctly for the DFW family.
+ */
+export function fmtPostTime(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const time = d
+    .toLocaleString('en-US', { timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit' })
+    .toLowerCase()
+  const sameYear =
+    d.toLocaleString('en-US', { timeZone: 'America/Chicago', year: 'numeric' }) ===
+    new Date().toLocaleString('en-US', { timeZone: 'America/Chicago', year: 'numeric' })
+  const date = d.toLocaleString('en-US', {
+    timeZone: 'America/Chicago',
+    month: 'short',
+    day: 'numeric',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  })
+  return `${time} · ${date}`
+}
+
 export function timeAgoShort(iso: string | null): string {
   if (!iso) return ''
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
