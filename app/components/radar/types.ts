@@ -6,6 +6,8 @@
 export type DealListing = {
   id: string
   source: string
+  /** FB group id for fb_group rows, search id for craigslist rows. */
+  source_ref: string | null
   external_url: string | null
   title: string | null
   price_listed: number | null
@@ -27,7 +29,7 @@ export type DealListing = {
 
 /** Columns fetched for radar surfaces — one place to keep them in sync. */
 export const DEAL_LISTING_COLUMNS =
-  'id, source, external_url, title, price_listed, is_free, location_text, posted_at, ingested_at, status, score, category, est_value_low, est_value_high, flip_type, reasoning, suggested_reply, outcome_feedback'
+  'id, source, source_ref, external_url, title, price_listed, is_free, location_text, posted_at, ingested_at, status, score, category, est_value_low, est_value_high, flip_type, reasoning, suggested_reply, outcome_feedback'
 
 export function fmtPrice(l: Pick<DealListing, 'price_listed' | 'is_free'>): string {
   if (l.is_free) return 'FREE'

@@ -35,13 +35,13 @@ async function getHomeData() {
     supabase.from('deal_listings').select('ingested_at').eq('source', 'craigslist').order('ingested_at', { ascending: false }).limit(1),
     supabase.from('deal_listings').select('id', { count: 'exact', head: true }).eq('status', 'new'),
     supabase.from('deal_listings').select('id', { count: 'exact', head: true }).gte('alerted_at', todayStart),
-    supabase.from('monitored_groups').select('id', { count: 'exact', head: true }).eq('active', true),
+    supabase.from('monitored_groups').select('fb_group_id, name').eq('active', true).order('name'),
     supabase.from('monitored_searches').select('id', { count: 'exact', head: true }).eq('active', true),
     supabase.from('settings').select('value').eq('key', 'alerts_enabled').maybeSingle(),
     supabase.from('deal_listings').select(DEAL_LISTING_COLUMNS)
       .in('status', ['scored', 'alerted', 'claimed'])
       .order('ingested_at', { ascending: false })
-      .limit(40),
+      .limit(200),
     supabase.from('deal_listings').select(DEAL_LISTING_COLUMNS)
       .in('status', ['scored', 'alerted'])
       .gte('score', 65).lte('score', 74)
@@ -66,11 +66,14 @@ async function getHomeData() {
       clLast: clLastRes.data?.[0]?.ingested_at ?? null,
       waiting: newRes.count ?? 0,
       alertsToday: alertsRes.count ?? 0,
-      groups: groupsRes.count ?? 0,
+      groups: (groupsRes.data || []).length,
       searches: searchesRes.count ?? 0,
     },
     alertsEnabled: typeof alertsOnRes.data?.value === 'boolean' ? alertsOnRes.data.value : true,
     feed: (feedRes.data as DealListing[]) || [],
+    fbGroups: ((groupsRes.data || []) as { fb_group_id: string | null; name: string }[])
+      .filter(g => g.fb_group_id && /^\d+$/.test(String(g.fb_group_id)))
+      .map(g => ({ id: String(g.fb_group_id), name: g.name })),
     nearMisses: (nearRes.data as DealListing[]) || [],
     board: boardRes.data || [],
     lists: (listsRes.data || []).map(l => ({ ...l, open: openByList[l.id] || 0 })),
@@ -140,7 +143,7 @@ export default async function HomePage() {
         </div>
 
         {/* 2 · quick bar, 3 · the feed, 4 · near misses */}
-        <HomeFeed rows={d.feed} nearMisses={d.nearMisses} admin={admin} alertsEnabled={d.alertsEnabled} />
+        <HomeFeed rows={d.feed} nearMisses={d.nearMisses} fbGroups={d.fbGroups} admin={admin} alertsEnabled={d.alertsEnabled} />
 
         {/* 5 · family strips */}
         <div className="mb-3 flex flex-col gap-2">
