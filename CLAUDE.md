@@ -155,6 +155,8 @@ Read `docs/PROJECT-STATUS.md` for what shipped and what's pending.
 
 After completing work, always generate a session continuation document (summary of what was done, what's left, and a prompt for the next session). Save to `.claude/session-notes/` with date prefix.
 
+Before writing it, run the memory ingest protocol in `docs/MEMORY-WIKI.md`: extract facts as subject→relation→object with evidence, normalize names against the Entity Registry, classify each fact (new/duplicate/update/contradiction/uncertain), write to the entity's home doc, and flag contradictions in the ledger — never silently overwrite a conflicting fact.
+
 ## Design Philosophy
 
 - **The product sells itself.** Show scored deals on the page, not marketing copy about scored deals.
